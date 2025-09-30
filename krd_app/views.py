@@ -1,10 +1,28 @@
-from django.shortcuts import render
-from django import forms 
-from django.contrib.auth.forms import UserCreationForm ##Para la creacion de usuarios, se usará para completar datos al momento de comprar
-# Create your views here.
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from .models import Producto
+from .forms import ProductoForm
+from django.http import HttpResponse
 
+### SECCION POST (FORMS)
+def addProducto(request):
+    if request.method == "POST":
+        form = ProductoForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Producto creado con éxito")
+            return redirect("/catalogo/")
+        else:
+            messages.error(request,"Error, probablemente usaste un formato no soportado")
+            return render(request,"catalogo.html")
+    else:
+        form = ProductoForm()
+        return render(request,"crear/crearprods.html",{"formulario":form})
+        
 
-class ProductoForm(forms.ModelForm):
-    class Meta:
-        model = ModelProd
-        exclude = ("idproducto", "idvehiculo", "stock")
+### SECCION GET (MODELS)
+def getProducto(request):
+    if request.method=="GET":
+        print("2")
+        prods=Producto.objects.all()
+        return render(request, "catalogo.html", {"prods":prods})
