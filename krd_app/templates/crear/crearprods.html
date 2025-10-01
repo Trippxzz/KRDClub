@@ -26,46 +26,15 @@
             
                 {% endfor %}
             {% endif %}
-               <form method="POST" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    <div class="form-label">
-                        {{ formulario.n_producto.label_tag }}
-                        {{ formulario.n_producto}}
-                    </div>
-                    <div class="form-label">
-                        {{ formulario.desc_producto.label_tag }}
-                        {{ formulario.desc_producto}}
-                    </div>
-                    <div class="form-label">
-                        {{ formulario.precio.label_tag }}
-                        {{ formulario.precio}}
-                    </div>
-                    <div class="form-label">
-                        {{ formulario.imagen.label_tag }}
-                        {{ formulario.imagen}}
-                    </div>
-                    <div class="form-label">
-                        {{ formulario.aro.label_tag }}
-                        {{ formulario.aro}}
-                    </div>
-                    <div class="form-label">
-                        {{ formulario.apernadura.label_tag }}
-                        {{ formulario.apernadura}}
-                    </div>
-                    <div class="form-label">
-                        {{ formulario.ancho.label_tag }}
-                        {{ formulario.ancho}}
-                    </div>
-                    <div class="form-label">
-                        {{ formulario.offset.label_tag }}
-                        {{ formulario.offset}}
-                    </div>
-                    <div class="form-label">
-                        {{ formulario.centro_llanta.label_tag }}
-                        {{ formulario.centro_llanta}}
-                    </div>
-                    <button type="submit" class="btn btn-danger">Crear Producto</button>
-                </form> 
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                {{ form_producto.as_p }}
+                <label>Imágenes:</label>
+                {{ form_imagenes.imagenes }}
+
+                <button type="submit">Guardar</button>
+            </form>
             <!-- {% else %}
             {% endif %} -->
                 
