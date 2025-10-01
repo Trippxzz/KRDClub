@@ -10,9 +10,15 @@ class ProductoForm(forms.ModelForm):
     n_producto=forms.CharField(label="Nombre del producto")
     desc_producto=forms.CharField(widget=forms.widgets.Textarea, label="Descripción del producto")
     precio=forms.IntegerField(label="Precio")
-    imagen=forms.ImageField(label="Imagen")
+    # imagen=forms.ImageField(label="Imagen")
     aro=forms.IntegerField()
     apernadura=forms.CharField()
     ancho=forms.CharField()
     offset=forms.IntegerField()
     centro_llanta=forms.CharField()
+
+class MultiFileInput(forms.ClearableFileInput):
+    allow_multiple_selected = True
+
+class ProductoImagenForm(forms.Form):
+    imagenes = forms.ImageField(widget=MultiFileInput(attrs={'multiple': True}), required=False)
