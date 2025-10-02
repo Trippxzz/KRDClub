@@ -39,7 +39,12 @@
                             </div>
                             
                             <div class="col-3 text-center mt-4">
-                                <img src="{{p.imagen.url}}" height="200px" alt="..." >
+                               {% if p.imagen_principal %}
+                                <img src="{{ p.imagen_principal.imagen.url }}" height="200px" alt="{{ p.n_producto }}">
+                            {% else %}
+                                <img src="/static/img/no-image.png" height="200px" alt="Sin imagen">
+                            {% endif %}
+
                             </div>
                             <hr>
                             

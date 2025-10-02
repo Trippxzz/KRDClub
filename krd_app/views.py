@@ -14,8 +14,13 @@ def addProducto(request):
             producto = form_producto.save()
             messages.success(request, "Producto creado con éxito")
             #PARA GUARDAR VARIAS IMAGENES
-            for img in request.FILES.getlist('imagenes'):
-                ProductoImagen.objects.create(producto=producto, imagen = img)
+            for i, img in enumerate(request.FILES.getlist('imagenes')):
+                ProductoImagen.objects.create(
+                    producto=producto,
+                    imagen=img,
+                    es_principal=True if i == 0 else False  # para asignar la primera imagen que se selecciona como principal
+                )
+
 
             messages.success(request, "Producto creado con éxito")
             return redirect("/catalogo/")
