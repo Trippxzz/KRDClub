@@ -22,8 +22,9 @@ from krd_app import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path("catalogo/", views.getProducto),
-    path("catalogo/crearprod/", views.addProducto )
+    path("catalogo/", views.getCatalogo),
+    path("catalogo/crearprod/", views.addProducto ),
+    path("catalogo/<uuid:id>", views.getProducto, name="detproducto"),
 ]
 
 if settings.DEBUG:

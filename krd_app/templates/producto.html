@@ -6,6 +6,16 @@
     <title>Document</title>
 </head>
 <body>
-    
+    <h1>{{ prod.n_producto }}</h1>
+    <p>{{ prod.desc_producto }}</p>
+    <p>Precio: ${{ prod.precio }}</p>
+
+<div>
+  {% for img in imgs %}
+      <img src="{{ img.imagen.url }}" height="200px" alt="{{ prod.n_producto }}">
+  {% empty %}
+      <p>No hay imágenes para este producto.</p>
+  {% endfor %}
+</div>
 </body>
 </html>

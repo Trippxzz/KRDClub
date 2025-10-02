@@ -37,7 +37,14 @@ def addProducto(request):
         
 
 ### SECCION GET (MODELS)
-def getProducto(request):
+def getCatalogo(request):
     if request.method=="GET":
         prods=Producto.objects.all()
         return render(request, "catalogo.html", {"prods":prods})
+    
+
+def getProducto(request, id):
+    if request.method == "GET":
+        prod = Producto.objects.get(id_producto=id)
+        imgprod = prod.imagenes.all()
+        return render(request, "producto.html", {"prod":prod, "imgs":imgprod})

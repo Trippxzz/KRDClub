@@ -32,7 +32,9 @@
                                 <span class="d-inline-block text-truncate" style="max-width: 150px;">
                                     <p>{{p.desc_producto}}</p>
                                   </span>
-                                  <a class="btn btn-success btn-small" href="../market/{{p.id}}/producto/"> <i class="bi bi-pencil-fill"></i></a>
+                                  <a class="btn btn-success btn-small" href="{% url 'detproducto' p.id_producto %}">
+                                    <i class="bi bi-pencil-fill"></i>
+                                </a>
                                 
                                 
                                 
