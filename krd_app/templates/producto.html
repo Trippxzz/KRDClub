@@ -9,6 +9,11 @@
     <h1>{{ prod.n_producto }}</h1>
     <p>{{ prod.desc_producto }}</p>
     <p>Precio: ${{ prod.precio }}</p>
+    {%if prod.stock == 0%}
+    <p>Producto sin Stock</p>
+    {%else%}
+    <p>Stock: {{prod.stock}}</p>
+    {%endif%}
 
 <div>
   {% for img in imgs %}
