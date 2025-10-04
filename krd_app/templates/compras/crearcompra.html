@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+    {% load static %}
+<script src="{% static 'js/compras.js' %}"></script>
+<body>
+    <form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+
+  <h3>Productos de la compra</h3>
+  {{ formset.management_form }}
+
+  <table id="tabla-productos">
+    <thead>
+      <tr>
+        <th>Producto</th>
+        <th>Unidades</th>
+        <th>Precio Compra</th>
+        <th>Precio Venta</th>
+        <th>Subtotal</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for f in formset %}
+      <tr class="producto-row">
+        <td>{{ f.producto }}</td>
+        <td>{{ f.cantidad_compra }}</td>
+        <td>{{ f.precio_und }}</td>
+        <td>{{ f.precio_venta }}</td>
+        <td class="subtotal">0</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div>
+    <p>Total Neto: $<span id="total-neto">0</span></p>
+    <p>IVA (19%): $<span id="iva">0</span></p>
+    <p><b>Total Compra: $<span id="total-compra">0</span></b></p>
+  </div>
+
+  <button type="submit">Guardar compra</button>
+</form>
+
+
+</body>
+</html>

@@ -25,6 +25,7 @@ urlpatterns = [
     path("catalogo/", views.getCatalogo),
     path("catalogo/crearprod/", views.addProducto ),
     path("catalogo/<uuid:id>", views.getProducto, name="detproducto"),
+    path("crearcompra/", views.addCompra)
 ]
 
 if settings.DEBUG:
