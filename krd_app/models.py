@@ -34,3 +34,24 @@ class ProductoImagen(models.Model):
         if self.es_principal:
             ProductoImagen.objects.filter(producto=self.producto, es_principal=True).update(es_principal=False)
         super().save(*args, **kwargs)
+
+
+
+
+###LOGISTICA
+class Compra(models.Model):
+    proveedor = models.CharField(max_length=25)
+    fecha = models.DateField()
+    folio = models.CharField(max_length=20)
+    subtotalc = models.IntegerField()
+
+class ProductoCompra(models.Model):
+    compra = models.ForeignKey(Compra, on_delete=models.CASCADE, related_name="productos_compra")
+    producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
+    cantidad_compra = models.IntegerField()
+    precio_und = models.DecimalField(max_digits=10, decimal_places=2)
+    subtotal_prod = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+
+    def save(self, *args, **kwargs):
+        self.subtotal_prod = self.cantidad_compra * self.precio_und
+        super().save(*args, **kwargs)

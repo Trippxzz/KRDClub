@@ -1,8 +1,9 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from .models import Producto, ProductoImagen
-from .forms import ProductoForm, ProductoImagenForm
+from .models import Producto, ProductoImagen, Compra
+from .forms import ProductoForm, ProductoImagenForm, CompraForm, ProductoCompraFormSet
 from django.http import HttpResponse
+from decimal import Decimal
 
 ### SECCION POST (FORMS)
 def addProducto(request):
@@ -35,6 +36,36 @@ def addProducto(request):
         form_imagenes = ProductoImagenForm()
         return render(request,"crear/crearprods.html",{"form_producto":form_producto, "form_imagenes":form_imagenes})
         
+def addCompra(request):
+    if request.method == "POST":
+        form = CompraForm(request.POST)
+        formset = ProductoCompraFormSet(request.POST)
+
+        if form.is_valid():
+            compra = form.save(commit=False)
+            compra.subtotalc = Decimal('0.00')
+            compra.save()
+            formset = ProductoCompraFormSet(request.POST, instance=compra)
+            if formset.is_valid():
+                subtotal_total = Decimal('0.00')
+                productos = formset.save(commit=False)
+                for prod in productos:
+                    prod.compra = compra
+                    prod.save()
+                    prod.producto.stock += prod.cantidad_compra
+                    prod.producto.save()
+                    subtotal_total +=prod.subtotal_prod
+                formset.save_m2m()
+                compra.subtotalc = subtotal_total
+                compra.save(update_fields=['subtotalc'])
+                return redirect("/catalogo/")
+            else:
+                compra.delete()
+    else:
+        form = CompraForm()
+        formset = ProductoCompraFormSet()
+
+    return render(request, "compras/crearcompra.html", {"form": form, "formset":formset}) 
 
 ### SECCION GET (MODELS)
 def getCatalogo(request):
