@@ -49,8 +49,8 @@ class ProductoCompra(models.Model):
     compra = models.ForeignKey(Compra, on_delete=models.CASCADE, related_name="productos_compra")
     producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
     cantidad_compra = models.IntegerField()
-    precio_und = models.DecimalField(max_digits=10, decimal_places=2)
-    subtotal_prod = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    precio_und = models.DecimalField(max_digits=10, decimal_places=0)
+    subtotal_prod = models.DecimalField(max_digits=10,decimal_places=0, default=0)
 
     def save(self, *args, **kwargs):
         self.subtotal_prod = self.cantidad_compra * self.precio_und
