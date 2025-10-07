@@ -44,6 +44,7 @@ class Compra(models.Model):
     fecha = models.DateField()
     folio = models.CharField(max_length=20)
     subtotalc = models.IntegerField()
+    pdf = models.FileField(upload_to='pdfs/', null=True, blank=True)
 
 class ProductoCompra(models.Model):
     compra = models.ForeignKey(Compra, on_delete=models.CASCADE, related_name="productos_compra")
@@ -71,3 +72,11 @@ class vehiculo(models.Model):
 
     def __str__(self):
         return f"{self.marca} {self.modelo} {self.cilindrada}L ({self.anio})"
+    
+
+class Producto_Vehiculo(models.Model): ##PARA CREARLE APLICACIONES A LOS PRODUCTOS
+    producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
+    vehiculo = models.ForeignKey(vehiculo, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.producto.n_producto} compatible con {self.vehiculo}"

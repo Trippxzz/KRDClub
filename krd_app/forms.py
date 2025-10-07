@@ -9,15 +9,19 @@ class ProductoForm(forms.ModelForm):
     class Meta:
         model = Producto
         exclude = ("id_producto", "stock")
-    n_producto=forms.CharField(label="Nombre del producto")
-    desc_producto=forms.CharField(widget=forms.widgets.Textarea, label="Descripción del producto")
-    precio=forms.IntegerField(label="Precio")
-    # imagen=forms.ImageField(label="Imagen")
-    aro=forms.IntegerField()
-    apernadura=forms.CharField()
-    ancho=forms.CharField()
-    offset=forms.IntegerField()
-    centro_llanta=forms.CharField()
+        labels = {
+            'n_producto': 'Nombre del producto',
+            'desc_producto': 'Descripción del producto',
+            'precio': 'Precio',
+            'aro': 'Aro',
+            'apernadura': 'Apernadura',
+            'ancho': 'Ancho',
+            'offset': 'Offset',
+            'centro_llanta': 'Centro de llanta',
+        }
+        widgets = {
+            'desc_producto': forms.Textarea(),
+        }
 
 class MultiFileInput(forms.ClearableFileInput):
     allow_multiple_selected = True
@@ -29,9 +33,18 @@ class CompraForm(forms.ModelForm):
     class Meta:
         model = Compra
         exclude = ("subtotalc",)
-    proveedor = forms.CharField()
-    fecha = forms.DateField()
-    folio = forms.CharField()
+        widgets = {
+            'pdf': forms.ClearableFileInput(attrs={'accept': 'application/pdf'}),
+        }
+
+    def clean_pdf(self):
+        pdf = self.cleaned_data.get('pdf')
+        if pdf:
+            if not pdf.name.lower().endswith('.pdf'):
+                raise forms.ValidationError("Solo se permiten archivos PDF.")
+            if pdf.content_type != 'application/pdf':
+                raise forms.ValidationError("El archivo debe ser un PDF.")
+        return pdf
 
 class ProductoCompraForm(forms.ModelForm):
     class Meta:

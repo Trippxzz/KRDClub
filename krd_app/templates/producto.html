@@ -14,6 +14,7 @@
     {%else%}
     <p>Stock: {{prod.stock}}</p>
     {%endif%}
+    <span><a type="button" href="../catalogo/{{prod.id_producto}}/editar">Editar</a></span>
 
 <div>
   {% for img in imgs %}
@@ -22,5 +23,6 @@
       <p>No hay imágenes para este producto.</p>
   {% endfor %}
 </div>
+
 </body>
 </html>

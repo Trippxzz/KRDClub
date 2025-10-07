@@ -18,6 +18,7 @@ from django.contrib import admin
 from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
+
 from krd_app import views
 
 urlpatterns = [
@@ -28,7 +29,10 @@ urlpatterns = [
     path("crearcompra/", views.addCompra),
     path('vehiculos/agregar/', views.agregar_vehiculos, name='agregar_vehiculos'),
     path('vehiculos/lista/', views.lista_vehiculo, name='lista_vehiculo'),
-    path('vehiculos/eliminar/<int:pk>/', views.eliminar_vehiculo, name='eliminar_vehiculo')
+    path('vehiculos/eliminar/<int:pk>/', views.eliminar_vehiculo, name='eliminar_vehiculo'),
+    path('catalogo/<uuid:id>/editar/', views.editProducto, name='editar_producto'),
+    path('imagen/eliminar/<int:imagen_id>/', views.eliminar_imagen, name='eliminar_imagen'),
+    path('imagen/principal/<int:imagen_id>/', views.cambiar_principal, name='cambiar_principal'),
 ]
 
 if settings.DEBUG:

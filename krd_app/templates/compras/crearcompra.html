@@ -6,53 +6,53 @@
   <title>Document</title>
 </head>
 <body>
-  <form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
 
-  <h3>Productos de la compra</h3>
+    <h3>Productos de la compra</h3>
 
-  <table id="productos-table">
-    <thead>
-      <tr>
-        <th>Producto</th>
-        <th>Cantidad</th>
-        <th>Precio Unitario</th>
-        <th>Subtotal</th>
-        <th>Eliminar</th>
-      </tr>
-    </thead>
-    <tbody id="productos-body">
-    </tbody>
-  </table>
+    <table id="productos-table">
+      <thead>
+        <tr>
+          <th>Producto</th>
+          <th>Cantidad</th>
+          <th>Precio Unitario</th>
+          <th>Subtotal</th>
+          <th>Eliminar</th>
+        </tr>
+      </thead>
+      <tbody id="productos-body">
+      </tbody>
+    </table>
 
-  <button type="button" id="add-product">Agregar Producto</button>
+    <button type="button" id="add-product">Agregar Producto</button>
 
-  <p>Total Neto: $<span id="total-neto">0</span></p>
-  <p>IVA (19%): $<span id="iva">0</span></p>
-  <p>Total Compra: $<span id="total-compra">0</span></p>
+    <p>Total Neto: $<span id="total-neto">0</span></p>
+    <p>IVA (19%): $<span id="iva">0</span></p>
+    <p>Total Compra: $<span id="total-compra">0</span></p>
 
-  <input type="hidden" name="productos_data" id="productos_data">
-  <button type="submit">Guardar Compra</button>
-</form>
+    <input type="hidden" name="productos_data" id="productos_data">
+    <button type="submit">Guardar Compra</button>
+  </form>
 
-<template id="producto-row-template">
-  <tr>
-    <td>
-      <select class="producto-select" {% if not productos %}disabled{% endif %}>
-        {% for p in productos %}
-          <option value="{{ p.id_producto }}">{{ p.n_producto }}</option>
-          {%empty%}
-          <option value="">No hay productos creados</option>
-        {% endfor %}
-      </select>
-    </td>
-    <td><input type="number" class="cantidad-input" value="1" min="1"></td>
-    <td><input type="number" class="precio-input" value="0" min="0" step="0.01"></td>
-    <td class="subtotal">0</td>
-    <td><button type="button" class="btn-eliminar">❌</button></td>
-  </tr>
-</template>
+  <template id="producto-row-template">
+    <tr>
+      <td>
+        <select class="producto-select" {% if not productos %}disabled{% endif %}>
+          {% for p in productos %}
+            <option value="{{ p.id_producto }}">{{ p.n_producto }}</option>
+          {% empty %}
+            <option value="">No hay productos creados</option>
+          {% endfor %}
+        </select>
+      </td>
+      <td><input type="number" class="cantidad-input" value="1" min="1"></td>
+      <td><input type="number" class="precio-input" value="0" min="0" step="0.01"></td>
+      <td class="subtotal">0</td>
+      <td><button type="button" class="btn-eliminar">❌</button></td>
+    </tr>
+  </template>
 
 </body>
 <script src="/static/js/compras.js"></script>

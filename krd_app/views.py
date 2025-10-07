@@ -4,6 +4,7 @@ from .models import Producto, ProductoImagen, Compra, ProductoCompra, vehiculo
 from .forms import ProductoForm, ProductoImagenForm, CompraForm, ProductoCompraForm, VehiculoForm
 from django.http import HttpResponse
 from decimal import Decimal
+from django.urls import reverse
 import json
 ### SECCION POST (FORMS)
 def addProducto(request):
@@ -38,33 +39,28 @@ def addProducto(request):
         
 def addCompra(request):
     if request.method == "POST":
-        form = CompraForm(request.POST)
+        form = CompraForm(request.POST, request.FILES)  
         productos_data = json.loads(request.POST.get("productos_data", "[]"))
 
         if form.is_valid():
             compra = form.save(commit=False)
             compra.subtotalc = 0
+            # El archivo PDF se guarda automáticamente por el ModelForm
             compra.save()
 
             subtotal_total = 0
             for p in productos_data:
-                # Aquí sí buscamos el Producto, no ProductoCompra
                 prod = Producto.objects.get(id_producto=p["producto"])
                 cantidad = int(p["cantidad"])
                 precio = Decimal(p["precio"])
-                
-                # Creamos el ProductoCompra directamente
                 pc = ProductoCompra.objects.create(
                     compra=compra,
                     producto=prod,
                     cantidad_compra=cantidad,
                     precio_und=precio
                 )
-
-                # Actualizamos stock del producto
                 prod.stock += cantidad
                 prod.save()
-
                 subtotal_total += pc.subtotal_prod
 
             compra.subtotalc = subtotal_total
@@ -79,6 +75,7 @@ def addCompra(request):
         "form": form,
         "productos": Producto.objects.all()
     })
+
 
 def agregar_vehiculos(request):
     if request.method == 'POST':
@@ -114,3 +111,71 @@ def getProducto(request, id):
         prod = Producto.objects.get(id_producto=id)
         imgprod = prod.imagenes.all()
         return render(request, "producto.html", {"prod":prod, "imgs":imgprod})
+    
+
+
+
+###SECCION DE EDITS
+
+def editProducto(request, id):
+    prod = get_object_or_404(Producto, id_producto=id)
+    imgs = prod.imagenes.all()
+    if request.method == "POST":
+        print("POST recibido en editProducto")
+        print("POST data:", request.POST)
+        print("FILES:", request.FILES)
+        form_producto = ProductoForm(request.POST, instance=prod)
+        print("form_producto.is_valid():", form_producto.is_valid())
+        print("form errors:", form_producto.errors)
+        if form_producto.is_valid():
+            producto = form_producto.save()
+            # Guardar nuevas imágenes si se subieron
+            imagenes = request.FILES.getlist('imagenes')
+            for img in imagenes:
+                ProductoImagen.objects.create(
+                    producto=producto,
+                    imagen=img,
+                    es_principal=False
+                )
+            messages.success(request, "Producto editado con éxito")
+            return redirect("/catalogo/")
+        else:
+            from django.contrib import messages as dj_messages
+            return render(request, "editar/editarprod.html", {
+                "form_producto": form_producto,
+                "form_imagenes": ProductoImagenForm(),
+                "prod": prod,
+                "imgs": imgs,
+                "messages": dj_messages.get_messages(request)
+            })
+    else:
+        form_producto = ProductoForm(instance=prod)
+        from django.contrib import messages as dj_messages
+        return render(request, "editar/editarprod.html", {
+            "form_producto": form_producto,
+            "form_imagenes": ProductoImagenForm(),
+            "prod": prod,
+            "imgs": imgs,
+            "messages": dj_messages.get_messages(request)
+        })
+
+def cambiar_principal(request, imagen_id):
+    imagen = get_object_or_404(ProductoImagen, id=imagen_id)
+    producto = imagen.producto
+    if request.method == "POST":
+        # Desmarcar todas las imágenes como principal
+        ProductoImagen.objects.filter(producto=producto).update(es_principal=False)
+        # Marcar la seleccionada como principal
+        imagen.es_principal = True
+        imagen.save()
+        messages.success(request, "Imagen principal actualizada.")
+        return redirect(reverse('editar_producto', args=[producto.id_producto]))
+    return HttpResponse("Método no permitido", status=405)
+def eliminar_imagen(request, imagen_id):
+    imagen = get_object_or_404(ProductoImagen, id=imagen_id)
+    producto_id = imagen.producto.id_producto
+    if request.method == "POST":
+        imagen.delete()
+        messages.success(request, "Imagen eliminada correctamente.")
+        return redirect(reverse('editar_producto', args=[producto_id]))
+    return HttpResponse("Método no permitido", status=405)
