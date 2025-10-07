@@ -25,7 +25,10 @@ urlpatterns = [
     path("catalogo/", views.getCatalogo),
     path("catalogo/crearprod/", views.addProducto ),
     path("catalogo/<uuid:id>", views.getProducto, name="detproducto"),
-    path("crearcompra/", views.addCompra)
+    path("crearcompra/", views.addCompra),
+    path('vehiculos/agregar/', views.agregar_vehiculos, name='agregar_vehiculos'),
+    path('vehiculos/lista/', views.lista_vehiculo, name='lista_vehiculo'),
+    path('vehiculos/eliminar/<int:pk>/', views.eliminar_vehiculo, name='eliminar_vehiculo')
 ]
 
 if settings.DEBUG:

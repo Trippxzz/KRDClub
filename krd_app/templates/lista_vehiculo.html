@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Lista de Vehículos</title>
+</head>
+<body>
+    <h1>Lista de Vehículos</h1>
+
+{% for v in vehiculos %}
+    <li>
+        {{ v.marca }} {{ v.modelo }} - {{ v.cilindrada }}L - {{ v.anio }}
+        <form action="{% url 'eliminar_vehiculo' v.pk %}" method="post" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" onclick="return confirm('¿Seguro que deseas eliminar este vehículo?');">Eliminar</button>
+        </form>
+    </li>
+{% endfor %}
+</ul>
+
+    </ul>
+
+    <a href="{% url 'agregar_vehiculos' %}">Agregar nuevo vehículo</a>
+</body>
+</html>

@@ -55,3 +55,19 @@ class ProductoCompra(models.Model):
     def save(self, *args, **kwargs):
         self.subtotal_prod = self.cantidad_compra * self.precio_und
         super().save(*args, **kwargs)
+
+class vehiculo(models.Model):
+    MARCAS = [
+        ('Audi', 'Audi'),
+        ('BMW', 'BMW'),
+        ('Mercedes-Benz', 'Mercedes-Benz'),
+        ('Porsche', 'Porsche'),
+        ('Volkswagen', 'Volkswagen')
+    ]
+    marca = models.CharField(max_length=50, choices=MARCAS)
+    modelo = models.CharField(max_length=100)
+    cilindrada = models.DecimalField(max_digits=4, decimal_places=1, help_text="Ejemplo: 2.0")
+    anio = models.PositiveIntegerField()
+
+    def __str__(self):
+        return f"{self.marca} {self.modelo} {self.cilindrada}L ({self.anio})"

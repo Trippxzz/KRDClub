@@ -1,6 +1,7 @@
 from django import forms
 from django.forms import inlineformset_factory
-from .models import Producto, Compra, ProductoCompra
+from .models import Producto, Compra, ProductoCompra, vehiculo
+from datetime import date
 from django.contrib.auth.forms import UserCreationForm ##Para la creacion de usuarios, se usará para completar datos al momento de comprar
 
 
@@ -37,4 +38,14 @@ class ProductoCompraForm(forms.ModelForm):
         model = ProductoCompra
         exclude=("compra", "subtotal_prod")
 
+class VehiculoForm(forms.ModelForm):
+    class Meta:
+        model = vehiculo
+        fields = ['marca', 'modelo', 'cilindrada', 'anio']
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        current_year = date.today().year
+        self.fields['anio'].widget = forms.Select(
+            choices=[(y, y) for y in range(2000, current_year + 1)]
+        )

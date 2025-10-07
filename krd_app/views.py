@@ -1,7 +1,7 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from .models import Producto, ProductoImagen, Compra, ProductoCompra
-from .forms import ProductoForm, ProductoImagenForm, CompraForm, ProductoCompraForm
+from .models import Producto, ProductoImagen, Compra, ProductoCompra, vehiculo
+from .forms import ProductoForm, ProductoImagenForm, CompraForm, ProductoCompraForm, VehiculoForm
 from django.http import HttpResponse
 from decimal import Decimal
 import json
@@ -80,6 +80,26 @@ def addCompra(request):
         "productos": Producto.objects.all()
     })
 
+def agregar_vehiculos(request):
+    if request.method == 'POST':
+        form = VehiculoForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('lista_vehiculo')
+    else:
+        form = VehiculoForm()
+    return render(request, 'agregar_vehiculos.html', {'form': form})
+
+def lista_vehiculo(request):
+    vehiculos = vehiculo.objects.all()
+    return render(request, 'lista_vehiculo.html', {'vehiculos': vehiculos})
+
+def eliminar_vehiculo(request, pk):
+    veh = get_object_or_404(vehiculo, pk=pk)
+    if request.method == "POST":
+        veh.delete()
+        return redirect('lista_vehiculo')
+    return render(request, 'krd/confirmar_eliminacion.html', {'vehiculo': veh})
 
 
 ### SECCION GET (MODELS)
