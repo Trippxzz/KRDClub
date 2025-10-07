@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
+    <title>Nueva Compra</title>
     {% load static %}
-<script src="{% static 'js/compras.js' %}"></script>
+    <script src="{% static 'js/compras.js' %}" defer></script>
+</head>
 <body>
-    <form method="post">
+<form method="post">
   {% csrf_token %}
   {{ form.as_p }}
 
@@ -23,30 +23,44 @@
         <th>Precio Compra</th>
         <th>Precio Venta</th>
         <th>Subtotal</th>
+        <th>Eliminar</th>
       </tr>
     </thead>
-    <tbody>
-      {% for f in formset %}
+    <tbody id="productos-formset">
+      {% for f in formset.forms %}
       <tr class="producto-row">
         <td>{{ f.producto }}</td>
         <td>{{ f.cantidad_compra }}</td>
         <td>{{ f.precio_und }}</td>
         <td>{{ f.precio_venta }}</td>
         <td class="subtotal">0</td>
+        <td>{% if f.fields.DELETE %}{{ f.DELETE }}{% endif %}</td>
       </tr>
       {% endfor %}
     </tbody>
   </table>
+
+<template id="empty-form-template">
+    <tr class="producto-row">
+      {% with f=formset.empty_form %}
+        {% for hidden in f.hidden_fields %}{{ hidden.as_widget }}{% endfor %}
+        <td>{{ f.producto.as_widget }}</td>
+        <td>{{ f.cantidad_compra.as_widget }}</td>
+        <td>{{ f.precio_und.as_widget }}</td>
+        <td>{{ f.precio_venta.as_widget }}</td>
+        <td class="subtotal">0</td>
+        <td>{% if f.fields.DELETE %}{{ f.DELETE.as_widget }}{% endif %}</td>
+      {% endwith %}
+    </tr>
+  </template>
 
   <div>
     <p>Total Neto: $<span id="total-neto">0</span></p>
     <p>IVA (19%): $<span id="iva">0</span></p>
     <p><b>Total Compra: $<span id="total-compra">0</span></b></p>
   </div>
-
+  <button type="button" id="add-form">Agregar otro producto</button>
   <button type="submit">Guardar compra</button>
 </form>
-
-
 </body>
 </html>

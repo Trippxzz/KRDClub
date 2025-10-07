@@ -38,4 +38,8 @@ class ProductoCompraForm(forms.ModelForm):
         exclude=("compra", "subtotal_prod")
 
 ProductoCompraFormSet = inlineformset_factory(
-    Compra, ProductoCompra, form=ProductoCompraForm, extra = 1, can_delete = True) ##Ese extra hará que siempre haya una linea mas para insertar un producto
+    Compra, 
+    ProductoCompra, 
+    form=ProductoCompraForm, 
+    extra = 1, 
+    can_delete = True) ##Ese extra hará que siempre haya una linea mas para insertar un producto
