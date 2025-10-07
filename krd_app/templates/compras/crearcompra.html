@@ -1,66 +1,59 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nueva Compra</title>
-    {% load static %}
-    <script src="{% static 'js/compras.js' %}" defer></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
 </head>
 <body>
-<form method="post">
+  <form method="post">
   {% csrf_token %}
   {{ form.as_p }}
 
   <h3>Productos de la compra</h3>
-  {{ formset.management_form }}
 
-  <table id="tabla-productos">
+  <table id="productos-table">
     <thead>
       <tr>
         <th>Producto</th>
-        <th>Unidades</th>
-        <th>Precio Compra</th>
-        <th>Precio Venta</th>
+        <th>Cantidad</th>
+        <th>Precio Unitario</th>
         <th>Subtotal</th>
         <th>Eliminar</th>
       </tr>
     </thead>
-    <tbody id="productos-formset">
-      {% for f in formset.forms %}
-      <tr class="producto-row">
-        <td>{{ f.producto }}</td>
-        <td>{{ f.cantidad_compra }}</td>
-        <td>{{ f.precio_und }}</td>
-        <td>{{ f.precio_venta }}</td>
-        <td class="subtotal">0</td>
-        <td>{% if f.fields.DELETE %}{{ f.DELETE }}{% endif %}</td>
-      </tr>
-      {% endfor %}
+    <tbody id="productos-body">
     </tbody>
   </table>
 
-<template id="empty-form-template">
-    <tr class="producto-row">
-      {% with f=formset.empty_form %}
-        {% for hidden in f.hidden_fields %}{{ hidden.as_widget }}{% endfor %}
-        <td>{{ f.producto.as_widget }}</td>
-        <td>{{ f.cantidad_compra.as_widget }}</td>
-        <td>{{ f.precio_und.as_widget }}</td>
-        <td>{{ f.precio_venta.as_widget }}</td>
-        <td class="subtotal">0</td>
-        <td>{% if f.fields.DELETE %}{{ f.DELETE.as_widget }}{% endif %}</td>
-      {% endwith %}
-    </tr>
-  </template>
+  <button type="button" id="add-product">Agregar Producto</button>
 
-  <div>
-    <p>Total Neto: $<span id="total-neto">0</span></p>
-    <p>IVA (19%): $<span id="iva">0</span></p>
-    <p><b>Total Compra: $<span id="total-compra">0</span></b></p>
-  </div>
-  <button type="button" id="add-form">Agregar otro producto</button>
-  <button type="submit">Guardar compra</button>
+  <p>Total Neto: $<span id="total-neto">0</span></p>
+  <p>IVA (19%): $<span id="iva">0</span></p>
+  <p>Total Compra: $<span id="total-compra">0</span></p>
+
+  <input type="hidden" name="productos_data" id="productos_data">
+  <button type="submit">Guardar Compra</button>
 </form>
+
+<template id="producto-row-template">
+  <tr>
+    <td>
+      <select class="producto-select" {% if not productos %}disabled{% endif %}>
+        {% for p in productos %}
+          <option value="{{ p.id_producto }}">{{ p.n_producto }}</option>
+          {%empty%}
+          <option value="">No hay productos creados</option>
+        {% endfor %}
+      </select>
+    </td>
+    <td><input type="number" class="cantidad-input" value="1" min="1"></td>
+    <td><input type="number" class="precio-input" value="0" min="0" step="0.01"></td>
+    <td class="subtotal">0</td>
+    <td><button type="button" class="btn-eliminar">❌</button></td>
+  </tr>
+</template>
+
 </body>
+<script src="/static/js/compras.js"></script>
 </html>

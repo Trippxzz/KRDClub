@@ -1,10 +1,10 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from .models import Producto, ProductoImagen, Compra
-from .forms import ProductoForm, ProductoImagenForm, CompraForm, ProductoCompraFormSet
+from .models import Producto, ProductoImagen, Compra, ProductoCompra
+from .forms import ProductoForm, ProductoImagenForm, CompraForm, ProductoCompraForm
 from django.http import HttpResponse
 from decimal import Decimal
-
+import json
 ### SECCION POST (FORMS)
 def addProducto(request):
     if request.method == "POST":
@@ -37,40 +37,49 @@ def addProducto(request):
         return render(request,"crear/crearprods.html",{"form_producto":form_producto, "form_imagenes":form_imagenes})
         
 def addCompra(request):
-    prefix = "productocompra_set"
-
     if request.method == "POST":
         form = CompraForm(request.POST)
+        productos_data = json.loads(request.POST.get("productos_data", "[]"))
 
         if form.is_valid():
             compra = form.save(commit=False)
-            compra.subtotalc = Decimal('0.00')
+            compra.subtotalc = 0
             compra.save()
 
-            formset = ProductoCompraFormSet(request.POST, instance=compra, prefix=prefix)
-            if formset.is_valid():
-                subtotal_total = Decimal('0.00')
-                productos = formset.save(commit=False)
-                for prod in productos:
-                    prod.compra = compra
-                    prod.save()
-                    prod.producto.stock += prod.cantidad_compra
-                    prod.producto.save()
-                    subtotal_total += prod.subtotal_prod
-                formset.save_m2m()
-                compra.subtotalc = subtotal_total
-                compra.save(update_fields=['subtotalc'])
-                return redirect("/catalogo/")
-            else:
-                compra.delete()
-        else:
-            formset = ProductoCompraFormSet(request.POST, prefix=prefix)
+            subtotal_total = 0
+            for p in productos_data:
+                # Aquí sí buscamos el Producto, no ProductoCompra
+                prod = Producto.objects.get(id_producto=p["producto"])
+                cantidad = int(p["cantidad"])
+                precio = Decimal(p["precio"])
+                
+                # Creamos el ProductoCompra directamente
+                pc = ProductoCompra.objects.create(
+                    compra=compra,
+                    producto=prod,
+                    cantidad_compra=cantidad,
+                    precio_und=precio
+                )
+
+                # Actualizamos stock del producto
+                prod.stock += cantidad
+                prod.save()
+
+                subtotal_total += pc.subtotal_prod
+
+            compra.subtotalc = subtotal_total
+            compra.save()
+
+            return redirect("/catalogo/")
 
     else:
         form = CompraForm()
-        formset = ProductoCompraFormSet(prefix=prefix)
 
-    return render(request, "compras/crearcompra.html", {"form": form, "formset": formset})
+    return render(request, "compras/crearcompra.html", {
+        "form": form,
+        "productos": Producto.objects.all()
+    })
+
 
 
 ### SECCION GET (MODELS)
