@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Listado de Compras</title>
+</head>
+<body>
+    <h1>Listado de Compras</h1>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Proveedor</th>
+                <th>Fecha</th>
+                <th>Folio</th>
+                <th>PDF</th>
+                <th>Subtotal</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for compra in compras %}
+            <tr>
+                <td>{{ compra.proveedor }}</td>
+                <td>{{ compra.fecha }}</td>
+                <td>{{ compra.folio }}</td>
+                <td>
+                    {% if compra.pdf %}
+                        <a href="{{ compra.pdf.url }}" target="_blank">Ver PDF</a>
+                    {% else %}
+                        No adjunto
+                    {% endif %}
+                </td>
+                <td>{{ compra.subtotalc }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5">No hay compras registradas.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="{% url 'crear_compra' %}">Crear nueva compra</a>
+</body>
+</html>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
+  <title>Crear Compra</title>
 </head>
 <body>
   <form method="post" enctype="multipart/form-data">
@@ -11,7 +11,6 @@
     {{ form.as_p }}
 
     <h3>Productos de la compra</h3>
-
     <table id="productos-table">
       <thead>
         <tr>
@@ -25,7 +24,6 @@
       <tbody id="productos-body">
       </tbody>
     </table>
-
     <button type="button" id="add-product">Agregar Producto</button>
 
     <p>Total Neto: $<span id="total-neto">0</span></p>
@@ -35,25 +33,7 @@
     <input type="hidden" name="productos_data" id="productos_data">
     <button type="submit">Guardar Compra</button>
   </form>
-
-  <template id="producto-row-template">
-    <tr>
-      <td>
-        <select class="producto-select" {% if not productos %}disabled{% endif %}>
-          {% for p in productos %}
-            <option value="{{ p.id_producto }}">{{ p.n_producto }}</option>
-          {% empty %}
-            <option value="">No hay productos creados</option>
-          {% endfor %}
-        </select>
-      </td>
-      <td><input type="number" class="cantidad-input" value="1" min="1"></td>
-      <td><input type="number" class="precio-input" value="0" min="0" step="0.01"></td>
-      <td class="subtotal">0</td>
-      <td><button type="button" class="btn-eliminar">❌</button></td>
-    </tr>
-  </template>
-
+  <a href="{% url 'listar_compras' %}">Ver todas las compras</a>
+  <script src="/static/js/compras.js"></script>
 </body>
-<script src="/static/js/compras.js"></script>
 </html>

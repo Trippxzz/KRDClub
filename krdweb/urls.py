@@ -33,6 +33,9 @@ urlpatterns = [
     path('catalogo/<uuid:id>/editar/', views.editProducto, name='editar_producto'),
     path('imagen/eliminar/<int:imagen_id>/', views.eliminar_imagen, name='eliminar_imagen'),
     path('imagen/principal/<int:imagen_id>/', views.cambiar_principal, name='cambiar_principal'),
+    path('catalogo/<uuid:id>/eliminar/', views.eliminarProducto, name='eliminar_producto'),
+    path('compras/crear/', views.addCompra, name='crear_compra'),
+    path('compras/', views.listar_compras, name='listar_compras'),
 ]
 
 if settings.DEBUG:

@@ -7,7 +7,6 @@
 </head>
 <body>
     <h1>Editar Producto</h1>
-
     <form method="POST" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form_producto.as_p }}
@@ -35,5 +34,9 @@
             <p>No hay imágenes para este producto.</p>
         {% endfor %}
     </div>
+        <form method="POST" action="{% url 'eliminar_producto' prod.id_producto %}" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit" onclick="return confirm('¿Eliminar este producto?')">Eliminar Producto ❌</button>
+    </form>
 </body>
 </html>
