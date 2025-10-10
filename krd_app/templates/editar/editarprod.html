@@ -34,6 +34,19 @@
             <p>No hay imágenes para este producto.</p>
         {% endfor %}
     </div>
+
+    <h3>Aplicaciones del producto</h3>
+    <div>
+        {% if vehiculos.exists %}
+        <select name="aplicacion-prod" required>
+                {% for v in vehiculos %}
+                    <option value="{{ v.id }}">{{ v.marca }}, {{ v.modelo }}, {{ v.cilindrada }}, {{ v.anio }}</option>
+                {% endfor %}
+        </select>
+        {% else %}
+            <h1>No hay vehículos creados</h1>
+        {% endif %}
+    </div>
         <form method="POST" action="{% url 'eliminar_producto' prod.id_producto %}" style="display:inline;">
         {% csrf_token %}
         <button type="submit" onclick="return confirm('¿Eliminar este producto?')">Eliminar Producto ❌</button>

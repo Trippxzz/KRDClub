@@ -34,6 +34,23 @@
     <button type="submit">Guardar Compra</button>
   </form>
   <a href="{% url 'listar_compras' %}">Ver todas las compras</a>
+  
+    <!-- Template para agregar filas de productos dinámicamente -->
+  <template id="producto-row-template">
+    <tr>
+      <td>
+        <select class="producto-select" required>
+          {% for producto in productos %}
+            <option value="{{ producto.id_producto }}">{{ producto.n_producto }}</option>
+          {% endfor %}
+        </select>
+      </td>
+      <td><input type="number" class="cantidad-input" min="1" value="1" required></td>
+      <td><input type="number" class="precio-input" min="0" value="0" required></td>
+      <td class="subtotal">0</td>
+      <td><button type="button" class="btn-eliminar">❌</button></td>
+    </tr>
+  </template>
   <script src="/static/js/compras.js"></script>
 </body>
 </html>

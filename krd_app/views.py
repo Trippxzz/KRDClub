@@ -14,15 +14,17 @@ def addProducto(request):
 
         if form_producto.is_valid():
             producto = form_producto.save()
-            messages.success(request, "Producto creado con éxito")
-            #PARA GUARDAR VARIAS IMAGENES
-            for i, img in enumerate(request.FILES.getlist('imagenes')):
+            # Tomar todas las imágenes subidas
+            imagenes = request.FILES.getlist('imagenes')
+            # Tomar el índice de la imagen marcada como principal desde el formulario (input hidden)
+            principal_idx = int(request.POST.get('principal_idx', 0))
+            # Recorrer las imágenes y marcar la principal según el índice seleccionado
+            for i, img in enumerate(imagenes):
                 ProductoImagen.objects.create(
                     producto=producto,
                     imagen=img,
-                    es_principal=True if i == 0 else False  # para asignar la primera imagen que se selecciona como principal
+                    es_principal=True if i == principal_idx else False  # Solo la seleccionada queda como principal
                 )
-
 
             messages.success(request, "Producto creado con éxito")
             return redirect("/catalogo/")
@@ -30,13 +32,11 @@ def addProducto(request):
             print("error prod:",form_producto.errors)
             print("error img:",form_imagenes.errors)
             return render(request,"catalogo.html")
-            # messages.error(request,"Error, probablemente usaste un formato no soportado")
-            # 
     else:
         form_producto = ProductoForm()
         form_imagenes = ProductoImagenForm()
         return render(request,"crear/crearprods.html",{"form_producto":form_producto, "form_imagenes":form_imagenes})
-        
+    
 def addCompra(request):
     if request.method == "POST":
         form = CompraForm(request.POST, request.FILES)
@@ -121,6 +121,7 @@ def getProducto(request, id):
 def editProducto(request, id):
     prod = get_object_or_404(Producto, id_producto=id)
     imgs = prod.imagenes.all()
+    vehiculos = vehiculo.objects.all()
     if request.method == "POST":
         print("POST recibido en editProducto")
         print("POST data:", request.POST)
@@ -147,6 +148,7 @@ def editProducto(request, id):
                 "form_imagenes": ProductoImagenForm(),
                 "prod": prod,
                 "imgs": imgs,
+                "vehiculos": vehiculos,
                 "messages": dj_messages.get_messages(request)
             })
     else:
@@ -157,6 +159,7 @@ def editProducto(request, id):
             "form_imagenes": ProductoImagenForm(),
             "prod": prod,
             "imgs": imgs,
+            "vehiculos": vehiculos,
             "messages": dj_messages.get_messages(request)
         })
 

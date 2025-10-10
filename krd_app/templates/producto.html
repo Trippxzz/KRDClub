@@ -17,12 +17,19 @@
     <span><a type="button" href="../catalogo/{{prod.id_producto}}/editar">Editar</a></span>
 
 <div>
-  {% for img in imgs %}
-      <img src="{{ img.imagen.url }}" height="200px" alt="{{ prod.n_producto }}">
-  {% empty %}
-      <p>No hay imágenes para este producto.</p>
-  {% endfor %}
+    {% if imgs %}
+        {% with principal=imgs|dictsortreversed:"es_principal" %}
+            {% for img in principal %}
+                <img src="{{ img.imagen.url }}" height="200px" alt="{{ prod.n_producto }}">
+            {% endfor %}
+        {% endwith %}
+    {% else %}
+        <p>No hay imágenes para este producto.</p>
+    {% endif %}
 </div>
+<!-- dictsortreversed sirve para ordenar las imágenes y mostrar la principal primero en base a un diccionario -->
+
+
 
 </body>
 </html>
