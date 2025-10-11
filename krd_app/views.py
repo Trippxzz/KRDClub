@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from .models import Producto, ProductoImagen, Compra, ProductoCompra, vehiculo
+from .models import Producto, ProductoImagen, Compra, ProductoCompra, vehiculo, Producto_Vehiculo
 from .forms import ProductoForm, ProductoImagenForm, CompraForm, ProductoCompraForm, VehiculoForm
 from django.http import HttpResponse
 from decimal import Decimal
@@ -122,13 +122,17 @@ def editProducto(request, id):
     prod = get_object_or_404(Producto, id_producto=id)
     imgs = prod.imagenes.all()
     vehiculos = vehiculo.objects.all()
+    # Obtener vehículos asociados para inicializar el JS
+    vehiculos_asociados_qs = Producto_Vehiculo.objects.filter(producto=prod).select_related('vehiculo')
+    vehiculos_asociados = [
+        {
+            'id': str(vv.vehiculo.id),
+            'text': f"{vv.vehiculo.marca}, {vv.vehiculo.modelo}, {vv.vehiculo.cilindrada}, {vv.vehiculo.anio}"
+        }
+        for vv in vehiculos_asociados_qs
+    ]
     if request.method == "POST":
-        print("POST recibido en editProducto")
-        print("POST data:", request.POST)
-        print("FILES:", request.FILES)
         form_producto = ProductoForm(request.POST, instance=prod)
-        print("form_producto.is_valid():", form_producto.is_valid())
-        print("form errors:", form_producto.errors)
         if form_producto.is_valid():
             producto = form_producto.save()
             # Guardar nuevas imágenes si se subieron
@@ -139,6 +143,15 @@ def editProducto(request, id):
                     imagen=img,
                     es_principal=False
                 )
+            # Guardar aplicaciones del producto (vehículos asociados)
+            vehiculos_ids = request.POST.get('vehiculos_ids', '')
+            # Eliminar relaciones previas
+            Producto_Vehiculo.objects.filter(producto=producto).delete()
+            # Crear nuevas relaciones
+            if vehiculos_ids:
+                for v_id in vehiculos_ids.split(','):
+                    if v_id:
+                        Producto_Vehiculo.objects.create(producto=producto, vehiculo_id=v_id)
             messages.success(request, "Producto editado con éxito")
             return redirect("/catalogo/")
         else:
@@ -149,6 +162,7 @@ def editProducto(request, id):
                 "prod": prod,
                 "imgs": imgs,
                 "vehiculos": vehiculos,
+                "vehiculos_asociados": vehiculos_asociados,
                 "messages": dj_messages.get_messages(request)
             })
     else:
@@ -160,6 +174,7 @@ def editProducto(request, id):
             "prod": prod,
             "imgs": imgs,
             "vehiculos": vehiculos,
+            "vehiculos_asociados": vehiculos_asociados,
             "messages": dj_messages.get_messages(request)
         })
 

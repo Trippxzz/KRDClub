@@ -10,13 +10,10 @@
 <body class="container-fluid">
     <div class="row justify-content-center">
         <div class="col-4">
-            
-            
-
-           
+            <div id="notificacion-producto" style="display:none;" class="alert alert-success" role="alert"></div>
             {% if messages %}
                 {% for message in messages %}
-                    <div class="alert alert-success" role="alert">
+                    <div class="alert alert-success mensaje-django" role="alert">
                         {{ message }}
                     </div>
                 {% endfor %}
@@ -32,10 +29,6 @@
                 <input type="hidden" name="principal_idx" id="principal_idx" value="0">
                 <button type="submit">Guardar</button>
             </form>
-            
-                
-            
-            
         </div>
     </div>
     
@@ -44,5 +37,30 @@
 </body>
 </script>
 <script src="{% static 'js/compras.js' %}"></script>
+<script>
+// Mostrar notificación solo una vez tras crear producto
+document.addEventListener('DOMContentLoaded', function() {
+    // Si venimos de un redirect tras crear producto
+    if (sessionStorage.getItem('productoCreado')) {
+        const notif = document.getElementById('notificacion-producto');
+        notif.textContent = 'Producto creado con éxito';
+        notif.style.display = 'block';
+        // Ocultar mensajes Django
+        document.querySelectorAll('.mensaje-django').forEach(el => el.style.display = 'none');
+        // Limpiar flag y recargar tras 1.5s
+        setTimeout(() => {
+            sessionStorage.removeItem('productoCreado');
+            location.reload();
+        }, 1500);
+    }
+    // Si se envía el form, setear flag para mostrar notificación tras redirect
+    const form = document.querySelector('form[method="POST"]');
+    if (form) {
+        form.addEventListener('submit', function() {
+            sessionStorage.setItem('productoCreado', '1');
+        });
+    }
+});
+</script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
 </html>

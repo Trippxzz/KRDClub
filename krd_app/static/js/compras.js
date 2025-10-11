@@ -1,3 +1,69 @@
+// --- Lógica para aplicaciones del producto (vehículos asociados en editar producto) ---
+document.addEventListener('DOMContentLoaded', function() {
+  const vehiculosSelect = document.getElementById('vehiculo-select');
+  const addVehiculoBtn = document.getElementById('add-vehiculo');
+  const tablaVehiculos = document.getElementById('vehiculos-seleccionados')?.querySelector('tbody');
+  const inputVehiculosIds = document.getElementById('vehiculos_ids');
+  const dataScript = document.getElementById('vehiculos-iniciales-data');
+  if (!(vehiculosSelect && addVehiculoBtn && tablaVehiculos && inputVehiculosIds)) return;
+
+  let vehiculosSeleccionados = [];
+  // Inicializar con los vehículos ya asociados (si existen)
+  let inicialesData = [];
+  if (dataScript) {
+    try {
+      inicialesData = JSON.parse(dataScript.textContent);
+    } catch (e) { inicialesData = []; }
+  }
+  if (Array.isArray(inicialesData) && inicialesData.length > 0) {
+    vehiculosSeleccionados = inicialesData.map(v => ({id: String(v.id), text: v.text}));
+    renderVehiculosSeleccionados();
+  }
+
+  function renderVehiculosSeleccionados() {
+    if (!tablaVehiculos) return;
+    tablaVehiculos.innerHTML = '';
+    vehiculosSeleccionados.forEach(v => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${v.text}</td><td><button type="button" class="btn-quitar-vehiculo" data-id="${v.id}">❌</button></td>`;
+      tablaVehiculos.appendChild(tr);
+    });
+    // Actualizar el input hidden
+    inputVehiculosIds.value = vehiculosSeleccionados.map(v => v.id).join(',');
+    // Ocultar del select los ya seleccionados
+    Array.from(vehiculosSelect.options).forEach(opt => {
+      opt.style.display = vehiculosSeleccionados.some(v => v.id == opt.value) ? 'none' : '';
+    });
+    // Si todos están seleccionados, deshabilitar el select y botón
+    if (vehiculosSeleccionados.length === vehiculosSelect.options.length) {
+      vehiculosSelect.disabled = true;
+      addVehiculoBtn.disabled = true;
+    } else {
+      vehiculosSelect.disabled = false;
+      addVehiculoBtn.disabled = false;
+    }
+    // Asignar eventos quitar
+    tablaVehiculos.querySelectorAll('.btn-quitar-vehiculo').forEach(btn => {
+      btn.addEventListener('click', function() {
+        quitarVehiculo(this.getAttribute('data-id'));
+      });
+    });
+  }
+
+  function quitarVehiculo(id) {
+    vehiculosSeleccionados = vehiculosSeleccionados.filter(v => v.id != id);
+    renderVehiculosSeleccionados();
+  }
+
+  addVehiculoBtn.addEventListener('click', function() {
+    const id = vehiculosSelect.value;
+    const text = vehiculosSelect.options[vehiculosSelect.selectedIndex].text;
+    if (!vehiculosSeleccionados.some(v => v.id == id)) {
+      vehiculosSeleccionados.push({id, text});
+      renderVehiculosSeleccionados();
+    }
+  });
+});
 
 // --- Lógica de compras (solo si existen los elementos de compras) ---
 document.addEventListener('DOMContentLoaded', function() {
