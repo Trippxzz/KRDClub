@@ -1,9 +1,10 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from .models import Producto, ProductoImagen, Compra, ProductoCompra, vehiculo, Producto_Vehiculo
+from .models import Producto, ProductoImagen, Compra, ProductoCompra, vehiculo, Producto_Vehiculo, Venta, Producto_Venta
 from .forms import ProductoForm, ProductoImagenForm, CompraForm, ProductoCompraForm, VehiculoForm
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from decimal import Decimal
+from django.db import transaction
 from django.urls import reverse
 import json
 ### SECCION POST (FORMS)
@@ -99,6 +100,33 @@ def eliminar_vehiculo(request, pk):
         return redirect('lista_vehiculo')
     return render(request, 'krd/confirmar_eliminacion.html', {'vehiculo': veh})
 
+def addCarrito(request, producto_id):
+    producto = get_object_or_404(Producto, id_producto=producto_id)
+    carrito = request.session.get('carrito', {})
+    cantidad = 1
+    try:
+        cantidad = int(request.GET.get('cantidad', '1'))
+        if cantidad < 1:
+            cantidad = 1
+    except Exception:
+        cantidad = 1
+
+    id_str = str(producto_id)
+    if id_str in carrito:
+        carrito[id_str]['cantidad'] += cantidad
+        carrito[id_str]['subtotal'] = carrito[id_str]['cantidad'] * carrito[id_str]['precio']
+    else:
+        carrito[id_str] = {
+            'nombre': producto.n_producto,
+            'precio': producto.precio,
+            'cantidad': cantidad,
+            'subtotal': producto.precio * cantidad
+        }
+    request.session['carrito'] = carrito
+    request.session.modified = True
+    # Redirigir de vuelta a la página del producto con mensaje de éxito
+    return redirect(f"/catalogo/{producto_id}?mensaje=ok")
+
 
 ### SECCION GET (MODELS)
 def getCatalogo(request):
@@ -114,7 +142,10 @@ def getProducto(request, id):
         return render(request, "producto.html", {"prod":prod, "imgs":imgprod})
     
 
-
+def getCarrito(request):
+    carrito = request.session.get('carrito', {})
+    total = sum(item['subtotal'] for item in carrito.values())
+    return render(request, 'carrito.html', {'carrito': carrito, 'total': total})
 
 ###SECCION DE EDITS
 
@@ -208,3 +239,65 @@ def eliminarProducto(request, id):
         prod.delete()
         messages.success(request, "Producto eliminado con éxito")
         return redirect("/catalogo/")
+    
+def eliminardelCarrito(request, producto_id):
+    carrito = request.session.get('carrito', {})
+    id_str = str(producto_id)
+    if id_str in carrito:
+        del carrito[id_str]
+        request.session['carrito'] = carrito
+        request.session.modified = True
+        messages.success(request, "Producto eliminado del carrito.")
+    return redirect('/catalogo/')
+
+
+### SECCION CONTROL DE STOCK Y SEGURIDAD
+@transaction.atomic
+def procesarCompra(request):
+    carrito = request.session.get('carrito', {})
+    if not carrito:
+        messages.error(request, "El carrito está vacío.")
+        return redirect("ver_carrito")
+
+    try:
+        with transaction.atomic():
+            total = sum(item["subtotal"] for item in carrito.values())
+            cantidad_total = sum(item["cantidad"] for item in carrito.values())
+
+            venta = Venta.objects.create(
+                cantidad=cantidad_total,
+                precio_venta=total,
+            )
+
+            for id_producto, item in carrito.items():
+                producto = Producto.objects.select_for_update().get(id_producto=id_producto)
+
+                if producto.stock < item["cantidad"]:
+                    raise ValueError(f"No hay suficiente stock para {producto.n_producto}")
+
+                producto.stock -= item["cantidad"]
+                producto.save()
+
+                Producto_Venta.objects.create(
+                    id_venta=venta,
+                    id_producto=producto,
+                    cantidad=item["cantidad"],
+                    precio_unitario=item["precio"]
+                )
+
+            # Vaciar carrito
+            request.session["carrito"] = {}
+            request.session.modified = True
+            messages.success(request, "Compra realizada con éxito 🎉")
+
+    except ValueError as e:
+        messages.error(request, str(e))
+        return redirect("ver_carrito")
+
+    return redirect("/catalogo/")
+
+### Contador carrito
+def contador_carrito(request):
+    carrito = request.session.get('carrito', {})
+    total_items = sum(item['cantidad'] for item in carrito.values())
+    return JsonResponse({"total_items": total_items})

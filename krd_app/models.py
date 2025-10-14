@@ -57,6 +57,9 @@ class ProductoCompra(models.Model):
         self.subtotal_prod = self.cantidad_compra * self.precio_und
         super().save(*args, **kwargs)
 
+
+### Seccion de vehiculos/aplicaciones
+
 class vehiculo(models.Model):
     MARCAS = [
         ('Audi', 'Audi'),
@@ -80,3 +83,31 @@ class Producto_Vehiculo(models.Model): ##PARA CREARLE APLICACIONES A LOS PRODUCT
 
     def __str__(self):
         return f"{self.producto.n_producto} compatible con {self.vehiculo}"
+
+
+### Seccion de ventas
+
+class Venta(models.Model):
+    id_venta = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id_usuario = models.CharField(max_length=50, null=True, blank=True)  # si no hay login
+    cantidad = models.IntegerField(default=0)
+    precio_venta = models.DecimalField(max_digits=10, decimal_places=0)
+    fecha_venta = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f"Venta {self.id_venta} - {self.fecha_venta.date()}"
+
+
+class Producto_Venta(models.Model):
+    id_venta = models.ForeignKey(Venta, on_delete=models.CASCADE, related_name="productos_venta")
+    id_producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
+    cantidad = models.IntegerField()
+    precio_unitario = models.DecimalField(max_digits=10, decimal_places=0)
+    subtotal = models.DecimalField(max_digits=10, decimal_places=0, default=0)
+
+    def save(self, *args, **kwargs):
+        self.subtotal = self.cantidad * self.precio_unitario
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.id_producto.n_producto} x{self.cantidad}"
