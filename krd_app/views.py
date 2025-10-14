@@ -262,10 +262,10 @@ def procesarCompra(request):
     try:
         with transaction.atomic():
             total = sum(item["subtotal"] for item in carrito.values())
-            cantidad_total = sum(item["cantidad"] for item in carrito.values())
+            # cantidad_total = sum(item["cantidad"] for item in carrito.values())
 
             venta = Venta.objects.create(
-                cantidad=cantidad_total,
+                # cantidad=cantidad_total,
                 precio_venta=total,
             )
 

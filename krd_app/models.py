@@ -88,14 +88,14 @@ class Producto_Vehiculo(models.Model): ##PARA CREARLE APLICACIONES A LOS PRODUCT
 ### Seccion de ventas
 
 class Venta(models.Model):
-    id_venta = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    # id_venta eliminado: se usará el id autoincremental por defecto
     id_usuario = models.CharField(max_length=50, null=True, blank=True)  # si no hay login
-    cantidad = models.IntegerField(default=0)
+    # cantidad = models.IntegerField(default=0)
     precio_venta = models.DecimalField(max_digits=10, decimal_places=0)
     fecha_venta = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
-        return f"Venta {self.id_venta} - {self.fecha_venta.date()}"
+        return f"Venta {self.id} - {self.fecha_venta.date()}"
 
 
 class Producto_Venta(models.Model):
