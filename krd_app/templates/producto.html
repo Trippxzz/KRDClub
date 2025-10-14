@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+    {% if request.GET.mensaje == 'ok' %}
+        <div class="alert alert-success" style="margin-top:20px;">Producto agregado al carrito</div>
+    {% endif %}
+    <!-- El logo del carrito está en base.html -->
     <h1>{{ prod.n_producto }}</h1>
     <p>{{ prod.desc_producto }}</p>
     <p>Precio: ${{ prod.precio }}</p>
@@ -27,9 +28,49 @@
         <p>No hay imágenes para este producto.</p>
     {% endif %}
 </div>
+
+<div>
+    <a href="{% url 'listar_productos' %}">Volver al catálogo</a>
+    <a href="{% url 'crear_producto' %}">Crear nuevo producto</a>
+
+<form id="form-agregar-carrito" action="{% url 'agregar_al_carrito' prod.id_producto %}" method="get" style="display:inline;">
+    {%if prod.stock == 0%}
+    <input type="number" disabled="True" name="cantidad" id="cantidad" value="1" min="1" max="{{ prod.stock }}" style="width:60px;">
+    <button type="submit" disabled="True">Agregar</button>
+    {%else%}
+    <input type="number" name="cantidad" id="cantidad" value="1" min="1" max="{{ prod.stock }}" style="width:60px;">
+    <button type="submit">Agregar</button>  
+    {%endif%}
+</form>
+<div id="mensaje-carrito" style="display:none;margin-top:20px;" class="alert alert-success"></div>
+</div>
 <!-- dictsortreversed sirve para ordenar las imágenes y mostrar la principal primero en base a un diccionario -->
 
 
 
-</body>
+{% endblock %}
+<script>
+// Interceptar submit para agregar al carrito sin recargar
+document.getElementById('form-agregar-carrito').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const form = e.target;
+    const url = form.action + '?cantidad=' + encodeURIComponent(form.cantidad.value);
+    fetch(url, { method: 'GET' })
+        .then(r => {
+            if (r.redirected) {
+                // Django redirige, pero no seguimos el redirect
+                return Promise.resolve();
+            }
+            return r.text();
+        })
+        .then(() => {
+            document.getElementById('mensaje-carrito').textContent = 'Producto agregado al carrito';
+            document.getElementById('mensaje-carrito').style.display = 'block';
+            if (typeof window.actualizarContadorCarrito === 'function') window.actualizarContadorCarrito();
+            setTimeout(() => {
+                document.getElementById('mensaje-carrito').style.display = 'none';
+            }, 1500);
+        });
+});
+</script>
 </html>

@@ -23,10 +23,10 @@ from krd_app import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path("catalogo/", views.getCatalogo),
-    path("catalogo/crearprod/", views.addProducto ),
+    path("catalogo/", views.getCatalogo, name="listar_productos"),
+    path("catalogo/crearprod/", views.addProducto, name="crear_producto"),
     path("catalogo/<uuid:id>", views.getProducto, name="detproducto"),
-    path("crearcompra/", views.addCompra),
+    path("crearcompra/", views.addCompra, name="crear_compra"),
     path('vehiculos/agregar/', views.agregar_vehiculos, name='agregar_vehiculos'),
     path('vehiculos/lista/', views.lista_vehiculo, name='lista_vehiculo'),
     path('vehiculos/eliminar/<int:pk>/', views.eliminar_vehiculo, name='eliminar_vehiculo'),
@@ -36,6 +36,12 @@ urlpatterns = [
     path('catalogo/<uuid:id>/eliminar/', views.eliminarProducto, name='eliminar_producto'),
     path('compras/crear/', views.addCompra, name='crear_compra'),
     path('compras/', views.listar_compras, name='listar_compras'),
+    path('carrito/', views.getCarrito, name='ver_carrito'),
+    path('agregar/<uuid:producto_id>/', views.addCarrito, name='agregar_al_carrito'),
+    path('quitar/<uuid:producto_id>/', views.eliminardelCarrito, name='remover_del_carrito'),
+    path('procesarCompra', views.procesarCompra, name='procesar_compra'),
+    path('contador_carrito/', views.contador_carrito, name='contador_carrito'),
+
 ]
 
 if settings.DEBUG:

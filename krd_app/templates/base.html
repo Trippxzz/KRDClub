@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div class="carrito-logo" style="position:fixed;top:20px;right:30px;z-index:1000;">
+        <a href="{% url 'ver_carrito' %}">
+            <img src="{% static 'img/carrito.png' %}" alt="Carrito" width="40">
+            <span id="carrito-contador" style="background:#dc3545;color:#fff;border-radius:50%;padding:2px 8px;font-size:0.9em;position:absolute;top:-10px;right:-10px;">0</span>
+        </a>
+    </div>
+    {% block content %}{% endblock %}
+</body>
+
+<script>
+function actualizarContadorCarrito() {
+    fetch("{% url 'contador_carrito' %}")
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById("carrito-contador").textContent = data.total_items || 0;
+        })
+        .catch(() => {
+            document.getElementById("carrito-contador").textContent = '0';
+        });
+}
+document.addEventListener('DOMContentLoaded', actualizarContadorCarrito);
+// Permitir que los hijos usen la función
+window.actualizarContadorCarrito = actualizarContadorCarrito;
+</script>
+</html>
