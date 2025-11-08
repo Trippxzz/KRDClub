@@ -1,12 +1,21 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from .models import Producto, ProductoImagen, Compra, ProductoCompra, vehiculo, Producto_Vehiculo, Venta, Producto_Venta
-from .forms import ProductoForm, ProductoImagenForm, CompraForm, ProductoCompraForm, VehiculoForm
+from .models import Producto, ProductoImagen, Compra, ProductoCompra, vehiculo, Producto_Vehiculo, Venta, Producto_Venta, Usuario
+from .forms import ProductoForm, ProductoImagenForm, CompraForm, ProductoCompraForm, VehiculoForm, UsuarioForm
 from django.http import HttpResponse, JsonResponse
 from decimal import Decimal
 from django.db import transaction
+from django.conf import settings
 from django.urls import reverse
-import json
+import json, random, time
+from django.contrib.auth.hashers import make_password, check_password
+from django.core.mail import send_mail
+
+
+def home(request):
+    return render(request, "home.html")
+
+
 ### SECCION POST (FORMS)
 def addProducto(request):
     if request.method == "POST":
@@ -126,6 +135,28 @@ def addCarrito(request, producto_id):
     request.session.modified = True
     # Redirigir de vuelta a la página del producto con mensaje de éxito
     return redirect(f"/catalogo/{producto_id}?mensaje=ok")
+
+# def buscarCliente(request):
+#     rut = request.GET.get("rut")
+#     try:
+#         usuario = Usuario.objects.get(rut=rut)
+        
+#         codigo = str(random.randint(100000, 999999))
+#         cod_encriptado = make_password(codigo)
+#         generadoa= int(time.time()) ##minuto en el cual fue generado
+
+#         request.session['cod_encriptado'] = cod_encriptado
+#         request.session['cod_generadoa'] = generadoa
+#         request.session['rut_usuario'] = rut
+
+#         send_mail(
+#             'Código de verificación',
+#             f'¡Hola, solo queremos asegurarnos que eres tú!😁 \n Tu código de verificación es: {codigo}\nExpira en 5 minutos.',
+#             settings.DEFAULT_FROM_EMAIL,
+#             [usuario.email],
+#             fail_silently=False,
+#         )
+#         return JsonResponse({"existe"})
 
 
 ### SECCION GET (MODELS)
@@ -251,6 +282,7 @@ def eliminardelCarrito(request, producto_id):
     return redirect('/catalogo/')
 
 
+
 ### SECCION CONTROL DE STOCK Y SEGURIDAD
 @transaction.atomic
 def procesarCompra(request):
@@ -275,7 +307,7 @@ def procesarCompra(request):
                 if producto.stock < item["cantidad"]:
                     raise ValueError(f"No hay suficiente stock para {producto.n_producto}")
 
-                producto.stock -= item["cantidad"]
+                producto.stock -= item["cantidad"] ### AQUÍ SE DESCUENTA EL STOCK
                 producto.save()
 
                 Producto_Venta.objects.create(
@@ -288,7 +320,7 @@ def procesarCompra(request):
             # Vaciar carrito
             request.session["carrito"] = {}
             request.session.modified = True
-            messages.success(request, "Compra realizada con éxito 🎉")
+            messages.success(request, "Compra realizada con éxito.")
 
     except ValueError as e:
         messages.error(request, str(e))

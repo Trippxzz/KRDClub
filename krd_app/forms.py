@@ -1,6 +1,6 @@
 from django import forms
 from django.forms import inlineformset_factory
-from .models import Producto, Compra, ProductoCompra, vehiculo
+from .models import Producto, Compra, ProductoCompra, vehiculo, Usuario
 from datetime import date
 from django.contrib.auth.forms import UserCreationForm ##Para la creacion de usuarios, se usará para completar datos al momento de comprar
 
@@ -62,3 +62,15 @@ class VehiculoForm(forms.ModelForm):
         self.fields['anio'].widget = forms.Select(
             choices=[(y, y) for y in range(2000, current_year + 1)]
         )
+
+class UsuarioForm(UserCreationForm):
+
+    class Meta:
+        model = Usuario
+        fields = ['rut', 'nombre', 'apellido', 'email']
+    rut=forms.CharField(label="Rut")
+    nombre=forms.CharField(label="Nombre")
+    apellido=forms.CharField(label="Apellido")
+    email=forms.CharField(label="Correo electronico")
+    telefono=forms.CharField(label="Telefono")
+    direccion=forms.CharField(label="Direccion")

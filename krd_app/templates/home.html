@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>KRD Club</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#101416] min-h-screen text-white">
+    <!-- Navbar -->
+    <nav class="bg-[#101416] border-b border-gray-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex-shrink-0 flex items-center">
+                    <span class="text-xl font-bold tracking-widest text-white">KRD CLUB</span>
+                </div>
+                <div class="hidden md:flex space-x-10 items-center">
+                    <a href="{% url 'listar_productos' %}" class="text-gray-200 hover:text-white transition">Catálogo</a>
+                    <a href="#" class="text-gray-200 hover:text-white transition">Nosotros</a>
+                    <a href="#" class="text-gray-200 hover:text-white transition">Contacto</a>
+                </div>
+                <!-- Mobile menu button -->
+                <div class="md:hidden flex items-center">
+                    <button id="menu-btn" class="text-white focus:outline-none">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M4 6h16M4 12h16M4 18h16"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Mobile menu -->
+        <div id="mobile-menu" class="md:hidden hidden px-4 pb-4 bg-[#101416]">
+            <a href="{% url 'listar_productos' %}" class="block px-4 py-2 rounded-md text-gray-200 hover:text-white mb-2">Catálogo</a>
+            <a href="#" class="block px-4 py-2 rounded-md text-gray-200 hover:text-white mb-2">Nosotros</a>
+            <a href="#" class="block px-4 py-2 rounded-md text-gray-200 hover:text-white mb-2">Contacto</a>
+        </div>
+    </nav>
+    <!-- Hero Section -->
+    <section class="relative bg-[#101416] overflow-hidden">
+        <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80"
+             alt="Car Hero"
+             class="absolute inset-0 w-full h-full object-cover opacity-30 pointer-events-none select-none">
+        <div class="relative max-w-5xl mx-auto px-6 py-24 flex flex-col items-start">
+            <h1 class="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight text-white mb-6 drop-shadow-lg">
+                Redefine tu Estilo.<br>Rueda con Clase.
+            </h1>
+            <p class="text-lg md:text-2xl text-gray-300 mb-8 max-w-2xl">
+                Llantas de alto rendimiento para las marcas más exclusivas.
+            </p>
+            <a href="{% url 'listar_productos' %}" class="inline-block px-8 py-3 rounded-lg bg-yellow-700 hover:bg-yellow-800 text-white font-semibold text-lg shadow transition">
+                Explorar catálogo
+            </a>
+        </div>
+    </section>
+    <!-- Carrusel de productos destacados -->
+    <div class="max-w-5xl mx-auto mt-12 px-4">
+        <div class="relative">
+            <div id="carousel-images" class="overflow-hidden rounded-xl h-64 bg-gray-900 flex items-center justify-center">
+                <img src="https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=800&q=80" alt="Imagen 2" class="carousel-img w-full h-full object-cover block">
+                <img src="https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=800&q=80" alt="Imagen 3" class="carousel-img w-full h-full object-cover hidden">
+                <img src="https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?auto=format&fit=crop&w=800&q=80" alt="Imagen 4" class="carousel-img w-full h-full object-cover hidden">
+            </div>
+            <!-- Botones de navegación -->
+            <button id="prev-btn" class="absolute left-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 hover:bg-opacity-70 text-white rounded-full p-2 focus:outline-none">
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+            </button>
+            <button id="next-btn" class="absolute right-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 hover:bg-opacity-70 text-white rounded-full p-2 focus:outline-none">
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+            </button>
+            <!-- Indicadores -->
+            <div class="absolute bottom-3 left-1/2 -translate-x-1/2 flex space-x-2">
+                <button class="carousel-indicator w-3 h-3 rounded-full bg-blue-600 opacity-80"></button>
+                <button class="carousel-indicator w-3 h-3 rounded-full bg-white opacity-30"></button>
+                <button class="carousel-indicator w-3 h-3 rounded-full bg-white opacity-30"></button>
+            </div>
+        </div>
+    </div>
+    <script>
+        // Navbar mobile toggle
+        const btn = document.getElementById('menu-btn');
+        const menu = document.getElementById('mobile-menu');
+        btn.addEventListener('click', () => {
+            menu.classList.toggle('hidden');
+        });
+
+        // Carrusel simple
+        const images = document.querySelectorAll('.carousel-img');
+        const indicators = document.querySelectorAll('.carousel-indicator');
+        let current = 0;
+
+        function showImage(idx) {
+            images.forEach((img, i) => {
+                img.classList.toggle('hidden', i !== idx);
+                indicators[i].classList.toggle('bg-blue-600', i === idx);
+                indicators[i].classList.toggle('bg-white', i !== idx);
+                indicators[i].classList.toggle('opacity-80', i === idx);
+                indicators[i].classList.toggle('opacity-30', i !== idx);
+            });
+        }
+
+        document.getElementById('prev-btn').onclick = () => {
+            current = (current - 1 + images.length) % images.length;
+            showImage(current);
+        };
+        document.getElementById('next-btn').onclick = () => {
+            current = (current + 1) % images.length;
+            showImage(current);
+        };
+        indicators.forEach((btn, idx) => {
+            btn.onclick = () => {
+                current = idx;
+                showImage(current);
+            };
+        });
+
+        // Auto-slide cada 5 segundos
+        setInterval(() => {
+            current = (current + 1) % images.length;
+            showImage(current);
+        }, 5000);
+
+        showImage(current);
+    </script>
+</body>
+</html>
