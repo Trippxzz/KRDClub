@@ -10,12 +10,36 @@ from django.urls import reverse
 import json, random, time
 from django.contrib.auth.hashers import make_password, check_password
 from django.core.mail import send_mail
-
+from PIL import Image
+import os
 
 def home(request):
     return render(request, "home.html")
 
-
+####OPTIMIZACION IMAGENES
+def optimizar_img360(dir_origen, dir_destino, img_deseadas=36):
+    archivos = sorted(os.listdir(dir_origen))
+    total_imagenes = len(archivos)
+    
+    # Calcular qué img seleccionar
+    paso = total_imagenes / img_deseadas
+    
+    for i in range(img_deseadas):
+        idx = int(i * paso)
+        if idx < total_imagenes:
+            ruta_origen = os.path.join(dir_origen, archivos[idx])
+            img = Image.open(ruta_origen)
+            
+            # Redimensionar (ancho máximo 800px)
+            if img.width > 800:
+                ratio = 800 / img.width
+                nuevo_tamano = (800, int(img.height * ratio))
+                img = img.resize(nuevo_tamano, Image.Resampling.LANCZOS)
+            
+            # Comprimir y guardar
+            ruta_destino = os.path.join(dir_destino, f"llanta_360_{i:03d}.jpg")
+            img.save(ruta_destino, 'JPEG', quality=85, optimize=True)
+            
 ### SECCION POST (FORMS)
 def addProducto(request):
     if request.method == "POST":
@@ -24,24 +48,85 @@ def addProducto(request):
 
         if form_producto.is_valid():
             producto = form_producto.save()
-            # Tomar todas las imágenes subidas
             imagenes = request.FILES.getlist('imagenes')
-            # Tomar el índice de la imagen marcada como principal desde el formulario (input hidden)
             principal_idx = int(request.POST.get('principal_idx', 0))
-            # Recorrer las imágenes y marcar la principal según el índice seleccionado
-            for i, img in enumerate(imagenes):
-                ProductoImagen.objects.create(
-                    producto=producto,
-                    imagen=img,
-                    es_principal=True if i == principal_idx else False  # Solo la seleccionada queda como principal
-                )
+            
+            # Obtener el checkbox es_360
+            es_360 = request.POST.get('es_360') == 'true'  # Viene como string 'true'
+            
+            print(f"DEBUG: es_360={es_360}, total_imagenes={len(imagenes)}")  # Para debug
+            
+            # Si son imágenes 360, optimizarlas primero
+            if es_360 and len(imagenes) > 36:
+                import tempfile
+                import shutil
+                from django.core.files import File
+                
+                # Crear directorio temporal
+                temp_dir = tempfile.mkdtemp()
+                temp_dir_optimizado = tempfile.mkdtemp()
+                
+                try:
+                    # Guardar imágenes temporalmente
+                    for i, img in enumerate(imagenes):
+                        ruta_temp = os.path.join(temp_dir, f"img_{i:03d}.jpg")
+                        with open(ruta_temp, 'wb+') as destination:
+                            for chunk in img.chunks():
+                                destination.write(chunk)
+                    
+                    # Optimizar
+                    optimizar_img360(temp_dir, temp_dir_optimizado, img_deseadas=36)
+                    
+                    # Cargar imágenes optimizadas
+                    orden = 0
+                    for filename in sorted(os.listdir(temp_dir_optimizado)):
+                        ruta = os.path.join(temp_dir_optimizado, filename)
+                        with open(ruta, 'rb') as f:
+                            ProductoImagen.objects.create(
+                                producto=producto,
+                                imagen=File(f, name=f"producto_{producto.id_producto}_{filename}"),
+                                es_principal=False,
+                                es_360=True,
+                                orden=orden
+                            )
+                            orden += 1
+                    
+                    messages.success(request, f"Producto creado con {orden} imágenes 360° optimizadas")
+                    
+                finally:
+                    # Limpiar temporales
+                    shutil.rmtree(temp_dir)
+                    shutil.rmtree(temp_dir_optimizado)
+                    
+            elif es_360 and len(imagenes) <= 36:
+                # Si son pocas imágenes 360, no optimizar
+                for i, img in enumerate(imagenes):
+                    ProductoImagen.objects.create(
+                        producto=producto,
+                        imagen=img,
+                        es_principal=False,
+                        es_360=True,
+                        orden=i
+                    )
+                messages.success(request, f"Producto creado con {len(imagenes)} imágenes 360°")
+                
+            else:
+                # Proceso normal para imágenes no-360
+                for i, img in enumerate(imagenes):
+                    ProductoImagen.objects.create(
+                        producto=producto,
+                        imagen=img,
+                        es_principal=True if i == principal_idx else False,
+                        es_360=False
+                    )
+                messages.success(request, "Producto creado con éxito")
 
-            messages.success(request, "Producto creado con éxito")
             return redirect("/catalogo/")
         else:
             print("error prod:",form_producto.errors)
             print("error img:",form_imagenes.errors)
-            return render(request,"catalogo.html")
+            messages.error(request, "Error al crear el producto")
+            return render(request,"crear/crearprods.html",{"form_producto":form_producto, "form_imagenes":form_imagenes})
     else:
         form_producto = ProductoForm()
         form_imagenes = ProductoImagenForm()
@@ -170,7 +255,23 @@ def getProducto(request, id):
     if request.method == "GET":
         prod = Producto.objects.get(id_producto=id)
         imgprod = prod.imagenes.all()
-        return render(request, "producto.html", {"prod":prod, "imgs":imgprod})
+        
+        # Filtrar imágenes 360
+        imagenes_360 = imgprod.filter(es_360=True).order_by('orden')
+        imagenes_360_urls = None
+        
+        if imagenes_360.exists():
+            # Solo pasar las URLs si hay imágenes 360
+            imagenes_360_urls = json.dumps([
+                request.build_absolute_uri(img.imagen.url) 
+                for img in imagenes_360
+            ])
+        
+        return render(request, "producto.html", {
+            "prod": prod, 
+            "imgs": imgprod, 
+            "imagenes_360_urls": imagenes_360_urls
+        })
     
 
 def getCarrito(request):

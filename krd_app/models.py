@@ -27,7 +27,8 @@ class ProductoImagen(models.Model):
     producto = models.ForeignKey(Producto, related_name="imagenes", on_delete=models.CASCADE)
     imagen = models.ImageField(upload_to="prodimagen")
     es_principal = models.BooleanField(default=False)
-
+    es_360 = models.BooleanField(default=False) 
+    orden = models.IntegerField(default=0)  # Para ordenar las imágenes 360
     def __str__(self):
         return f"Imagen de {self.producto.n_producto}"
 

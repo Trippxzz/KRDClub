@@ -1,6 +1,6 @@
 from django import forms
 from django.forms import inlineformset_factory
-from .models import Producto, Compra, ProductoCompra, vehiculo, Usuario
+from .models import Producto, Compra, ProductoCompra, vehiculo, Usuario, ProductoImagen
 from datetime import date
 from django.contrib.auth.forms import UserCreationForm ##Para la creacion de usuarios, se usará para completar datos al momento de comprar
 
@@ -23,11 +23,36 @@ class ProductoForm(forms.ModelForm):
             'desc_producto': forms.Textarea(),
         }
 
-class MultiFileInput(forms.ClearableFileInput):
+class MultipleFileInput(forms.ClearableFileInput):
+    """Widget personalizado para múltiples archivos"""
     allow_multiple_selected = True
 
+class MultipleFileField(forms.FileField):
+    """Campo personalizado para múltiples archivos"""
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault("widget", MultipleFileInput())
+        super().__init__(*args, **kwargs)
+
+    def clean(self, data, initial=None):
+        single_file_clean = super().clean
+        if isinstance(data, (list, tuple)):
+            result = [single_file_clean(d, initial) for d in data]
+        else:
+            result = [single_file_clean(data, initial)]
+        return result
+
 class ProductoImagenForm(forms.Form):
-    imagenes = forms.ImageField(widget=MultiFileInput(attrs={'multiple': True}), required=False)
+    """Form para subir imágenes del producto"""
+    imagenes = MultipleFileField(
+        required=False,
+        label='Seleccionar imágenes',
+        help_text='Puedes seleccionar múltiples imágenes'
+    )
+    es_360 = forms.BooleanField(
+        required=False,
+        label='¿Son imágenes 360°?',
+        help_text='Marca esta casilla si vas a subir múltiples imágenes para vista 360°'
+    )
 
 class CompraForm(forms.ModelForm):
     class Meta:
