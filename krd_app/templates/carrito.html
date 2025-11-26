@@ -1,37 +1,127 @@
 {% extends "base.html" %}
 {% block content %}
-    <div class="container mt-5">
-        <h2>Carrito de Compras</h2>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carrito de Compras - KRD Club</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .luxury-text {
+            letter-spacing: 0.15em;
+        }
+        .luxury-shadow {
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-white">
+    <div class="max-w-7xl mx-auto px-6 py-20">
+        <!-- Header -->
+        <div class="mb-12">
+            <p class="text-gray-600 text-sm tracking-[0.3em] mb-3 uppercase">Tienda Online</p>
+            <h1 class="text-5xl font-bold text-black luxury-text mb-4">Carrito de Compras</h1>
+            <div class="w-16 h-1 bg-black"></div>
+        </div>
+
         {% if carrito %}
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th>Producto</th>
-                    <th>Cantidad</th>
-                    <th>Precio unitario</th>
-                    <th>Subtotal</th>
-                    <th>Quitar</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for id, item in carrito.items %}
-                <tr>
-                    <td>{{ item.nombre }}</td>
-                    <td>{{ item.cantidad }}</td>
-                    <td>${{ item.precio }}</td>
-                    <td>${{ item.subtotal }}</td>
-                    <td>
-                        <a href="{% url 'remover_del_carrito' id %}" class="btn btn-danger btn-sm">Quitar</a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        <h4>Total: ${{ total }}</h4>
-        <a href="{% url 'procesar_compra' %}" class="btn btn-success">Procesar compra</a>
+            <!-- Tabla de Productos -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                <div class="lg:col-span-2">
+                    <div class="bg-gray-50 rounded-lg overflow-hidden luxury-shadow">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="bg-black text-white">
+                                    <th class="text-left px-6 py-4 font-bold tracking-wider text-sm">Producto</th>
+                                    <th class="text-center px-6 py-4 font-bold tracking-wider text-sm">Cantidad</th>
+                                    <th class="text-right px-6 py-4 font-bold tracking-wider text-sm">Precio</th>
+                                    <th class="text-right px-6 py-4 font-bold tracking-wider text-sm">Subtotal</th>
+                                    <th class="text-center px-6 py-4 font-bold tracking-wider text-sm">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200">
+                                {% for id, item in carrito.items %}
+                                <tr class="hover:bg-gray-100 transition">
+                                    <td class="px-6 py-6">
+                                        <p class="font-semibold text-gray-900">{{ item.nombre }}</p>
+                                        <p class="text-sm text-gray-600">ID: {{ id }}</p>
+                                    </td>
+                                    <td class="px-6 py-6 text-center">
+                                        <span class="bg-gray-200 text-gray-900 px-4 py-2 rounded font-semibold text-sm">{{ item.cantidad }}</span>
+                                    </td>
+                                    <td class="px-6 py-6 text-right font-semibold text-gray-900">${{ item.precio }}</td>
+                                    <td class="px-6 py-6 text-right font-bold text-black text-lg">${{ item.subtotal }}</td>
+                                    <td class="px-6 py-6 text-center">
+                                        <a href="{% url 'remover_del_carrito' id %}" class="inline-block bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm font-medium transition">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Continuar Comprando -->
+                    <div class="mt-8">
+                        <a href="{% url 'listar_productos' %}" class="inline-block bg-white border-2 border-black text-black px-8 py-3 font-medium tracking-wider hover:bg-black hover:text-white transition text-sm">
+                            ← Continuar Comprando
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Resumen de Compra -->
+                <div class="lg:col-span-1">
+                    <div class="bg-gray-50 rounded-lg p-8 luxury-shadow sticky top-24">
+                        <h3 class="text-2xl font-bold text-black mb-6 luxury-text">Resumen</h3>
+                        
+                        <div class="space-y-4 mb-8 pb-8 border-b border-gray-200">
+                            <div class="flex justify-between text-gray-700">
+                                <span>Subtotal</span>
+                                <span>${{ total }}</span>
+                            </div>
+                            <div class="flex justify-between text-gray-700">
+                                <span>Envío</span>
+                                <span class="text-green-600 font-semibold">Gratis</span>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between items-center mb-8 text-lg">
+                            <span class="font-bold text-black">Total:</span>
+                            <span class="text-3xl font-bold text-black">${{ total }}</span>
+                        </div>
+
+                        <a href="{% url 'procesar_compra' %}" class="w-full block bg-black text-white px-8 py-4 font-medium tracking-wider hover:bg-gray-900 transition text-center text-sm rounded">
+                            PROCESAR COMPRA
+                        </a>
+
+                        <div class="mt-6 pt-6 border-t border-gray-200">
+                            <p class="text-xs text-gray-600 text-center mb-4">
+                                ✓ Pago seguro garantizado
+                            </p>
+                            <p class="text-xs text-gray-600 text-center">
+                                ✓ Garantía de satisfacción
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         {% else %}
-        <p>El carrito está vacío.</p>
+            <!-- Carrito Vacío -->
+            <div class="text-center py-20">
+                <div class="mb-8">
+                    <i class="fas fa-shopping-bag text-6xl text-gray-300"></i>
+                </div>
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">Tu carrito está vacío</h2>
+                <p class="text-lg text-gray-600 mb-8">Descubre nuestra exclusiva colección de llantas premium.</p>
+                <a href="{% url 'listar_productos' %}" class="inline-block bg-black text-white px-8 py-4 font-medium tracking-wider hover:bg-gray-900 transition text-sm rounded">
+                    EXPLORAR CATÁLOGO
+                </a>
+            </div>
         {% endif %}
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
 {% endblock %}

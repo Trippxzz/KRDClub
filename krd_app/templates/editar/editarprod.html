@@ -1,70 +1,158 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     {% load static %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Editar Producto - KRD Club</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .luxury-text {
+            letter-spacing: 0.15em;
+        }
+        .luxury-shadow {
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+        input[type="text"],
+        input[type="number"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #d1d5db;
+            border-radius: 8px;
+            color: #111827;
+        }
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: #000;
+        }
+    </style>
 </head>
-<body>
-    <h1>Editar Producto</h1>
-    <form method="POST" enctype="multipart/form-data">
-        {% csrf_token %}
-        {{ form_producto.as_p }}
-        <div>
-            <label for="id_imagenes">Imágenes nuevas:</label>
-            <input type="file" name="imagenes" id="id_imagenes" multiple accept="image/*">
+<body class="bg-white min-h-screen">
+    <div class="max-w-5xl mx-auto px-6 py-20">
+        <!-- Header -->
+        <div class="mb-12">
+            <a href="{% url 'listar_productos' %}" class="text-gray-600 hover:text-black transition text-sm font-medium mb-6 inline-block">← Volver al catálogo</a>
+            <p class="text-gray-600 text-sm tracking-[0.3em] mb-3 uppercase">Editar Producto</p>
+            <h1 class="text-4xl font-bold text-black luxury-text mb-4">{{ prod.n_producto }}</h1>
+            <div class="w-16 h-1 bg-black"></div>
         </div>
-    <!-- Input hidden para IDs de vehículos seleccionados, debe estar dentro del form -->
-    <input type="hidden" name="vehiculos_ids" id="vehiculos_ids">
-        <button type="submit">Guardar cambios</button>
-    </form>
-    <h3>Imágenes actuales</h3>
-    <div style="display: flex; flex-wrap: wrap; gap: 20px;">
-        {% for img in imgs %}
-            <div style="border:1px solid #ccc; padding:10px; text-align:center;">
-                <img src="{{ img.imagen.url }}" alt="Imagen producto" style="max-width:120px; max-height:120px; display:block; margin-bottom:10px;" />
-                <form method="POST" action="{% url 'eliminar_imagen' img.id %}" style="display:inline;">
-                    {% csrf_token %}
-                    <button type="submit" onclick="return confirm('¿Eliminar esta imagen?')">Eliminar</button>
-                </form>
-                <form method="POST" action="{% url 'cambiar_principal' img.id %}" style="display:inline;">
-                    {% csrf_token %}
-                    <input type="radio" name="principal_{{ img.id }}" {% if img.es_principal %}checked{% endif %} onchange="this.form.submit()"> Principal
-                </form>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+            <!-- Formulario -->
+            <div class="lg:col-span-2">
+                <div class="bg-gray-50 rounded-lg p-8 luxury-shadow mb-8">
+                    <form method="POST" enctype="multipart/form-data" class="space-y-6">
+                        {% csrf_token %}
+                        
+                        <h2 class="text-2xl font-bold text-black mb-6">Información</h2>
+                        {{ form_producto.as_p }}
+                        
+                        <div class="border-t-2 border-gray-200 pt-6">
+                            <label class="block text-sm font-bold text-black mb-3 tracking-wider">
+                                Imágenes nuevas:
+                            </label>
+                            <input type="file" name="imagenes" id="id_imagenes" multiple accept="image/*" class="w-full px-4 py-3 border-2 border-gray-300 rounded">
+                        </div>
+
+                        <input type="hidden" name="vehiculos_ids" id="vehiculos_ids">
+
+                        <div class="flex gap-4 pt-6">
+                            <button type="submit" class="flex-1 bg-black text-white px-8 py-4 font-medium tracking-wider hover:bg-gray-900 transition text-sm rounded">
+                                <i class="fas fa-save mr-2"></i> Guardar Cambios
+                            </button>
+                            <a href="{% url 'listar_productos' %}" class="flex-1 bg-white border-2 border-black text-black px-8 py-4 text-center font-medium tracking-wider hover:bg-black hover:text-white transition text-sm rounded">
+                                Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Imágenes actuales -->
+                <div class="bg-gray-50 rounded-lg p-8 luxury-shadow">
+                    <h3 class="text-2xl font-bold text-black mb-6">Imágenes Actuales</h3>
+                    {% if imgs %}
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            {% for img in imgs %}
+                            <div class="bg-white rounded-lg overflow-hidden border border-gray-200 p-3">
+                                <img src="{{ img.imagen.url }}" alt="Imagen" class="w-full h-32 object-cover rounded mb-3">
+                                <div class="space-y-2 text-xs">
+                                    <form method="POST" action="{% url 'cambiar_principal' img.id %}" class="flex items-center gap-2">
+                                        {% csrf_token %}
+                                        <input type="radio" name="principal_{{ img.id }}" {% if img.es_principal %}checked{% endif %} onchange="this.form.submit()"> 
+                                        <span>Principal</span>
+                                    </form>
+                                    <form method="POST" action="{% url 'eliminar_imagen' img.id %}">
+                                        {% csrf_token %}
+                                        <button type="submit" onclick="return confirm('¿Eliminar esta imagen?')" class="w-full bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded text-xs font-medium transition">
+                                            <i class="fas fa-trash"></i> Eliminar
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-gray-600">No hay imágenes para este producto.</p>
+                    {% endif %}
+                </div>
             </div>
-        {% empty %}
-            <p>No hay imágenes para este producto.</p>
-        {% endfor %}
+
+            <!-- Sidebar: Vehículos -->
+            <div>
+                <div class="bg-gray-50 rounded-lg p-8 luxury-shadow">
+                    <h3 class="text-2xl font-bold text-black mb-6">Aplicaciones</h3>
+                    
+                    {% if vehiculos.exists %}
+                        <div class="mb-6">
+                            <label for="vehiculo-select" class="block text-sm font-bold text-black mb-2">Vehículos:</label>
+                            <select id="vehiculo-select" class="w-full px-4 py-3 border-2 border-gray-300 rounded">
+                                {% for v in vehiculos %}
+                                    <option value="{{ v.id }}">{{ v.marca }} {{ v.modelo }}</option>
+                                {% endfor %}
+                            </select>
+                            <button type="button" id="add-vehiculo" class="w-full mt-3 bg-black text-white px-4 py-2 rounded text-sm font-medium hover:bg-gray-900 transition">
+                                + Agregar
+                            </button>
+                        </div>
+
+                        <table class="w-full text-sm border border-gray-200 rounded">
+                            <thead class="bg-black text-white">
+                                <tr>
+                                    <th class="px-3 py-2 text-left">Vehículo</th>
+                                    <th class="px-3 py-2">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="vehiculos-seleccionados-body" class="divide-y divide-gray-200">
+                            </tbody>
+                        </table>
+
+                        {% if vehiculos_asociados %}
+                            {{ vehiculos_asociados|json_script:"vehiculos-iniciales-data" }}
+                        {% endif %}
+                    {% else %}
+                        <p class="text-gray-600 text-sm">No hay vehículos disponibles. Crea algunos primero.</p>
+                    {% endif %}
+                </div>
+
+                <!-- Eliminar Producto -->
+                <div class="mt-8">
+                    <form method="POST" action="{% url 'eliminar_producto' prod.id_producto %}">
+                        {% csrf_token %}
+                        <button type="submit" onclick="return confirm('¿Está seguro de que desea eliminar este producto?')" class="w-full bg-red-600 hover:bg-red-700 text-white px-6 py-4 rounded text-sm font-medium transition">
+                            <i class="fas fa-trash mr-2"></i> Eliminar Producto
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <h3>Aplicaciones del producto</h3>
-    <div>
-        {% if vehiculos.exists %}
-            <select id="vehiculo-select">
-                {% for v in vehiculos %}
-                    <option value="{{ v.id }}">{{ v.marca }}, {{ v.modelo }}, {{ v.cilindrada }}, {{ v.anio }}</option>
-                {% endfor %}
-            </select>
-            <button type="button" id="add-vehiculo">Agregar Vehículo</button>
-            <table id="vehiculos-seleccionados" border="1" style="margin-top:10px;">
-                <thead><tr><th>Vehículo</th><th>Quitar</th></tr></thead>
-                <tbody></tbody>
-            </table>
-            <!-- (El input hidden ya está en el form principal, no repetir aquí) -->
-            <p style="font-size:small;color:gray;">* Los vehículos seleccionados se guardarán al presionar "Guardar cambios"</p>
-            {% if vehiculos_asociados %}
-                {{ vehiculos_asociados|json_script:"vehiculos-iniciales-data" }}
-            {% endif %}
-        {% else %}
-            <h1>No hay vehículos creados</h1>
-        {% endif %}
-    </div>
-</body>
-<script src="{% static 'js/compras.js' %}"></script>
-        <form method="POST" action="{% url 'eliminar_producto' prod.id_producto %}" style="display:inline;">
-        {% csrf_token %}
-        <button type="submit" onclick="return confirm('¿Eliminar este producto?')">Eliminar Producto ❌</button>
-    </form>
+    <script src="{% static 'js/compras.js' %}"></script>
 </body>
 </html>

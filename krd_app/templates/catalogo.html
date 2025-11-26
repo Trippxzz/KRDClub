@@ -3,41 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catálogo</title>
+    <title>Catálogo de Productos - KRD Club</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .luxury-text {
+            letter-spacing: 0.15em;
+        }
+        .luxury-shadow {
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+        .hover-lift {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .hover-lift:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+        }
+    </style>
 </head>
-<body class="bg-[#101416] min-h-screen text-white">
-    <div class="max-w-7xl mx-auto px-4 py-10">
-        <div class="flex justify-between items-center mb-8">
-            <h1 class="text-3xl font-extrabold tracking-tight">Catálogo</h1>
-            <a href="crearprod/" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow transition">
-                <span class="text-xl mr-2">+</span> Agregar producto
-            </a>
-        </div>
-        {% if prods %}
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {% for p in prods %}
-            <div class="bg-[#181c20] rounded-xl shadow-lg overflow-hidden flex flex-col">
-                {% if p.imagen_principal %}
-                    <img src="{{ p.imagen_principal.imagen.url }}" alt="{{ p.n_producto }}" class="h-48 w-full object-cover">
-                {% else %}
-                    <img src="/static/img/no-image.png" alt="Sin imagen" class="h-48 w-full object-cover">
-                {% endif %}
-                <div class="p-6 flex-1 flex flex-col">
-                    <h2 class="text-xl font-bold mb-2 truncate">{{ p.n_producto }}</h2>
-                    <p class="text-blue-400 font-semibold mb-2">${{ p.precio }}</p>
-                    <p class="text-gray-300 text-sm mb-4 flex-1 truncate">{{ p.desc_producto }}</p>
-                    <a href="{% url 'detproducto' p.id_producto %}" class="inline-block mt-auto px-4 py-2 bg-yellow-700 hover:bg-yellow-800 text-white rounded-lg font-semibold transition">
-                        Editar
+<body class="bg-white min-h-screen text-gray-900">
+    <!-- Navbar simplificado -->
+    <nav class="bg-white border-b border-gray-200 sticky top-0 z-50 luxury-shadow">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-20 items-center">
+                <div class="flex-shrink-0">
+                    <span class="text-2xl font-bold tracking-[0.3em] text-black">KRD</span>
+                </div>
+                <div class="hidden md:flex space-x-12 items-center">
+                    <a href="/" class="text-gray-700 hover:text-black font-medium text-sm tracking-wider transition">INICIO</a>
+                    <a href="#" class="text-gray-700 hover:text-black font-medium text-sm tracking-wider transition">NOSOTROS</a>
+                </div>
+                <div class="flex items-center space-x-6">
+                    <a href="#" class="relative text-gray-600 hover:text-black transition">
+                        <i class="fas fa-shopping-bag text-lg"></i>
+                        <span class="absolute -top-2 -right-2 bg-black text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">0</span>
                     </a>
                 </div>
             </div>
-            {% endfor %}
         </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-6 py-20">
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-16">
+            <div>
+                <p class="text-gray-600 text-sm tracking-[0.3em] mb-3 uppercase">Tienda Online</p>
+                <h1 class="text-5xl font-bold text-black luxury-text mb-4">Catálogo Completo</h1>
+                <div class="w-16 h-1 bg-black"></div>
+            </div>
+            <a href="crearprod/" class="mt-8 md:mt-0 inline-flex items-center px-8 py-4 bg-black text-white font-medium tracking-wider hover:bg-gray-900 transition text-sm rounded">
+                <i class="fas fa-plus mr-2"></i> Agregar Producto
+            </a>
+        </div>
+
+        {% if prods %}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {% for p in prods %}
+                <div class="group hover-lift bg-gray-50 rounded-lg overflow-hidden luxury-shadow">
+                    <!-- Imagen -->
+                    <div class="relative h-64 bg-gradient-to-br from-gray-200 to-gray-100 overflow-hidden flex items-center justify-center">
+                        {% if p.imagen_principal %}
+                            <img src="{{ p.imagen_principal.imagen.url }}" alt="{{ p.n_producto }}" class="w-full h-full object-cover group-hover:scale-110 transition duration-300">
+                        {% else %}
+                            <div class="w-full h-full flex items-center justify-center bg-gray-200">
+                                <svg class="w-32 h-32 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" />
+                                </svg>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Contenido -->
+                    <div class="p-8">
+                        <h3 class="text-xl font-bold text-black mb-2 truncate">{{ p.n_producto }}</h3>
+                        <p class="text-2xl font-bold text-black mb-4">${{ p.precio }}</p>
+                        <p class="text-gray-600 text-sm mb-6 line-clamp-2 font-light leading-relaxed">{{ p.desc_producto }}</p>
+                        
+                        <div class="flex gap-3">
+                            <a href="{% url 'detproducto' p.id_producto %}" class="flex-1 bg-black text-white px-4 py-3 text-center font-medium tracking-wider hover:bg-gray-900 transition text-sm rounded">
+                                VER DETALLE
+                            </a>
+                            <a href="{% url 'detproducto' p.id_producto %}/editar" class="flex-1 bg-white border-2 border-black text-black px-4 py-3 text-center font-medium tracking-wider hover:bg-black hover:text-white transition text-sm rounded">
+                                EDITAR
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
         {% else %}
-        <div class="text-center text-gray-400 mt-20 text-lg">
-            No hay productos creados
-        </div>
+            <!-- Sin productos -->
+            <div class="text-center py-20">
+                <div class="mb-8">
+                    <i class="fas fa-inbox text-6xl text-gray-300"></i>
+                </div>
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">No hay productos creados</h2>
+                <p class="text-lg text-gray-600 mb-8">Comienza agregando productos a tu catálogo.</p>
+                <a href="crearprod/" class="inline-block bg-black text-white px-8 py-4 font-medium tracking-wider hover:bg-gray-900 transition text-sm rounded">
+                    <i class="fas fa-plus mr-2"></i> Crear Primer Producto
+                </a>
+            </div>
         {% endif %}
     </div>
 </body>

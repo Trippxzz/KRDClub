@@ -1,25 +1,80 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Lista de Vehículos</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Vehículos - KRD Club</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .luxury-text {
+            letter-spacing: 0.15em;
+        }
+        .luxury-shadow {
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+    </style>
 </head>
-<body>
-    <h1>Lista de Vehículos</h1>
+<body class="bg-white min-h-screen">
+    <div class="max-w-7xl mx-auto px-6 py-20">
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-16">
+            <div>
+                <p class="text-gray-600 text-sm tracking-[0.3em] mb-3 uppercase">Inventario</p>
+                <h1 class="text-5xl font-bold text-black luxury-text mb-4">Gestión de Vehículos</h1>
+                <div class="w-16 h-1 bg-black"></div>
+            </div>
+            <a href="{% url 'agregar_vehiculos' %}" class="mt-8 md:mt-0 inline-flex items-center px-8 py-4 bg-black text-white font-medium tracking-wider hover:bg-gray-900 transition text-sm rounded">
+                <i class="fas fa-plus mr-2"></i> Agregar Vehículo
+            </a>
+        </div>
 
-{% for v in vehiculos %}
-    <li>
-        {{ v.marca }} {{ v.modelo }} - {{ v.cilindrada }}L - {{ v.anio }}
-        <form action="{% url 'eliminar_vehiculo' v.pk %}" method="post" style="display:inline;">
-            {% csrf_token %}
-            <button type="submit" onclick="return confirm('¿Seguro que deseas eliminar este vehículo?');">Eliminar</button>
-        </form>
-    </li>
-{% endfor %}
-</ul>
-
-    </ul>
-
-    <a href="{% url 'agregar_vehiculos' %}">Agregar nuevo vehículo</a>
+        <!-- Lista de Vehículos -->
+        <div class="bg-gray-50 rounded-lg overflow-hidden luxury-shadow">
+            {% if vehiculos %}
+                <table class="w-full">
+                    <thead>
+                        <tr class="bg-black text-white">
+                            <th class="text-left px-6 py-4 font-bold tracking-wider text-sm">Marca</th>
+                            <th class="text-left px-6 py-4 font-bold tracking-wider text-sm">Modelo</th>
+                            <th class="text-left px-6 py-4 font-bold tracking-wider text-sm">Cilindrada</th>
+                            <th class="text-left px-6 py-4 font-bold tracking-wider text-sm">Año</th>
+                            <th class="text-center px-6 py-4 font-bold tracking-wider text-sm">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        {% for v in vehiculos %}
+                        <tr class="hover:bg-gray-100 transition">
+                            <td class="px-6 py-4 font-semibold text-gray-900">{{ v.marca }}</td>
+                            <td class="px-6 py-4 text-gray-700">{{ v.modelo }}</td>
+                            <td class="px-6 py-4 text-gray-700">{{ v.cilindrada }}L</td>
+                            <td class="px-6 py-4 text-gray-700">{{ v.anio }}</td>
+                            <td class="px-6 py-4">
+                                <form action="{% url 'eliminar_vehiculo' v.pk %}" method="post" style="display:inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" onclick="return confirm('¿Está seguro de que desea eliminar este vehículo?')" class="inline-block bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm font-medium transition">
+                                        <i class="fas fa-trash"></i> Eliminar
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <!-- Sin vehículos -->
+                <div class="text-center py-20">
+                    <div class="mb-8">
+                        <i class="fas fa-car text-6xl text-gray-300"></i>
+                    </div>
+                    <h2 class="text-3xl font-bold text-gray-900 mb-4">No hay vehículos registrados</h2>
+                    <p class="text-lg text-gray-600 mb-8">Comienza agregando los vehículos que utilizarán tus productos.</p>
+                    <a href="{% url 'agregar_vehiculos' %}" class="inline-block bg-black text-white px-8 py-4 font-medium tracking-wider hover:bg-gray-900 transition text-sm rounded">
+                        <i class="fas fa-plus mr-2"></i> Agregar Primer Vehículo
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
 </body>
 </html>

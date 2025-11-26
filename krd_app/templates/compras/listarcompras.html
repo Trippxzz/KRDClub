@@ -1,42 +1,81 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <title>Listado de Compras</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listado de Compras - KRD Club</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .luxury-text {
+            letter-spacing: 0.15em;
+        }
+        .luxury-shadow {
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+    </style>
 </head>
-<body>
-    <h1>Listado de Compras</h1>
-    <table border="1">
-        <thead>
-            <tr>
-                <th>Proveedor</th>
-                <th>Fecha</th>
-                <th>Folio</th>
-                <th>PDF</th>
-                <th>Subtotal</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for compra in compras %}
-            <tr>
-                <td>{{ compra.proveedor }}</td>
-                <td>{{ compra.fecha }}</td>
-                <td>{{ compra.folio }}</td>
-                <td>
-                    {% if compra.pdf %}
-                        <a href="{{ compra.pdf.url }}" target="_blank">Ver PDF</a>
-                    {% else %}
-                        No adjunto
-                    {% endif %}
-                </td>
-                <td>{{ compra.subtotalc }}</td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="5">No hay compras registradas.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    <a href="{% url 'crear_compra' %}">Crear nueva compra</a>
+<body class="bg-white min-h-screen">
+    <div class="max-w-7xl mx-auto px-6 py-20">
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-16">
+            <div>
+                <p class="text-gray-600 text-sm tracking-[0.3em] mb-3 uppercase">Gestión</p>
+                <h1 class="text-5xl font-bold text-black luxury-text mb-4">Listado de Compras</h1>
+                <div class="w-16 h-1 bg-black"></div>
+            </div>
+            <a href="{% url 'crear_compra' %}" class="mt-8 md:mt-0 inline-flex items-center px-8 py-4 bg-black text-white font-medium tracking-wider hover:bg-gray-900 transition text-sm rounded">
+                <i class="fas fa-plus mr-2"></i> Nueva Compra
+            </a>
+        </div>
+
+        <!-- Tabla de Compras -->
+        <div class="bg-gray-50 rounded-lg overflow-hidden luxury-shadow">
+            {% if compras %}
+                <table class="w-full">
+                    <thead>
+                        <tr class="bg-black text-white">
+                            <th class="text-left px-6 py-4 font-bold tracking-wider text-sm">Proveedor</th>
+                            <th class="text-left px-6 py-4 font-bold tracking-wider text-sm">Fecha</th>
+                            <th class="text-left px-6 py-4 font-bold tracking-wider text-sm">Folio</th>
+                            <th class="text-right px-6 py-4 font-bold tracking-wider text-sm">Subtotal</th>
+                            <th class="text-center px-6 py-4 font-bold tracking-wider text-sm">Documento</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        {% for compra in compras %}
+                        <tr class="hover:bg-gray-100 transition">
+                            <td class="px-6 py-4 font-semibold text-gray-900">{{ compra.proveedor }}</td>
+                            <td class="px-6 py-4 text-gray-700">{{ compra.fecha|date:"d/m/Y" }}</td>
+                            <td class="px-6 py-4 text-gray-700">{{ compra.folio }}</td>
+                            <td class="px-6 py-4 text-right font-bold text-black">${{ compra.subtotalc }}</td>
+                            <td class="px-6 py-4 text-center">
+                                {% if compra.pdf %}
+                                    <a href="{{ compra.pdf.url }}" target="_blank" class="inline-block bg-black text-white px-4 py-2 rounded text-sm font-medium hover:bg-gray-900 transition">
+                                        <i class="fas fa-file-pdf mr-2"></i> Ver PDF
+                                    </a>
+                                {% else %}
+                                    <span class="text-gray-500 text-sm">No adjunto</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <!-- Sin Compras -->
+                <div class="text-center py-20">
+                    <div class="mb-8">
+                        <i class="fas fa-inbox text-6xl text-gray-300"></i>
+                    </div>
+                    <h2 class="text-3xl font-bold text-gray-900 mb-4">No hay compras registradas</h2>
+                    <p class="text-lg text-gray-600 mb-8">Comienza creando tu primera compra.</p>
+                    <a href="{% url 'crear_compra' %}" class="inline-block bg-black text-white px-8 py-4 font-medium tracking-wider hover:bg-gray-900 transition text-sm rounded">
+                        <i class="fas fa-plus mr-2"></i> Crear Compra
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
 </body>
 </html>

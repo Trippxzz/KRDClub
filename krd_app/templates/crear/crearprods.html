@@ -4,30 +4,156 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crear Producto</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <title>Crear Producto - KRD Club</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .luxury-text {
+            letter-spacing: 0.15em;
+        }
+        .luxury-shadow {
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+        input[type="text"],
+        input[type="number"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #d1d5db;
+            border-radius: 8px;
+            color: #111827;
+        }
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: #000;
+        }
+        textarea {
+            min-height: 128px;
+            resize: vertical;
+        }
+    </style>
 </head>
-<body class="container-fluid">
-    <div class="row justify-content-center">
-        <div class="col-4">
-            <div id="notificacion-producto" style="display:none;" class="alert alert-success" role="alert"></div>
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="alert alert-success mensaje-django" role="alert">
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            {% endif %}
-            <form method="POST" enctype="multipart/form-data">
+<body class="bg-white min-h-screen">
+    <div class="max-w-3xl mx-auto px-6 py-20">
+        <!-- Header -->
+        <div class="mb-12">
+            <a href="{% url 'listar_productos' %}" class="text-gray-600 hover:text-black transition text-sm font-medium mb-6 inline-block">← Volver al catálogo</a>
+            <p class="text-gray-600 text-sm tracking-[0.3em] mb-3 uppercase">Crear Producto</p>
+            <h1 class="text-4xl font-bold text-black luxury-text mb-4">Nuevo Producto</h1>
+            <div class="w-16 h-1 bg-black"></div>
+        </div>
+
+        <!-- Notificaciones -->
+        <div id="notificacion-producto" style="display:none;" class="mb-6 p-4 bg-green-50 border border-green-200 rounded text-green-700 text-sm flex items-center gap-3">
+            <i class="fas fa-check-circle"></i>
+            <span>Producto creado con éxito</span>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded text-green-700 text-sm">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Formulario -->
+        <div class="bg-gray-50 rounded-lg p-8 luxury-shadow">
+            <form method="POST" enctype="multipart/form-data" class="space-y-8">
                 {% csrf_token %}
-                {{ form_producto.as_p }}
-                <label>Imágenes:</label>
-                <!-- Input para seleccionar varias imágenes. Al cambiar, se muestran previews y radios para elegir la principal -->
-                <input type="file" name="imagenes" id="id_imagenes" multiple accept="image/*">
-                <div id="preview_imagenes"></div>
-                <!-- Este input hidden guarda el índice de la imagen principal seleccionada -->
-                <input type="hidden" name="principal_idx" id="principal_idx" value="0">
-                <button type="submit">Guardar</button>
+                
+                <!-- Sección: Información del Producto -->
+                <div>
+                    <h2 class="text-2xl font-bold text-black mb-6 flex items-center gap-3">
+                        <i class="fas fa-info-circle text-black"></i> Información del Producto
+                    </h2>
+                    <div class="space-y-6">
+                        {% for field in form_producto %}
+                            {% if field.name != 'imagenes' %}
+                            <div>
+                                {% if field.label %}
+                                <label for="{{ field.id_for_label }}" class="block text-sm font-bold text-black mb-2 tracking-wider">
+                                    {{ field.label }}
+                                    {% if field.field.required %}<span class="text-red-600">*</span>{% endif %}
+                                </label>
+                                {% endif %}
+                                
+                                {% if field.errors %}
+                                    <div class="mb-2">
+                                        {% for error in field.errors %}
+                                            <p class="text-red-600 text-sm font-medium">{{ error }}</p>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+
+                                {{ field }}
+                                
+                                {% if field.help_text %}
+                                    <p class="text-gray-600 text-sm mt-1 font-light">{{ field.help_text|safe }}</p>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Separador -->
+                <div class="border-t-2 border-gray-200"></div>
+
+                <!-- Sección: Imágenes -->
+                <div>
+                    <h2 class="text-2xl font-bold text-black mb-6 flex items-center gap-3">
+                        <i class="fas fa-images text-black"></i> Imágenes del Producto
+                    </h2>
+
+                    <!-- Checkbox para 360 -->
+                    <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded">
+                        <label class="flex items-center cursor-pointer">
+                            <input type="checkbox" name="es_360" id="id_es_360" value="true" class="w-5 h-5 text-black">
+                            <span class="ml-3 font-semibold text-gray-900">¿Son imágenes para vista 360°?</span>
+                        </label>
+                        <p class="text-gray-600 text-sm mt-2 font-light">Marca esta casilla si vas a subir múltiples imágenes (mínimo 24) para crear una vista 360° interactiva.</p>
+                    </div>
+
+                    <!-- Input de imágenes -->
+                    <div class="mb-6">
+                        <label for="id_imagenes" class="block text-sm font-bold text-black mb-3 tracking-wider">
+                            Seleccionar imágenes:
+                            <span class="text-red-600">*</span>
+                        </label>
+                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-black hover:bg-gray-100 transition" onclick="document.getElementById('id_imagenes').click()">
+                            <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-3 block"></i>
+                            <p class="text-gray-700 font-medium mb-1">Arrastra imágenes aquí o haz clic</p>
+                            <p class="text-gray-500 text-sm">PNG, JPG, GIF hasta 10MB cada una</p>
+                        </div>
+                        <input type="file" name="imagenes" id="id_imagenes" multiple accept="image/*" class="hidden">
+                        <p class="text-sm text-gray-600 mt-3 font-medium" id="contador-imagenes">0 imágenes seleccionadas</p>
+                    </div>
+
+                    <!-- Selector de imagen principal -->
+                    <div id="principal-selector" class="mb-6">
+                        <label for="principal_idx" class="block text-sm font-bold text-black mb-2 tracking-wider">
+                            Imagen principal:
+                        </label>
+                        <select name="principal_idx" id="principal_idx">
+                            <option value="0">Primera imagen</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Botones -->
+                <div class="border-t-2 border-gray-200 pt-8 flex gap-4">
+                    <button type="submit" class="flex-1 bg-black text-white px-8 py-4 font-medium tracking-wider hover:bg-gray-900 transition text-sm rounded flex items-center justify-center gap-2">
+                        <i class="fas fa-save"></i> Crear Producto
+                    </button>
+                    <a href="{% url 'listar_productos' %}" class="flex-1 bg-white border-2 border-black text-black px-8 py-4 text-center font-medium tracking-wider hover:bg-black hover:text-white transition text-sm rounded">
+                        Cancelar
+                    </a>
+                </div>
             </form>
         </div>
     </div>
@@ -35,29 +161,133 @@
 </script>
 <script src="{% static 'js/compras.js' %}"></script>
 <script>
-// Mostrar notificación solo una vez tras crear producto
-document.addEventListener('DOMContentLoaded', function() {
-    // Si venimos de un redirect tras crear producto
-    if (sessionStorage.getItem('productoCreado')) {
-        const notif = document.getElementById('notificacion-producto');
-        notif.textContent = 'Producto creado con éxito';
-        notif.style.display = 'block';
-        // Ocultar mensajes Django
-        document.querySelectorAll('.mensaje-django').forEach(el => el.style.display = 'none');
-        // Limpiar flag y recargar tras 1.5s
-        setTimeout(() => {
-            sessionStorage.removeItem('productoCreado');
-            location.reload();
-        }, 1500);
-    }
-    // Si se envía el form, setear flag para mostrar notificación tras redirect
-    const form = document.querySelector('form[method="POST"]');
-    if (form) {
-        form.addEventListener('submit', function() {
-            sessionStorage.setItem('productoCreado', '1');
+    // Mostrar notificación solo una vez tras crear producto
+    document.addEventListener('DOMContentLoaded', function() {
+        if (sessionStorage.getItem('productoCreado')) {
+            const notif = document.getElementById('notificacion-producto');
+            notif.style.display = 'flex';
+            document.querySelectorAll('.mensaje-django').forEach(el => el.style.display = 'none');
+            setTimeout(() => {
+                sessionStorage.removeItem('productoCreado');
+                location.reload();
+            }, 1500);
+        }
+
+        const form = document.querySelector('form[method="POST"]');
+        if (form) {
+            form.addEventListener('submit', function() {
+                sessionStorage.setItem('productoCreado', '1');
+            });
+        }
+
+        // Manejo de imágenes
+        const inputImagenes = document.getElementById('id_imagenes');
+        const checkbox360 = document.getElementById('id_es_360');
+        const contadorImagenes = document.getElementById('contador-imagenes');
+        const principalSelector = document.getElementById('principal-selector');
+        const selectPrincipal = document.getElementById('principal_idx');
+
+        checkbox360.addEventListener('change', function() {
+            principalSelector.style.display = this.checked ? 'none' : 'block';
         });
-    }
-});
+
+        // Contador de imágenes
+        inputImagenes.addEventListener('change', function() {
+            const numImagenes = this.files.length;
+            contadorImagenes.textContent = `${numImagenes} imagen(es) seleccionada(s)`;
+
+            if (checkbox360.checked && numImagenes < 24) {
+                contadorImagenes.classList.add('text-yellow-600');
+                contadorImagenes.textContent += ' ⚠️ (Se recomiendan al menos 24 imágenes)';
+            } else if (checkbox360.checked && numImagenes > 60) {
+                contadorImagenes.classList.remove('text-yellow-600');
+                contadorImagenes.classList.add('text-blue-600');
+                contadorImagenes.textContent += ' (Se optimizarán a 36 imágenes)';
+            } else {
+                contadorImagenes.classList.remove('text-yellow-600', 'text-blue-600');
+            }
+
+            if (!checkbox360.checked) {
+                selectPrincipal.innerHTML = '';
+                for (let i = 0; i < numImagenes; i++) {
+                    const option = document.createElement('option');
+                    option.value = i;
+                    option.textContent = `Imagen ${i + 1}`;
+                    selectPrincipal.appendChild(option);
+                }
+            }
+        });
+    });
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
 </html>
+
+<style>
+.imagenes-section {
+    border: 1px solid #ddd;
+    padding: 20px;
+    margin: 20px 0;
+    border-radius: 5px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.help-text {
+    font-size: 0.9em;
+    color: #666;
+    margin-top: 5px;
+}
+
+#contador-imagenes {
+    font-weight: bold;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const inputImagenes = document.getElementById('id_imagenes');
+    const checkbox360 = document.getElementById('id_es_360');
+    const contadorImagenes = document.getElementById('contador-imagenes');
+    const principalSelector = document.getElementById('principal-selector');
+    const selectPrincipal = document.getElementById('principal_idx');
+    
+    // Controlar visibilidad del selector de imagen principal
+    checkbox360.addEventListener('change', function() {
+        if (this.checked) {
+            principalSelector.style.display = 'none';
+        } else {
+            principalSelector.style.display = 'block';
+        }
+    });
+    
+    // Contador de imágenes seleccionadas
+    inputImagenes.addEventListener('change', function() {
+        const numImagenes = this.files.length;
+        contadorImagenes.textContent = `${numImagenes} imagen(es) seleccionada(s)`;
+        
+        // Advertencia si es 360 y tiene pocas imágenes
+        if (checkbox360.checked && numImagenes < 24) {
+            contadorImagenes.style.color = 'red';
+            contadorImagenes.textContent += ' (Se recomiendan al menos 24 imágenes para vista 360°)';
+        } else if (checkbox360.checked && numImagenes > 60) {
+            contadorImagenes.style.color = 'orange';
+            contadorImagenes.textContent += ' (Se optimizarán a 36 imágenes)';
+        } else {
+            contadorImagenes.style.color = 'green';
+        }
+        
+        // Actualizar opciones del selector de principal
+        if (!checkbox360.checked) {
+            selectPrincipal.innerHTML = '';
+            for (let i = 0; i < numImagenes; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = `Imagen ${i + 1}`;
+                selectPrincipal.appendChild(option);
+            }
+        }
+    });
+});
+</script>

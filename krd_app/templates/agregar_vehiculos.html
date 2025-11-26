@@ -1,18 +1,81 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Agregar Vehículo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agregar Vehículo - KRD Club</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .luxury-text {
+            letter-spacing: 0.15em;
+        }
+        .luxury-shadow {
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+    </style>
 </head>
-<body>
-    <h1>Agregar Vehículo</h1>
+<body class="bg-white min-h-screen">
+    <div class="max-w-2xl mx-auto px-6 py-20">
+        <!-- Header -->
+        <div class="mb-12">
+            <a href="{% url 'lista_vehiculo' %}" class="text-gray-600 hover:text-black transition text-sm font-medium mb-6 inline-block">← Volver a la lista</a>
+            <p class="text-gray-600 text-sm tracking-[0.3em] mb-3 uppercase">Inventario</p>
+            <h1 class="text-4xl font-bold text-black luxury-text mb-4">Agregar Nuevo Vehículo</h1>
+            <div class="w-16 h-1 bg-black"></div>
+        </div>
 
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Guardar</button>
-    </form>
+        <!-- Formulario -->
+        <div class="bg-gray-50 rounded-lg p-8 luxury-shadow">
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <!-- Django Form Fields -->
+                {% for field in form %}
+                    <div>
+                        {% if field.label %}
+                        <label for="{{ field.id_for_label }}" class="block text-sm font-bold text-black mb-2 tracking-wider">
+                            {{ field.label }}
+                            {% if field.field.required %}<span class="text-red-600">*</span>{% endif %}
+                        </label>
+                        {% endif %}
+                        
+                        {% if field.errors %}
+                            <div class="mb-2">
+                                {% for error in field.errors %}
+                                    <p class="text-red-600 text-sm font-medium">{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
 
-    <a href="{% url 'lista_vehiculo' %}">Ver lista</a>
+                        {{ field }}
+                        
+                        {% if field.help_text %}
+                            <p class="text-gray-600 text-sm mt-1 font-light">{{ field.help_text|safe }}</p>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+
+                <!-- Botones -->
+                <div class="flex gap-4 pt-6">
+                    <button type="submit" class="flex-1 bg-black text-white px-8 py-4 font-medium tracking-wider hover:bg-gray-900 transition text-sm rounded">
+                        <i class="fas fa-save mr-2"></i> Guardar Vehículo
+                    </button>
+                    <a href="{% url 'lista_vehiculo' %}" class="flex-1 bg-white border-2 border-black text-black px-8 py-4 text-center font-medium tracking-wider hover:bg-black hover:text-white transition text-sm rounded">
+                        Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <style>
+        input[type="text"],
+        input[type="number"],
+        select,
+        textarea {
+            @apply w-full px-4 py-3 border-2 border-gray-300 rounded text-gray-900 focus:outline-none focus:border-black transition;
+        }
+    </style>
 </body>
 </html>

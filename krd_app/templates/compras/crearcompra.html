@@ -1,56 +1,146 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Crear Compra</title>
+  <title>Crear Compra - KRD Club</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    .luxury-text {
+      letter-spacing: 0.15em;
+    }
+    .luxury-shadow {
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #d1d5db;
+      border-radius: 8px;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #000;
+    }
+  </style>
 </head>
-<body>
-  <form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form.as_p }}
+<body class="bg-white min-h-screen">
+  <div class="max-w-5xl mx-auto px-6 py-20">
+    <!-- Header -->
+    <div class="mb-12">
+      <a href="{% url 'listar_compras' %}" class="text-gray-600 hover:text-black transition text-sm font-medium mb-6 inline-block">← Ver todas las compras</a>
+      <p class="text-gray-600 text-sm tracking-[0.3em] mb-3 uppercase">Gestión</p>
+      <h1 class="text-4xl font-bold text-black luxury-text mb-4">Crear Compra</h1>
+      <div class="w-16 h-1 bg-black"></div>
+    </div>
 
-    <h3>Productos de la compra</h3>
-    <table id="productos-table">
-      <thead>
-        <tr>
-          <th>Producto</th>
-          <th>Cantidad</th>
-          <th>Precio Unitario</th>
-          <th>Subtotal</th>
-          <th>Eliminar</th>
-        </tr>
-      </thead>
-      <tbody id="productos-body">
-      </tbody>
-    </table>
-    <button type="button" id="add-product">Agregar Producto</button>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+      <!-- Formulario -->
+      <div class="lg:col-span-2">
+        <form method="post" enctype="multipart/form-data" class="bg-gray-50 rounded-lg p-8 luxury-shadow">
+          {% csrf_token %}
+          
+          <h2 class="text-2xl font-bold text-black mb-6">Información de la Compra</h2>
+          {{ form.as_p }}
 
-    <p>Total Neto: $<span id="total-neto">0</span></p>
-    <p>IVA (19%): $<span id="iva">0</span></p>
-    <p>Total Compra: $<span id="total-compra">0</span></p>
+          <!-- Tabla de Productos -->
+          <div class="mt-12">
+            <h3 class="text-2xl font-bold text-black mb-6">Productos</h3>
+            <div class="overflow-x-auto rounded-lg border border-gray-200">
+              <table class="w-full text-sm">
+                <thead class="bg-black text-white">
+                  <tr>
+                    <th class="text-left px-4 py-3 font-bold">Producto</th>
+                    <th class="text-center px-4 py-3 font-bold">Cantidad</th>
+                    <th class="text-right px-4 py-3 font-bold">Precio</th>
+                    <th class="text-right px-4 py-3 font-bold">Subtotal</th>
+                    <th class="text-center px-4 py-3 font-bold">Acción</th>
+                  </tr>
+                </thead>
+                <tbody id="productos-body" class="divide-y divide-gray-200">
+                </tbody>
+              </table>
+            </div>
+            <button type="button" id="add-product" class="mt-4 bg-black text-white px-6 py-2 rounded font-medium hover:bg-gray-900 transition text-sm">
+              + Agregar Producto
+            </button>
+          </div>
 
-    <input type="hidden" name="productos_data" id="productos_data">
-    <button type="submit">Guardar Compra</button>
-  </form>
-  <a href="{% url 'listar_compras' %}">Ver todas las compras</a>
-  
-    <!-- Template para agregar filas de productos dinámicamente -->
+          <!-- Totales -->
+          <div class="mt-12 pt-8 border-t-2 border-gray-200">
+            <div class="space-y-3 max-w-sm ml-auto">
+              <div class="flex justify-between text-gray-700">
+                <span>Total Neto:</span>
+                <span>$<span id="total-neto">0</span></span>
+              </div>
+              <div class="flex justify-between text-gray-700">
+                <span>IVA (19%):</span>
+                <span>$<span id="iva">0</span></span>
+              </div>
+              <div class="flex justify-between items-center border-t-2 border-gray-200 pt-3">
+                <span class="font-bold text-black text-lg">Total Compra:</span>
+                <span class="text-3xl font-bold text-black">$<span id="total-compra">0</span></span>
+              </div>
+            </div>
+          </div>
+
+          <input type="hidden" name="productos_data" id="productos_data">
+          
+          <div class="mt-8 flex gap-4">
+            <button type="submit" class="flex-1 bg-black text-white px-8 py-4 font-medium tracking-wider hover:bg-gray-900 transition text-sm rounded">
+              <i class="fas fa-save mr-2"></i> Guardar Compra
+            </button>
+            <a href="{% url 'listar_compras' %}" class="flex-1 bg-white border-2 border-black text-black px-8 py-4 text-center font-medium tracking-wider hover:bg-black hover:text-white transition text-sm rounded">
+              Cancelar
+            </a>
+          </div>
+        </form>
+      </div>
+
+      <!-- Info -->
+      <div class="bg-gray-50 rounded-lg p-8 luxury-shadow h-fit">
+        <h3 class="text-xl font-bold text-black mb-4">Información</h3>
+        <p class="text-gray-600 text-sm mb-6 font-light">Completa los detalles de la compra y agrega los productos que adquiriste.</p>
+        <div class="space-y-3 text-sm text-gray-700">
+          <p class="flex items-start gap-2">
+            <i class="fas fa-check-circle text-green-600 mt-1"></i>
+            <span>Los cálculos se actualizan automáticamente</span>
+          </p>
+          <p class="flex items-start gap-2">
+            <i class="fas fa-check-circle text-green-600 mt-1"></i>
+            <span>IVA calculado al 19%</span>
+          </p>
+          <p class="flex items-start gap-2">
+            <i class="fas fa-check-circle text-green-600 mt-1"></i>
+            <span>Puedes agregar múltiples productos</span>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Template para agregar filas de productos dinámicamente -->
   <template id="producto-row-template">
-    <tr>
-      <td>
+    <tr class="hover:bg-gray-50 transition">
+      <td class="px-4 py-3">
         <select class="producto-select" required>
           {% for producto in productos %}
             <option value="{{ producto.id_producto }}">{{ producto.n_producto }}</option>
           {% endfor %}
         </select>
       </td>
-      <td><input type="number" class="cantidad-input" min="1" value="1" required></td>
-      <td><input type="number" class="precio-input" min="0" value="0" required></td>
-      <td class="subtotal">0</td>
-      <td><button type="button" class="btn-eliminar">❌</button></td>
+      <td class="px-4 py-3"><input type="number" class="cantidad-input text-center" min="1" value="1" required></td>
+      <td class="px-4 py-3"><input type="number" class="precio-input text-right" min="0" value="0" required></td>
+      <td class="px-4 py-3 text-right font-semibold subtotal">0</td>
+      <td class="px-4 py-3 text-center">
+        <button type="button" class="btn-eliminar bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-xs font-medium transition">
+          ✕
+        </button>
+      </td>
     </tr>
   </template>
+
   <script src="/static/js/compras.js"></script>
 </body>
 </html>
