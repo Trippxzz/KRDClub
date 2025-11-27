@@ -88,9 +88,8 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'krd',
         'USER': 'root',
-        'PASSWORD': '',
-        'HOST': '127.0.0.1',
-        'PORT': '3306',
+        # 'PASSWORD': "admin",
+        "PORT":"3306"
         
     }
 }
@@ -138,8 +137,13 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# Usuario personalizado
+AUTH_USER_MODEL = 'krd_app.Usuario'
 
-
+# URLs de autenticación
+LOGIN_URL = 'panel_login'
+LOGIN_REDIRECT_URL = 'admin_dashboard'
+LOGOUT_REDIRECT_URL = 'home'
 
 
 # ==================== WEBPAY TRANSBANK ====================

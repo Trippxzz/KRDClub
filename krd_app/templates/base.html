@@ -39,7 +39,21 @@
                 </div>
                 
                 <!-- Carrito y Menu Mobile -->
-                <div class="flex items-center space-x-6">
+                <div class="flex items-center space-x-4">
+                    <!-- Botón Acceso Panel -->
+                    {% if request.user.is_authenticated %}
+                    <div class="hidden md:flex items-center space-x-3">
+                        <span class="text-xs text-gray-500">{{ request.user.nombre }}</span>
+                        <a href="{% url 'panel_logout' %}" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded text-xs font-medium tracking-wider transition">
+                            <i class="fas fa-sign-out-alt mr-1"></i>SALIR
+                        </a>
+                    </div>
+                    {% else %}
+                    <a href="{% url 'panel_login' %}" class="hidden md:block bg-black hover:bg-gray-800 text-white px-4 py-2 rounded text-xs font-medium tracking-wider transition">
+                        <i class="fas fa-lock mr-1"></i>ACCESO PANEL
+                    </a>
+                    {% endif %}
+                    
                     <a href="{% url 'ver_carrito' %}" class="relative text-gray-600 hover:text-black transition">
                         <i class="fas fa-shopping-bag text-lg"></i>
                         <span id="carrito-contador" class="absolute -top-2 -right-2 bg-black text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">0</span>
@@ -58,7 +72,15 @@
             <div class="px-4 py-4 space-y-3">
                 <a href="/" class="block px-4 py-3 text-gray-700 hover:bg-white font-medium text-sm tracking-wider">INICIO</a>
                 <a href="{% url 'listar_productos' %}" class="block px-4 py-3 text-gray-700 hover:bg-white font-medium text-sm tracking-wider">CATÁLOGO</a>
-                {% comment %} <a href="{% url 'lista_vehiculo' %}" class="block px-4 py-3 text-gray-700 hover:bg-white font-medium text-sm tracking-wider">VEHÍCULOS</a> {% endcomment %}
+                {% if request.user.is_authenticated %}
+                <a href="{% url 'panel_logout' %}" class="block px-4 py-3 text-red-600 hover:bg-white font-medium text-sm tracking-wider">
+                    <i class="fas fa-sign-out-alt mr-2"></i>CERRAR SESIÓN
+                </a>
+                {% else %}
+                <a href="{% url 'panel_login' %}" class="block px-4 py-3 text-gray-700 hover:bg-white font-medium text-sm tracking-wider">
+                    <i class="fas fa-lock mr-2"></i>ACCESO PANEL
+                </a>
+                {% endif %}
             </div>
         </div>
     </nav>

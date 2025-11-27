@@ -794,7 +794,7 @@ def contador_carrito(request):
     return JsonResponse({"total_items": total_items})
 
 
-### ==================== PANEL DE ADMINISTRACIÓN ====================
+### PANEL DE ADMINISTRACIÓN
 
 from django.db.models import Sum, Count
 from django.db.models.functions import TruncDate
@@ -802,16 +802,22 @@ from datetime import datetime, timedelta
 
 def admin_dashboard(request):
     """Dashboard principal del panel de administración"""
+    if not request.user.is_authenticated or not getattr(request.user, 'admin', False):
+        messages.error(request, 'No tienes permisos de administrador')
+        return redirect('panel_login')
     
-    return render(request, 'admin/dashboard.html')
+    return render(request, 'panel/dashboard.html')
 
 
 def admin_productos(request):
     """Lista de productos para administración"""
+    if not request.user.is_authenticated or not getattr(request.user, 'admin', False):
+        messages.error(request, 'No tienes permisos de administrador')
+        return redirect('panel_login')
     productos = Producto.objects.all().order_by('-id_producto')
     stock_total = Producto.objects.aggregate(total=Sum('stock'))['total'] or 0
     
-    return render(request, 'admin/productos.html', {
+    return render(request, 'panel/productos.html', {
         'productos': productos,
         'stock_total': stock_total,
     })
@@ -820,7 +826,9 @@ def admin_productos(request):
 def admin_ventas(request):
     """Lista de ventas para administración"""
     from django.utils import timezone
-    
+    if not request.user.is_authenticated or not getattr(request.user, 'admin', False):
+        messages.error(request, 'No tienes permisos de administrador')
+        return redirect('panel_login')
     hoy = timezone.now().date()
     inicio_mes = hoy.replace(day=1)
     inicio_semana = hoy - timedelta(days=hoy.weekday())
@@ -854,7 +862,7 @@ def admin_ventas(request):
         'total_ventas': ventas.count(),
     }
     
-    return render(request, 'admin/ventas.html', {
+    return render(request, 'panel/ventas.html', {
         'ventas': ventas,
         'stats': stats,
     })
@@ -862,6 +870,9 @@ def admin_ventas(request):
 
 def admin_compras(request):
     """Lista de compras para administración"""
+    if not request.user.is_authenticated or not getattr(request.user, 'admin', False):
+        messages.error(request, 'No tienes permisos de administrador')
+        return redirect('panel_login')
     compras = Compra.objects.prefetch_related('productos_compra__producto').order_by('-fecha')
     
     # El precio unitario se ingresa NETO (sin IVA)
@@ -877,9 +888,98 @@ def admin_compras(request):
         compra.iva = round(compra.subtotalc * Decimal('0.19'), 0)
         compra.bruto = compra.neto + compra.iva
     
-    return render(request, 'admin/compras.html', {
+    return render(request, 'panel/compras.html', {
         'compras': compras,
         'total_neto': total_neto,
         'total_iva': total_iva,
         'total_bruto': total_bruto,
     })
+
+
+### Login Panel de Administración
+from django.contrib.auth import login, logout, authenticate
+import re
+
+def validar_rut_chileno(rut):
+    """Valida formato y dígito verificador de RUT chileno"""
+    # Limpiar el RUT
+    rut = rut.replace(".", "").replace("-", "").upper()
+    
+    if len(rut) < 2:
+        return False
+    
+    # Separar cuerpo y dígito verificador
+    cuerpo = rut[:-1]
+    dv = rut[-1]
+    
+    # Validar que el cuerpo sea numérico
+    if not cuerpo.isdigit():
+        return False
+    
+    # Calcular dígito verificador
+    suma = 0
+    multiplo = 2
+    
+    for i in reversed(cuerpo):
+        suma += int(i) * multiplo
+        multiplo = multiplo + 1 if multiplo < 7 else 2
+    
+    resto = suma % 11
+    dv_calculado = 11 - resto
+    
+    if dv_calculado == 11:
+        dv_calculado = '0'
+    elif dv_calculado == 10:
+        dv_calculado = 'K'
+    else:
+        dv_calculado = str(dv_calculado)
+    
+    return dv == dv_calculado
+
+
+def panel_login(request):
+    """Vista de login para el panel de administración"""
+    if request.user.is_authenticated:
+        return redirect('admin_dashboard')
+    
+    if request.method == 'POST':
+        rut = request.POST.get('rut', '').strip()
+        password = request.POST.get('password', '')
+        
+        # Validar RUT chileno
+        if not validar_rut_chileno(rut):
+            messages.error(request, 'El RUT ingresado no es válido.')
+            return render(request, 'panel/login.html', {'rut': rut})
+        
+        # Formatear RUT (quitar puntos y guiones para buscar)
+        rut_limpio = rut.replace(".", "").replace("-", "").upper()
+        
+        # Buscar usuario
+        try:
+            usuario = Usuario.objects.get(rut=rut_limpio)
+            
+            # Verificar si es admin
+            if not usuario.admin:
+                messages.error(request, 'No tienes permisos para acceder al panel.')
+                return render(request, 'panel/login.html', {'rut': rut})
+            
+            # Verificar contraseña
+            if usuario.check_password(password):
+                login(request, usuario)
+                messages.success(request, f'Bienvenido, {usuario.nombre}!')
+                return redirect('admin_dashboard')
+            else:
+                messages.error(request, 'Contraseña incorrecta.')
+        except Usuario.DoesNotExist:
+            messages.error(request, 'Usuario no encontrado.')
+        
+        return render(request, 'panel/login.html', {'rut': rut})
+    
+    return render(request, 'panel/login.html')
+
+
+def panel_logout(request):
+    """Cerrar sesión"""
+    logout(request)
+    messages.info(request, 'Has cerrado sesión correctamente.')
+    return redirect('home')

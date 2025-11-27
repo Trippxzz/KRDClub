@@ -58,6 +58,8 @@ urlpatterns = [
     path('panel/productos/', views.admin_productos, name='admin_productos'),
     path('panel/ventas/', views.admin_ventas, name='admin_ventas'),
     path('panel/compras/', views.admin_compras, name='admin_compras'),
+    path('panel/login/', views.panel_login, name='panel_login'),
+    path('panel/logout/', views.panel_logout, name='panel_logout'),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
