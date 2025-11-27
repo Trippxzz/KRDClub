@@ -1,0 +1,253 @@
+/* =========================================
+   Carrito de Compras - Estilos específicos
+   ========================================= */
+
+/* Tabla de productos */
+.carrito-tabla {
+    width: 100%;
+    background-color: #f9fafb;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+
+.carrito-tabla thead {
+    background-color: #000;
+    color: #fff;
+}
+
+.carrito-tabla th {
+    padding: 1rem 1.5rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+}
+
+.carrito-tabla th:first-child {
+    text-align: left;
+}
+
+.carrito-tabla th:nth-child(2),
+.carrito-tabla th:last-child {
+    text-align: center;
+}
+
+.carrito-tabla th:nth-child(3),
+.carrito-tabla th:nth-child(4) {
+    text-align: right;
+}
+
+.carrito-tabla tbody tr {
+    border-bottom: 1px solid #e5e7eb;
+    transition: background-color 0.2s;
+}
+
+.carrito-tabla tbody tr:hover {
+    background-color: #f3f4f6;
+}
+
+.carrito-tabla td {
+    padding: 1.5rem;
+}
+
+/* Nombre del producto */
+.carrito-producto-nombre {
+    font-weight: 600;
+    color: #111827;
+}
+
+/* Cantidad badge */
+.carrito-cantidad {
+    display: inline-block;
+    background-color: #e5e7eb;
+    color: #111827;
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+/* Precios */
+.carrito-precio {
+    font-weight: 600;
+    color: #111827;
+}
+
+.carrito-subtotal {
+    font-weight: 700;
+    color: #000;
+    font-size: 1.125rem;
+}
+
+/* Botón eliminar */
+.carrito-btn-eliminar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #dc2626;
+    color: #fff;
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.carrito-btn-eliminar:hover {
+    background-color: #b91c1c;
+}
+
+/* Resumen de compra */
+.carrito-resumen {
+    background-color: #f9fafb;
+    border-radius: 0.5rem;
+    padding: 2rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 6rem;
+}
+
+.carrito-resumen h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #000;
+    margin-bottom: 1.5rem;
+    letter-spacing: 0.15em;
+}
+
+.carrito-resumen-linea {
+    display: flex;
+    justify-content: space-between;
+    color: #374151;
+    margin-bottom: 1rem;
+}
+
+.carrito-envio-gratis {
+    color: #059669;
+    font-weight: 600;
+}
+
+.carrito-resumen-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 2rem 0;
+}
+
+.carrito-resumen-total span:first-child {
+    font-weight: 700;
+    color: #000;
+}
+
+.carrito-total-precio {
+    font-size: 1.875rem;
+    font-weight: 700;
+    color: #000;
+}
+
+.carrito-btn-pagar {
+    display: block;
+    width: 100%;
+    background-color: #000;
+    color: #fff;
+    padding: 1rem 2rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-align: center;
+    font-size: 0.875rem;
+    border-radius: 0.25rem;
+    transition: background-color 0.2s;
+}
+
+.carrito-btn-pagar:hover {
+    background-color: #1f2937;
+}
+
+.carrito-seguridad {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e5e7eb;
+    text-align: center;
+}
+
+.carrito-seguridad p {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-bottom: 0.5rem;
+}
+
+/* Carrito vacío */
+.carrito-vacio {
+    text-align: center;
+    padding: 5rem 0;
+}
+
+.carrito-vacio-icon {
+    font-size: 4rem;
+    color: #d1d5db;
+    margin-bottom: 2rem;
+}
+
+.carrito-vacio h2 {
+    font-size: 1.875rem;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 1rem;
+}
+
+.carrito-vacio p {
+    font-size: 1.125rem;
+    color: #6b7280;
+    margin-bottom: 2rem;
+}
+
+/* Mensajes de alerta */
+.carrito-mensaje {
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.carrito-mensaje.error {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+.carrito-mensaje.success {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+/* Nota informativa */
+.carrito-nota {
+    padding: 1rem;
+    background-color: #fef3c7;
+    border: 1px solid #fcd34d;
+    border-radius: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.carrito-nota p {
+    font-size: 0.875rem;
+    color: #92400e;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .carrito-resumen {
+        position: static;
+    }
+}
+
+@media (max-width: 768px) {
+    .carrito-tabla th,
+    .carrito-tabla td {
+        padding: 0.75rem;
+        font-size: 0.875rem;
+    }
+    
+    .carrito-total-precio {
+        font-size: 1.5rem;
+    }
+}

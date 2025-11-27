@@ -120,6 +120,14 @@ document.addEventListener('DOMContentLoaded', function() {
           precio: row.querySelector(".precio-input").value
         });
       });
+      
+      // Validar que haya al menos 1 producto
+      if (productos.length === 0) {
+        e.preventDefault();
+        alert("Debe agregar al menos 1 producto para guardar la compra.");
+        return false;
+      }
+      
       productosDataInput.value = JSON.stringify(productos);
     });
   }
