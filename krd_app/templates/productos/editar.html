@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Editar {{ prod.n_producto }} - KRD Club{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/forms.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto px-6 py-20">
+    <!-- Header -->
+    <div class="mb-12">
+        <a href="{% url 'listar_productos' %}" class="text-gray-600 hover:text-black transition text-sm font-medium mb-6 inline-block">
+            ← Volver al catálogo
+        </a>
+        <p class="text-gray-600 text-sm tracking-[0.3em] mb-3 uppercase">Editar Producto</p>
+        <h1 class="text-4xl font-bold text-black luxury-text mb-4">{{ prod.n_producto }}</h1>
+        <div class="w-16 h-1 bg-black"></div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+        <!-- Formulario -->
+        <div class="lg:col-span-2">
+            <div class="form-container mb-8">
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <h2 class="form-section-title">Información</h2>
+                    {{ form_producto.as_p }}
+                    
+                    <div class="form-section mt-6 pt-6">
+                        <label class="form-label">Imágenes nuevas:</label>
+                        <input type="file" name="imagenes" id="id_imagenes" multiple accept="image/*" class="form-input">
+                    </div>
+
+                    <input type="hidden" name="vehiculos_ids" id="vehiculos_ids">
+
+                    <div class="form-buttons">
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-save"></i> Guardar Cambios
+                        </button>
+                        <a href="{% url 'listar_productos' %}" class="btn-secondary">
+                            Cancelar
+                        </a>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Imágenes actuales -->
+            <div class="form-container">
+                <h3 class="form-section-title">Imágenes Actuales</h3>
+                {% if imgs %}
+                    <div class="images-grid">
+                        {% for img in imgs %}
+                        <div class="image-card">
+                            <img src="{{ img.imagen.url }}" alt="Imagen">
+                            <div class="image-card-actions">
+                                <form method="POST" action="{% url 'cambiar_principal' img.id %}" class="flex items-center gap-2">
+                                    {% csrf_token %}
+                                    <input type="radio" name="principal_{{ img.id }}" {% if img.es_principal %}checked{% endif %} onchange="this.form.submit()"> 
+                                    <span>Principal</span>
+                                </form>
+                                <form method="POST" action="{% url 'eliminar_imagen' img.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" onclick="return confirm('¿Eliminar esta imagen?')" class="btn-danger btn-small">
+                                        <i class="fas fa-trash"></i> Eliminar
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-gray-600">No hay imágenes para este producto.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Sidebar: Vehículos -->
+        <div>
+            <div class="sidebar-card">
+                <h3>Aplicaciones</h3>
+                
+                {% if vehiculos.exists %}
+                    <div class="mb-6">
+                        <label for="vehiculo-select" class="form-label">Vehículos:</label>
+                        <select id="vehiculo-select" class="form-input">
+                            {% for v in vehiculos %}
+                                <option value="{{ v.id }}">{{ v.marca }} {{ v.modelo }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="button" id="add-vehiculo" class="btn-primary mt-3" style="flex: none; width: 100%;">
+                            + Agregar
+                        </button>
+                    </div>
+
+                    <table class="selection-table">
+                        <thead>
+                            <tr>
+                                <th>Vehículo</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="vehiculos-seleccionados-body">
+                        </tbody>
+                    </table>
+
+                    <script id="vehiculos-iniciales-data" type="application/json">{{ vehiculos_asociados_json|safe }}</script>
+                {% else %}
+                    <p class="text-gray-600 text-sm">No hay vehículos disponibles. Crea algunos primero.</p>
+                {% endif %}
+            </div>
+
+            <!-- Eliminar Producto -->
+            <div class="sidebar-card">
+                <form method="POST" action="{% url 'eliminar_producto' prod.id_producto %}">
+                    {% csrf_token %}
+                    <button type="submit" onclick="return confirm('¿Está seguro de que desea eliminar este producto?')" class="btn-danger">
+                        <i class="fas fa-trash"></i> Eliminar Producto
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/forms.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Inicializar selector de vehículos
+    new VehicleSelector({
+        selectId: 'vehiculo-select',
+        addBtnId: 'add-vehiculo',
+        tableBodyId: 'vehiculos-seleccionados-body',
+        inputId: 'vehiculos_ids',
+        initialDataId: 'vehiculos-iniciales-data'
+    });
+});
+</script>
+{% endblock %}

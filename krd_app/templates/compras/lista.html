@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Listado de Compras - KRD Club{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/forms.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-6 py-20">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-16">
+        <div>
+            <p class="text-gray-600 text-sm tracking-[0.3em] mb-3 uppercase">Gestión</p>
+            <h1 class="text-5xl font-bold text-black luxury-text mb-4">Listado de Compras</h1>
+            <div class="w-16 h-1 bg-black"></div>
+        </div>
+        <a href="{% url 'crear_compra' %}" class="mt-8 md:mt-0 inline-flex items-center px-8 py-4 bg-black text-white font-medium tracking-wider hover:bg-gray-900 transition text-sm rounded">
+            <i class="fas fa-plus mr-2"></i> Nueva Compra
+        </a>
+    </div>
+
+    <!-- Tabla de Compras -->
+    <div class="form-container">
+        {% if compras %}
+            <table class="selection-table">
+                <thead>
+                    <tr>
+                        <th>Proveedor</th>
+                        <th>Fecha</th>
+                        <th>Folio</th>
+                        <th>Subtotal</th>
+                        <th>Documento</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for compra in compras %}
+                    <tr>
+                        <td class="font-semibold text-gray-900">{{ compra.proveedor }}</td>
+                        <td>{{ compra.fecha|date:"d/m/Y" }}</td>
+                        <td>{{ compra.folio }}</td>
+                        <td class="font-bold text-black">${{ compra.subtotalc }}</td>
+                        <td>
+                            {% if compra.pdf %}
+                                <a href="{{ compra.pdf.url }}" target="_blank" class="inline-block bg-black text-white px-4 py-2 rounded text-sm font-medium hover:bg-gray-900 transition">
+                                    <i class="fas fa-file-pdf mr-2"></i> Ver PDF
+                                </a>
+                            {% else %}
+                                <span class="text-gray-500 text-sm">No adjunto</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <!-- Sin Compras -->
+            <div class="text-center py-20">
+                <div class="mb-8">
+                    <i class="fas fa-inbox text-6xl text-gray-300"></i>
+                </div>
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">No hay compras registradas</h2>
+                <p class="text-lg text-gray-600 mb-8">Comienza creando tu primera compra.</p>
+                <a href="{% url 'crear_compra' %}" class="inline-block bg-black text-white px-8 py-4 font-medium tracking-wider hover:bg-gray-900 transition text-sm rounded">
+                    <i class="fas fa-plus mr-2"></i> Crear Compra
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

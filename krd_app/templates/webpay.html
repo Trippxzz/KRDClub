@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pago - Webpay</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+    <div class="max-w-md w-full mx-4">
+        <div class="bg-white rounded-xl shadow-xl p-8">
+            <!-- Logo Webpay -->
+            <div class="text-center mb-8">
+                <div class="inline-block bg-red-600 text-white px-6 py-3 rounded-lg mb-4">
+                    <span class="text-2xl font-bold">Webpay</span>
+                </div>
+                <p class="text-gray-600">Transbank - Pago Seguro</p>
+            </div>
+
+            <!-- Información de la compra -->
+            <div class="bg-gray-50 rounded-lg p-6 mb-6">
+                <div class="flex justify-between items-center mb-4">
+                    <span class="text-gray-600">Orden #</span>
+                    <span class="font-bold text-gray-900">{{ venta_id }}</span>
+                </div>
+                <div class="flex justify-between items-center text-xl">
+                    <span class="font-bold text-gray-900">Total a pagar:</span>
+                    <span class="font-bold text-green-600">${{ total }}</span>
+                </div>
+            </div>
+
+            {% if error %}
+            <!-- Error de conexión con Webpay -->
+            <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                <p class="text-sm text-red-800">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                    <strong>Error de conexión:</strong> No se pudo conectar con Webpay.
+                </p>
+                <p class="text-xs text-red-600 mt-2">{{ error }}</p>
+            </div>
+            {% endif %}
+
+            <!-- Modo de prueba -->
+            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+                <p class="text-sm text-yellow-800">
+                    <i class="fas fa-flask mr-2"></i>
+                    <strong>Modo de prueba:</strong> Usa las tarjetas de prueba de Transbank.
+                </p>
+                <div class="mt-3 text-xs text-yellow-700 space-y-1">
+                    <p><strong>Tarjeta VISA:</strong> 4051 8856 0044 6623</p>
+                    <p><strong>CVV:</strong> 123 | <strong>Exp:</strong> Cualquier fecha futura</p>
+                    <p><strong>RUT:</strong> 11.111.111-1 | <strong>Clave:</strong> 123</p>
+                </div>
+            </div>
+
+            <!-- Botones de acción -->
+            <div class="space-y-3">
+                <a href="{% url 'webpay_retorno' %}?token_ws=test_success" 
+                   class="w-full block bg-green-600 hover:bg-green-700 text-white px-6 py-4 rounded-lg font-bold text-center transition">
+                    <i class="fas fa-check-circle mr-2"></i>
+                    Simular Pago Exitoso
+                </a>
+                <a href="{% url 'webpay_retorno' %}?TBK_TOKEN=cancelled" 
+                   class="w-full block bg-gray-200 hover:bg-gray-300 text-gray-800 px-6 py-4 rounded-lg font-bold text-center transition">
+                    <i class="fas fa-times mr-2"></i>
+                    Simular Cancelación
+                </a>
+            </div>
+
+            <!-- Info seguridad -->
+            <div class="mt-6 pt-6 border-t border-gray-200 text-center">
+                <p class="text-xs text-gray-500">
+                    <i class="fas fa-lock mr-1"></i>
+                    Conexión segura encriptada
+                </p>
+            </div>
+        </div>
+
+        <!-- Powered by -->
+        <p class="text-center text-gray-400 text-xs mt-4">
+            Powered by Transbank
+        </p>
+    </div>
+</body>
+</html>
+{% endblock %}

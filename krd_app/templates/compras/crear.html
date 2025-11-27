@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Crear Compra - KRD Club{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/forms.css' %}">
+<!-- Flatpickr CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
+<style>
+    /* Estilo personalizado para Flatpickr */
+    .flatpickr-calendar {
+        border-radius: 12px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    }
+    .flatpickr-day.selected {
+        background: #000 !important;
+        border-color: #000 !important;
+    }
+    .flatpickr-day:hover {
+        background: #f3f4f6 !important;
+    }
+    .fecha-picker {
+        cursor: pointer;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        background-size: 20px;
+        padding-right: 40px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto px-6 py-20">
+    <!-- Header -->
+    <div class="mb-12">
+        <a href="{% url 'listar_compras' %}" class="text-gray-600 hover:text-black transition text-sm font-medium mb-6 inline-block">
+            ← Ver todas las compras
+        </a>
+        <p class="text-gray-600 text-sm tracking-[0.3em] mb-3 uppercase">Gestión</p>
+        <h1 class="text-4xl font-bold text-black luxury-text mb-4">Crear Compra</h1>
+        <div class="w-16 h-1 bg-black"></div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+        <!-- Formulario -->
+        <div class="lg:col-span-2">
+            <form method="post" enctype="multipart/form-data" class="form-container">
+                {% csrf_token %}
+                
+                <h2 class="form-section-title">Información de la Compra</h2>
+                {{ form.as_p }}
+
+                <!-- Tabla de Productos -->
+                <div class="form-section mt-8">
+                    <h3 class="form-section-title">Productos</h3>
+                    <div class="overflow-x-auto">
+                        <table class="selection-table">
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Cantidad</th>
+                                    <th>Precio</th>
+                                    <th>Subtotal</th>
+                                    <th>Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="productos-body">
+                            </tbody>
+                        </table>
+                    </div>
+                    <button type="button" id="add-product" class="btn-primary mt-4" style="flex: none;">
+                        + Agregar Producto
+                    </button>
+                </div>
+
+                <!-- Totales -->
+                <div class="form-section mt-8 pt-8 border-t-2 border-gray-200">
+                    <div class="space-y-3 max-w-sm ml-auto">
+                        <div class="flex justify-between text-gray-700">
+                            <span>Total Neto:</span>
+                            <span>$<span id="total-neto">0</span></span>
+                        </div>
+                        <div class="flex justify-between text-gray-700">
+                            <span>IVA (19%):</span>
+                            <span>$<span id="iva">0</span></span>
+                        </div>
+                        <div class="flex justify-between items-center border-t-2 border-gray-200 pt-3">
+                            <span class="font-bold text-black text-lg">Total Compra:</span>
+                            <span class="text-3xl font-bold text-black">$<span id="total-compra">0</span></span>
+                        </div>
+                    </div>
+                </div>
+
+                <input type="hidden" name="productos_data" id="productos_data">
+                
+                <div class="form-buttons mt-8">
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-save"></i> Guardar Compra
+                    </button>
+                    <a href="{% url 'listar_compras' %}" class="btn-secondary">
+                        Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Template para agregar filas de productos dinámicamente -->
+<template id="producto-row-template">
+    <tr>
+        <td class="px-4 py-3">
+            <select class="producto-select form-input" required>
+                {% for producto in productos %}
+                    <option value="{{ producto.id_producto }}">{{ producto.n_producto }}</option>
+                {% endfor %}
+            </select>
+        </td>
+        <td class="px-4 py-3"><input type="number" class="cantidad-input form-input text-center" min="1" value="1" required></td>
+        <td class="px-4 py-3"><input type="number" class="precio-input form-input text-right" min="0" value="0" required></td>
+        <td class="px-4 py-3 text-right font-semibold subtotal">0</td>
+        <td class="px-4 py-3 text-center">
+            <button type="button" class="btn-eliminar btn-danger btn-small">✕</button>
+        </td>
+    </tr>
+</template>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/compras.js' %}"></script>
+<!-- Flatpickr JS -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
+<script>
+    // Inicializar Flatpickr en el campo de fecha
+    flatpickr(".fecha-picker", {
+        locale: "es",
+        dateFormat: "Y-m-d",
+        altInput: true,
+        altFormat: "d \\de F, Y",
+        maxDate: "today",
+        disableMobile: true,
+        animate: true,
+        defaultDate: new Date()
+    });
+
+    // Validar que haya al menos 1 producto antes de enviar
+    document.querySelector("form").addEventListener("submit", function(e) {
+        const tbody = document.getElementById("productos-body");
+        const filas = tbody.querySelectorAll("tr");
+        
+        if (filas.length === 0) {
+            e.preventDefault();
+            alert("⚠️ Debe agregar al menos 1 producto para guardar la compra.");
+            return false;
+        }
+    });
+</script>
+{% endblock %}

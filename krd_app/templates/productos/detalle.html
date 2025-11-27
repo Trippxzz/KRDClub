@@ -1,0 +1,253 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ prod.n_producto }} - KRD Club{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/producto.css' %}">
+<link rel="stylesheet" href="{% static 'css/visor360.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-6 py-20">
+    <!-- Breadcrumb -->
+    <div class="mb-8">
+        <a href="{% url 'listar_productos' %}" class="text-gray-600 hover:text-black transition text-sm font-medium">
+            <i class="fas fa-arrow-left mr-2"></i>Volver al catálogo
+        </a>
+    </div>
+
+    <!-- Grid Producto -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
+        <!-- Imagen Producto -->
+        <div>
+            {% if sprite_360_data %}
+                <!-- Visor 360° con Sprite (1 sola petición HTTP) -->
+                <div class="visor-360-wrapper">
+                    <div id="visor-360-container" class="visor-360">
+                        <div class="loading-spinner">
+                            <div class="spinner"></div>
+                            <p>Cargando vista 360°...</p>
+                        </div>
+                        <div class="imagen-viewer"></div>
+                    </div>
+                    <div class="controles-360 text-center mt-4 text-gray-600 text-sm">
+                        <p>🖱️ Arrastra para rotar la vista 360°</p>
+                    </div>
+                </div>
+
+                <!-- Data JSON para el visor sprite (oculto) -->
+                <div id="sprite-360-data" 
+                     data-sprite='{{ sprite_360_data|safe }}' 
+                     style="display:none;">
+                </div>
+            {% else %}
+                <!-- Galería normal de imágenes -->
+                <div class="bg-gray-100 rounded-lg overflow-hidden shadow-lg mb-6">
+                    {% if imgs %}
+                        {% with principal=imgs|dictsortreversed:"es_principal" %}
+                            {% for img in principal %}
+                            <img src="{{ img.imagen.url }}" alt="{{ prod.n_producto }}" id="imagen-principal" class="producto-imagen-principal">
+                            {% endfor %}
+                        {% endwith %}
+                    {% else %}
+                        <div class="w-full h-96 flex items-center justify-center bg-gray-200">
+                            <div class="text-center">
+                                <i class="fas fa-image text-6xl text-gray-400 mb-4"></i>
+                                <p class="text-gray-600">Imagen no disponible</p>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Imágenes Thumbnails -->
+                {% if imgs %}
+                <div class="producto-thumbnails">
+                    {% for img in imgs %}
+                    <button onclick="cambiarImagenPrincipal('{{ img.imagen.url }}')" 
+                            data-url="{{ img.imagen.url }}"
+                            class="producto-thumbnail">
+                        <img src="{{ img.imagen.url }}" alt="Thumbnail">
+                    </button>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            {% endif %}
+        </div>
+
+        <!-- Información Producto -->
+        <div>
+            <h1 class="text-4xl md:text-5xl font-bold text-black mb-6">{{ prod.n_producto }}</h1>
+            
+            <!-- Precio -->
+            <div class="mb-8">
+                <p class="text-gray-600 text-sm tracking-[0.2em] uppercase mb-2">Precio</p>
+                <h2 class="producto-precio">${{ prod.precio|floatformat:0 }}</h2>
+            </div>
+
+            <!-- Stock -->
+            <div class="mb-8">
+                {% if prod.stock > 0 %}
+                    <span class="producto-stock en-stock">
+                        <i class="fas fa-check-circle mr-2"></i>En Stock: {{ prod.stock }} unidades
+                    </span>
+                {% else %}
+                    <span class="producto-stock sin-stock">
+                        <i class="fas fa-times-circle mr-2"></i>Sin Stock
+                    </span>
+                {% endif %}
+            </div>
+
+            <!-- Descripción -->
+            <div class="mb-8 pb-8 border-b border-gray-200">
+                <p class="text-gray-700 text-lg leading-relaxed font-light">{{ prod.desc_producto|linebreaksbr }}</p>
+            </div>
+
+            <!-- Especificaciones -->
+            {% if prod.aro or prod.ancho or prod.apernadura or prod.offset or prod.centro_llanta %}
+            <div class="mb-8 pb-8 border-b border-gray-200">
+                <h3 class="text-xl font-bold text-black mb-4">Especificaciones</h3>
+                <div class="especificaciones-grid">
+                    {% if prod.aro %}
+                    <div class="especificacion-item">
+                        <p class="especificacion-label">Aro</p>
+                        <p class="especificacion-value">{{ prod.aro }}</p>
+                    </div>
+                    {% endif %}
+                    {% if prod.ancho %}
+                    <div class="especificacion-item">
+                        <p class="especificacion-label">Ancho</p>
+                        <p class="especificacion-value">{{ prod.ancho }}</p>
+                    </div>
+                    {% endif %}
+                    {% if prod.apernadura %}
+                    <div class="especificacion-item">
+                        <p class="especificacion-label">Apernadura</p>
+                        <p class="especificacion-value">{{ prod.apernadura }}</p>
+                    </div>
+                    {% endif %}
+                    {% if prod.offset %}
+                    <div class="especificacion-item">
+                        <p class="especificacion-label">Offset</p>
+                        <p class="especificacion-value">{{ prod.offset }}</p>
+                    </div>
+                    {% endif %}
+                    {% if prod.centro_llanta %}
+                    <div class="especificacion-item">
+                        <p class="especificacion-label">Centro de llanta</p>
+                        <p class="especificacion-value">{{ prod.centro_llanta }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Agregar al Carrito -->
+            {% if prod.stock > 0 %}
+            <div class="mb-8">
+                <form method="GET" action="{% url 'agregar_al_carrito' prod.id_producto %}" id="form-agregar-carrito">
+                    <div class="mb-4">
+                        <label for="cantidad" class="block text-sm font-medium text-gray-700 mb-2">Cantidad:</label>
+                        <div class="cantidad-selector">
+                            <button type="button" onclick="decrementarCantidad()" class="cantidad-btn">−</button>
+                            <input type="number" 
+                                   name="cantidad" 
+                                   id="cantidad" 
+                                   class="cantidad-input" 
+                                   value="1" 
+                                   min="1" 
+                                   max="{{ prod.stock }}">
+                            <button type="button" onclick="incrementarCantidad()" class="cantidad-btn">+</button>
+                        </div>
+                    </div>
+                    <div class="nota-info mb-6">
+                        <p>
+                            <i class="fas fa-info-circle mr-2"></i>
+                            <strong>Nota:</strong> Las llantas se venden en juegos de 4 unidades (múltiplos de 4).
+                        </p>
+                    </div>
+                    <button type="submit" class="w-full bg-black text-white px-8 py-4 font-medium tracking-wider hover:bg-gray-900 transition text-center text-sm rounded">
+                        <i class="fas fa-shopping-cart mr-2"></i>AGREGAR AL CARRITO
+                    </button>
+                </form>
+            </div>
+            {% else %}
+            <div class="mb-8">
+                <button disabled class="w-full bg-gray-400 text-gray-200 px-8 py-4 font-medium tracking-wider cursor-not-allowed text-center text-sm rounded">
+                    PRODUCTO NO DISPONIBLE
+                </button>
+            </div>
+            {% endif %}
+
+            <!-- Mensaje de éxito -->
+            {% if request.GET.mensaje == 'ok' %}
+            <div class="bg-green-100 border-l-4 border-green-600 text-green-800 p-4 rounded mb-8">
+                <p class="font-semibold"><i class="fas fa-check-circle mr-2"></i>Producto agregado al carrito</p>
+            </div>
+            {% endif %}
+
+            <!-- Vehículos Compatibles -->
+            {% if vehiculos_compatibles %}
+            <div class="mb-8 pb-8 border-b border-gray-200">
+                <h3 class="text-xl font-bold text-black mb-4">
+                    <i class="fas fa-car mr-2"></i>Vehículos Compatibles
+                </h3>
+                <div class="vehiculos-tabla">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Marca</th>
+                                <th>Modelo</th>
+                                <th>Motor</th>
+                                <th>Año</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for pv in vehiculos_compatibles %}
+                            <tr>
+                                <td>{{ pv.vehiculo.marca }}</td>
+                                <td>{{ pv.vehiculo.modelo }}</td>
+                                <td>{{ pv.vehiculo.cilindrada }}L</td>
+                                <td>{{ pv.vehiculo.anio }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Beneficios -->
+            <div class="beneficios-lista">
+                <p class="beneficio-item"><i class="fas fa-truck"></i>Envío gratis en compras mayores a $500.000</p>
+                <p class="beneficio-item"><i class="fas fa-undo"></i>Devoluciones sin costo en 30 días</p>
+                <p class="beneficio-item"><i class="fas fa-shield-alt"></i>Garantía de satisfacción 100%</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Botones de navegación -->
+    <div class="border-t border-gray-200 pt-8 flex flex-col sm:flex-row gap-4">
+        <a href="{% url 'listar_productos' %}" class="flex-1 bg-white border-2 border-black text-black px-8 py-3 text-center font-medium tracking-wider hover:bg-black hover:text-white transition text-sm rounded">
+            ← Volver al Catálogo
+        </a>
+    </div>
+</div>
+
+<!-- Notificación de éxito (flotante) -->
+<div id="notificacion-carrito" class="notificacion-carrito">
+    <i class="fas fa-check-circle text-lg"></i>
+    <span>Producto agregado al carrito</span>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/visor360.js' %}"></script>
+<script src="{% static 'js/producto.js' %}"></script>
+<script>
+    // Inicializar módulo de producto con el stock actual
+    document.addEventListener('DOMContentLoaded', function(){
+        initProducto({{ prod.stock|default:0 }});
+    });
+</script>
+{% endblock %}

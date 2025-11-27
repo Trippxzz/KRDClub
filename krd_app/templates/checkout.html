@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - KRD Club</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .luxury-text { letter-spacing: 0.15em; }
+        .luxury-shadow { box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1); }
+    </style>
+</head>
+<body class="bg-white">
+    <div class="max-w-6xl mx-auto px-6 py-20">
+        <!-- Header -->
+        <div class="mb-12">
+            <a href="{% url 'ver_carrito' %}" class="text-gray-600 hover:text-black transition text-sm font-medium mb-6 inline-block">← Volver al carrito</a>
+            <p class="text-gray-600 text-sm tracking-[0.3em] mb-3 uppercase">Finalizar Compra</p>
+            <h1 class="text-4xl font-bold text-black luxury-text mb-4">Checkout</h1>
+            <div class="w-16 h-1 bg-black"></div>
+        </div>
+
+        <!-- Mensajes -->
+        {% if messages %}
+        <div class="mb-6">
+            {% for message in messages %}
+            <div class="p-4 rounded-lg {% if message.tags == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+            <!-- Formulario de Datos -->
+            <div class="lg:col-span-2">
+                <form method="POST" class="bg-gray-50 rounded-lg p-8 luxury-shadow">
+                    {% csrf_token %}
+                    
+                    <h2 class="text-2xl font-bold text-black mb-6">Datos del Cliente</h2>
+                    
+                    <!-- Info sobre autocompletado -->
+                    <div class="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                        <p class="text-sm text-blue-800">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            Si ya has comprado antes, ingresa tu RUT y tus datos se completarán automáticamente.
+                        </p>
+                    </div>
+                    
+                    <!-- RUT -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-bold text-black mb-2">RUT <span class="text-red-600">*</span></label>
+                        <div class="flex gap-2">
+                            <input type="text" name="rut" id="rut" 
+                                   value="{{ datos.rut|default:'' }}"
+                                   placeholder="12345678-9" 
+                                   class="flex-1 px-4 py-3 border-2 border-gray-300 rounded focus:border-black focus:outline-none"
+                                   required>
+                            <button type="button" id="btn-buscar-rut" 
+                                    class="px-4 py-3 bg-gray-800 text-white rounded hover:bg-black transition">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                        <p id="rut-status" class="text-sm mt-1 hidden"></p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Nombre -->
+                        <div>
+                            <label class="block text-sm font-bold text-black mb-2">Nombre <span class="text-red-600">*</span></label>
+                            <input type="text" name="nombre" id="nombre" 
+                                   value="{{ datos.nombre|default:'' }}"
+                                   placeholder="Juan"
+                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded focus:border-black focus:outline-none"
+                                   required>
+                        </div>
+
+                        <!-- Apellido -->
+                        <div>
+                            <label class="block text-sm font-bold text-black mb-2">Apellido <span class="text-red-600">*</span></label>
+                            <input type="text" name="apellido" id="apellido" 
+                                   value="{{ datos.apellido|default:'' }}"
+                                   placeholder="Pérez"
+                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded focus:border-black focus:outline-none"
+                                   required>
+                        </div>
+                    </div>
+
+                    <!-- Email -->
+                    <div class="mt-6">
+                        <label class="block text-sm font-bold text-black mb-2">Email <span class="text-red-600">*</span></label>
+                        <input type="email" name="email" id="email" 
+                               value="{{ datos.email|default:'' }}"
+                               placeholder="correo@ejemplo.com"
+                               class="w-full px-4 py-3 border-2 border-gray-300 rounded focus:border-black focus:outline-none"
+                               required>
+                    </div>
+
+                    <!-- Teléfono -->
+                    <div class="mt-6">
+                        <label class="block text-sm font-bold text-black mb-2">Teléfono <span class="text-red-600">*</span></label>
+                        <input type="tel" name="telefono" id="telefono" 
+                               value="{{ datos.telefono|default:'' }}"
+                               placeholder="912345678"
+                               class="w-full px-4 py-3 border-2 border-gray-300 rounded focus:border-black focus:outline-none"
+                               required>
+                    </div>
+
+                    <!-- Dirección -->
+                    <div class="mt-6">
+                        <label class="block text-sm font-bold text-black mb-2">Dirección de Envío <span class="text-red-600">*</span></label>
+                        <input type="text" name="direccion" id="direccion" 
+                               value="{{ datos.direccion|default:'' }}"
+                               placeholder="Av. Ejemplo 123, Comuna, Ciudad"
+                               class="w-full px-4 py-3 border-2 border-gray-300 rounded focus:border-black focus:outline-none"
+                               required>
+                    </div>
+
+                    <!-- Botón de Pago -->
+                    <div class="mt-8 pt-6 border-t border-gray-200">
+                        <button type="submit" class="w-full bg-black text-white px-8 py-4 font-medium tracking-wider hover:bg-gray-900 transition text-sm rounded flex items-center justify-center gap-3">
+                            <i class="fas fa-lock"></i>
+                            PAGAR CON WEBPAY - ${{ total }}
+                        </button>
+                        <p class="text-center text-xs text-gray-500 mt-3">
+                            <i class="fas fa-shield-alt mr-1"></i>
+                            Pago seguro procesado por Transbank
+                        </p>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Resumen del Pedido -->
+            <div class="lg:col-span-1">
+                <div class="bg-gray-50 rounded-lg p-8 luxury-shadow sticky top-24">
+                    <h3 class="text-2xl font-bold text-black mb-6 luxury-text">Tu Pedido</h3>
+                    
+                    <div class="space-y-4 mb-6 pb-6 border-b border-gray-200">
+                        {% for id, item in carrito.items %}
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">
+                                <p class="font-semibold text-gray-900 text-sm">{{ item.nombre }}</p>
+                                <p class="text-xs text-gray-500">Cantidad: {{ item.cantidad }} unid.</p>
+                            </div>
+                            <p class="font-bold text-gray-900">${{ item.subtotal }}</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="space-y-3 mb-6 pb-6 border-b border-gray-200">
+                        <div class="flex justify-between text-gray-700">
+                            <span>Subtotal</span>
+                            <span>${{ total }}</span>
+                        </div>
+                        <div class="flex justify-between text-gray-700">
+                            <span>Envío</span>
+                            <span class="text-green-600 font-semibold">Gratis</span>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-black text-lg">Total:</span>
+                        <span class="text-3xl font-bold text-black">${{ total }}</span>
+                    </div>
+
+                    <!-- Info de productos -->
+                    <div class="mt-6 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                        <p class="text-xs text-yellow-800">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            <strong>Nota:</strong> Las llantas se venden en juegos de 4 unidades.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const btnBuscar = document.getElementById('btn-buscar-rut');
+        const rutInput = document.getElementById('rut');
+        const rutStatus = document.getElementById('rut-status');
+        
+        btnBuscar.addEventListener('click', buscarPorRut);
+        rutInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                buscarPorRut();
+            }
+        });
+        
+        function buscarPorRut() {
+            const rut = rutInput.value.trim();
+            if (!rut) {
+                mostrarStatus('Ingresa un RUT', 'error');
+                return;
+            }
+            
+            btnBuscar.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            btnBuscar.disabled = true;
+            
+            fetch(`{% url 'buscar_usuario_rut' %}?rut=${encodeURIComponent(rut)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.found) {
+                        document.getElementById('nombre').value = data.nombre;
+                        document.getElementById('apellido').value = data.apellido;
+                        document.getElementById('email').value = data.email;
+                        document.getElementById('telefono').value = data.telefono;
+                        document.getElementById('direccion').value = data.direccion;
+                        mostrarStatus('✓ Datos encontrados y completados', 'success');
+                    } else {
+                        mostrarStatus('Usuario nuevo - completa tus datos', 'info');
+                        // Limpiar campos
+                        document.getElementById('nombre').value = '';
+                        document.getElementById('apellido').value = '';
+                        document.getElementById('email').value = '';
+                        document.getElementById('telefono').value = '';
+                        document.getElementById('direccion').value = '';
+                    }
+                })
+                .catch(error => {
+                    mostrarStatus('Error al buscar', 'error');
+                })
+                .finally(() => {
+                    btnBuscar.innerHTML = '<i class="fas fa-search"></i>';
+                    btnBuscar.disabled = false;
+                });
+        }
+        
+        function mostrarStatus(mensaje, tipo) {
+            rutStatus.classList.remove('hidden', 'text-green-600', 'text-red-600', 'text-blue-600');
+            if (tipo === 'success') rutStatus.classList.add('text-green-600');
+            else if (tipo === 'error') rutStatus.classList.add('text-red-600');
+            else rutStatus.classList.add('text-blue-600');
+            rutStatus.textContent = mensaje;
+        }
+    });
+    </script>
+</body>
+</html>
+{% endblock %}

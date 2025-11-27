@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Gestión de Vehículos - KRD Club{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/forms.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-6 py-20">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-16">
+        <div>
+            <p class="text-gray-600 text-sm tracking-[0.3em] mb-3 uppercase">Inventario</p>
+            <h1 class="text-5xl font-bold text-black luxury-text mb-4">Gestión de Vehículos</h1>
+            <div class="w-16 h-1 bg-black"></div>
+        </div>
+        <a href="{% url 'agregar_vehiculos' %}" class="mt-8 md:mt-0 inline-flex items-center px-8 py-4 bg-black text-white font-medium tracking-wider hover:bg-gray-900 transition text-sm rounded">
+            <i class="fas fa-plus mr-2"></i> Agregar Vehículo
+        </a>
+    </div>
+
+    <!-- Lista de Vehículos -->
+    <div class="form-container">
+        {% if vehiculos %}
+            <table class="selection-table">
+                <thead>
+                    <tr>
+                        <th>Marca</th>
+                        <th>Modelo</th>
+                        <th>Cilindrada</th>
+                        <th>Año</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for v in vehiculos %}
+                    <tr>
+                        <td class="font-semibold text-gray-900">{{ v.marca }}</td>
+                        <td>{{ v.modelo }}</td>
+                        <td>{{ v.cilindrada }}L</td>
+                        <td>{{ v.anio }}</td>
+                        <td>
+                            <form action="{% url 'eliminar_vehiculo' v.pk %}" method="post" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit" onclick="return confirm('¿Está seguro de que desea eliminar este vehículo?')" class="btn-danger btn-small">
+                                    <i class="fas fa-trash"></i> Eliminar
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <!-- Sin vehículos -->
+            <div class="text-center py-20">
+                <div class="mb-8">
+                    <i class="fas fa-car text-6xl text-gray-300"></i>
+                </div>
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">No hay vehículos registrados</h2>
+                <p class="text-lg text-gray-600 mb-8">Comienza agregando los vehículos que utilizarán tus productos.</p>
+                <a href="{% url 'agregar_vehiculos' %}" class="inline-block bg-black text-white px-8 py-4 font-medium tracking-wider hover:bg-gray-900 transition text-sm rounded">
+                    <i class="fas fa-plus mr-2"></i> Agregar Primer Vehículo
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

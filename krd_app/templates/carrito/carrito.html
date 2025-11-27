@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Carrito de Compras - KRD Club{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/carrito.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-6 py-20">
+    <!-- Header -->
+    <div class="mb-12">
+        <p class="text-gray-600 text-sm tracking-[0.3em] mb-3 uppercase">Tienda Online</p>
+        <h1 class="text-5xl font-bold text-black luxury-text mb-4">Carrito de Compras</h1>
+        <div class="w-16 h-1 bg-black"></div>
+    </div>
+
+    <!-- Mensajes -->
+    {% if messages %}
+    <div class="mb-6">
+        {% for message in messages %}
+        <div class="carrito-mensaje {% if message.tags == 'error' %}error{% else %}success{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if carrito %}
+        <!-- Tabla de Productos -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+            <div class="lg:col-span-2">
+                <div class="carrito-tabla">
+                    <table class="w-full">
+                        <thead>
+                            <tr>
+                                <th class="text-left px-6 py-4">Producto</th>
+                                <th class="text-center px-6 py-4">Cantidad</th>
+                                <th class="text-right px-6 py-4">Precio Unit.</th>
+                                <th class="text-right px-6 py-4">Subtotal</th>
+                                <th class="text-center px-6 py-4">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for id, item in carrito.items %}
+                            <tr>
+                                <td class="px-6 py-6">
+                                    <p class="carrito-producto-nombre">{{ item.nombre }}</p>
+                                </td>
+                                <td class="px-6 py-6 text-center">
+                                    <span class="carrito-cantidad">
+                                        {{ item.cantidad }} unid.
+                                    </span>
+                                </td>
+                                <td class="px-6 py-6 text-right carrito-precio">${{ item.precio }}</td>
+                                <td class="px-6 py-6 text-right carrito-subtotal">${{ item.subtotal }}</td>
+                                <td class="px-6 py-6 text-center">
+                                    <a href="{% url 'remover_del_carrito' id %}" class="carrito-btn-eliminar">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Continuar Comprando -->
+                <div class="mt-8">
+                    <a href="{% url 'listar_productos' %}" class="inline-block bg-white border-2 border-black text-black px-8 py-3 font-medium tracking-wider hover:bg-black hover:text-white transition text-sm">
+                        ← Continuar Comprando
+                    </a>
+                </div>
+            </div>
+
+            <!-- Resumen de Compra -->
+            <div class="lg:col-span-1">
+                <div class="carrito-resumen">
+                    <h3>Resumen</h3>
+                    
+                    <div class="space-y-4 mb-8 pb-8 border-b border-gray-200">
+                        <div class="carrito-resumen-linea">
+                            <span>Subtotal</span>
+                            <span>${{ total }}</span>
+                        </div>
+                        <div class="carrito-resumen-linea">
+                            <span>Envío</span>
+                            <span class="carrito-envio-gratis">Gratis</span>
+                        </div>
+                    </div>
+
+                    <div class="carrito-resumen-total">
+                        <span>Total:</span>
+                        <span class="carrito-total-precio">${{ total }}</span>
+                    </div>
+
+                    <a href="{% url 'procesar_compra' %}" class="carrito-btn-pagar">
+                        PROCESAR COMPRA
+                    </a>
+
+                    <div class="carrito-seguridad">
+                        <p><i class="fas fa-lock mr-1"></i> Pago seguro con Webpay</p>
+                        <p>✓ Garantía de satisfacción</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <!-- Carrito Vacío -->
+        <div class="carrito-vacio">
+            <div class="carrito-vacio-icon">
+                <i class="fas fa-shopping-bag"></i>
+            </div>
+            <h2>Tu carrito está vacío</h2>
+            <p>Descubre nuestra exclusiva colección de llantas premium.</p>
+            <a href="{% url 'listar_productos' %}" class="inline-block bg-black text-white px-8 py-4 font-medium tracking-wider hover:bg-gray-900 transition text-sm rounded">
+                EXPLORAR CATÁLOGO
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

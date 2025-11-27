@@ -1,0 +1,201 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block title %}Productos{% endblock %}
+{% block page_title %}Gestión de Productos{% endblock %}
+{% block page_subtitle %}Administra tu inventario de productos{% endblock %}
+
+{% block content %}
+<!-- Header Actions -->
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+    <div class="flex items-center gap-4">
+        <div class="relative">
+            <input type="text" id="buscar-producto" placeholder="Buscar producto..." 
+                   class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-64">
+            <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+        </div>
+        <select id="filtro-stock" class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500">
+            <option value="">Todos</option>
+            <option value="bajo">Bajo Stock (&lt;4)</option>
+            <option value="sin">Sin Stock</option>
+            <option value="disponible">Disponible</option>
+        </select>
+    </div>
+    <a href="{% url 'crear_producto' %}" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center">
+        <i class="fas fa-plus mr-2"></i>
+        Nuevo Producto
+    </a>
+</div>
+
+<!-- Products Table -->
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead class="bg-gray-50 border-b border-gray-200">
+                <tr>
+                    <th class="text-left px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Producto</th>
+                    <th class="text-left px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Especificaciones</th>
+                    <th class="text-center px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Stock</th>
+                    <th class="text-right px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Precio</th>
+                    <th class="text-center px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">360°</th>
+                    <th class="text-center px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Acciones</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                {% for prod in productos %}
+                <tr class="hover:bg-gray-50 transition producto-row" 
+                    data-nombre="{{ prod.n_producto|lower }}"
+                    data-stock="{{ prod.stock }}">
+                    <td class="px-6 py-4">
+                        <div class="flex items-center">
+                            {% if prod.imagen_principal %}
+                            <img src="{{ prod.imagen_principal.imagen.url }}" class="w-12 h-12 rounded-lg object-cover mr-4">
+                            {% else %}
+                            <div class="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center mr-4">
+                                <i class="fas fa-image text-gray-400"></i>
+                            </div>
+                            {% endif %}
+                            <div>
+                                <p class="font-medium text-gray-900">{{ prod.n_producto }}</p>
+                                <p class="text-sm text-gray-500">ID: {{ prod.id_producto|truncatechars:13 }}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="text-sm">
+                            <span class="inline-block bg-gray-100 px-2 py-1 rounded mr-1">Aro {{ prod.aro }}"</span>
+                            <span class="inline-block bg-gray-100 px-2 py-1 rounded mr-1">{{ prod.ancho }}</span>
+                            <span class="inline-block bg-gray-100 px-2 py-1 rounded">{{ prod.apernadura }}</span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        {% if prod.stock == 0 %}
+                        <span class="inline-block px-3 py-1 text-xs font-bold rounded-full bg-red-100 text-red-700">
+                            Sin stock
+                        </span>
+                        {% elif prod.stock < 5 %}
+                        <span class="inline-block px-3 py-1 text-xs font-bold rounded-full bg-yellow-100 text-yellow-700">
+                            {{ prod.stock }} unid.
+                        </span>
+                        {% else %}
+                        <span class="inline-block px-3 py-1 text-xs font-bold rounded-full bg-green-100 text-green-700">
+                            {{ prod.stock }} unid.
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                        <span class="font-bold text-gray-900">${{ prod.precio|floatformat:0 }}</span>
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        {% if prod.sprite_360 %}
+                        <span class="text-green-600"><i class="fas fa-check-circle"></i></span>
+                        {% else %}
+                        <span class="text-gray-300"><i class="fas fa-times-circle"></i></span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        <div class="flex justify-center space-x-2">
+                            <a href="{% url 'detproducto' prod.id_producto %}" 
+                               class="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition"
+                               title="Ver">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{% url 'editar_producto' prod.id_producto %}" 
+                               class="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition"
+                               title="Editar">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <button onclick="confirmarEliminar('{{ prod.id_producto }}', '{{ prod.n_producto }}')"
+                                    class="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
+                                    title="Eliminar">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="px-6 py-12 text-center text-gray-500">
+                        <i class="fas fa-box-open text-4xl mb-4 text-gray-300"></i>
+                        <p>No hay productos registrados</p>
+                        <a href="{% url 'crear_producto' %}" class="text-blue-600 hover:underline mt-2 inline-block">
+                            Crear primer producto
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Resumen -->
+<div class="mt-6 flex justify-between items-center text-sm text-gray-600">
+    <span>Mostrando {{ productos|length }} productos</span>
+    <span>Stock total: {{ stock_total }} unidades</span>
+</div>
+
+<!-- Modal Eliminar -->
+<div id="modal-eliminar" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-xl p-6 max-w-md w-full mx-4">
+        <div class="text-center">
+            <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-exclamation-triangle text-red-600 text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-gray-900 mb-2">¿Eliminar producto?</h3>
+            <p class="text-gray-600 mb-6">¿Estás seguro de eliminar "<span id="nombre-producto"></span>"? Esta acción no se puede deshacer.</p>
+            <div class="flex gap-4">
+                <button onclick="cerrarModal()" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                    Cancelar
+                </button>
+                <form id="form-eliminar" method="POST" class="flex-1">
+                    {% csrf_token %}
+                    <button type="submit" class="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
+                        Eliminar
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Búsqueda
+    document.getElementById('buscar-producto').addEventListener('input', filtrarProductos);
+    document.getElementById('filtro-stock').addEventListener('change', filtrarProductos);
+
+    function filtrarProductos() {
+        const busqueda = document.getElementById('buscar-producto').value.toLowerCase();
+        const filtroStock = document.getElementById('filtro-stock').value;
+        
+        document.querySelectorAll('.producto-row').forEach(row => {
+            const nombre = row.dataset.nombre;
+            const stock = parseInt(row.dataset.stock);
+            
+            let mostrar = nombre.includes(busqueda);
+            
+            if (mostrar && filtroStock) {
+                if (filtroStock === 'sin') mostrar = stock === 0;
+                else if (filtroStock === 'bajo') mostrar = stock > 0 && stock < 5;
+                else if (filtroStock === 'disponible') mostrar = stock >= 5;
+            }
+            
+            row.style.display = mostrar ? '' : 'none';
+        });
+    }
+
+    // Modal eliminar
+    function confirmarEliminar(id, nombre) {
+        document.getElementById('nombre-producto').textContent = nombre;
+        document.getElementById('form-eliminar').action = `/catalogo/${id}/eliminar/`;
+        document.getElementById('modal-eliminar').classList.remove('hidden');
+        document.getElementById('modal-eliminar').classList.add('flex');
+    }
+
+    function cerrarModal() {
+        document.getElementById('modal-eliminar').classList.add('hidden');
+        document.getElementById('modal-eliminar').classList.remove('flex');
+    }
+</script>
+{% endblock %}

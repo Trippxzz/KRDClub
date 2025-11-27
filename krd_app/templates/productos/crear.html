@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Crear Producto - KRD Club{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/forms.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-6 py-20">
+    <!-- Header -->
+    <div class="mb-12">
+        <a href="{% url 'listar_productos' %}" class="text-gray-600 hover:text-black transition text-sm font-medium mb-6 inline-block">
+            ← Volver al catálogo
+        </a>
+        <p class="text-gray-600 text-sm tracking-[0.3em] mb-3 uppercase">Crear Producto</p>
+        <h1 class="text-4xl font-bold text-black luxury-text mb-4">Nuevo Producto</h1>
+        <div class="w-16 h-1 bg-black"></div>
+    </div>
+
+    <!-- Notificación -->
+    <div id="notificacion-producto" class="form-notification success">
+        <i class="fas fa-check-circle"></i>
+        <span>Producto creado con éxito</span>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="form-notification show {% if message.tags == 'error' %}error{% else %}success{% endif %}">
+                <i class="fas {% if message.tags == 'error' %}fa-exclamation-circle{% else %}fa-check-circle{% endif %}"></i>
+                <span>{{ message }}</span>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Formulario -->
+    <div class="form-container">
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <!-- Sección: Información del Producto -->
+            <div class="form-section">
+                <h2 class="form-section-title">
+                    <i class="fas fa-info-circle"></i> Información del Producto
+                </h2>
+                <div class="space-y-6">
+                    {% for field in form_producto %}
+                        {% if field.name != 'imagenes' %}
+                        <div class="form-group">
+                            {% if field.label %}
+                            <label for="{{ field.id_for_label }}" class="form-label">
+                                {{ field.label }}
+                                {% if field.field.required %}<span class="required">*</span>{% endif %}
+                            </label>
+                            {% endif %}
+                            
+                            {% if field.errors %}
+                                {% for error in field.errors %}
+                                    <p class="form-error">{{ error }}</p>
+                                {% endfor %}
+                            {% endif %}
+
+                            {{ field }}
+                            
+                            {% if field.help_text %}
+                                <p class="form-help">{{ field.help_text|safe }}</p>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Sección: Imágenes -->
+            <div class="form-section">
+                <h2 class="form-section-title">
+                    <i class="fas fa-images"></i> Imágenes del Producto
+                </h2>
+
+                <!-- Checkbox para 360 -->
+                <div class="checkbox-container">
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="es_360" id="id_es_360" value="true">
+                        <span>¿Son imágenes para vista 360°?</span>
+                    </label>
+                    <p class="checkbox-help">Marca esta casilla si vas a subir múltiples imágenes (mínimo 24) para crear una vista 360° interactiva.</p>
+                </div>
+
+                <!-- Input de imágenes -->
+                <div class="form-group">
+                    <label class="form-label">
+                        Seleccionar imágenes: <span class="required">*</span>
+                    </label>
+                    <div id="upload-area" class="file-upload-area">
+                        <i class="fas fa-cloud-upload-alt file-upload-icon"></i>
+                        <p class="file-upload-text">Arrastra imágenes aquí o haz clic</p>
+                        <p class="file-upload-hint">PNG, JPG, GIF hasta 10MB cada una</p>
+                    </div>
+                    <input type="file" name="imagenes" id="id_imagenes" multiple accept="image/*" class="hidden">
+                    <p class="file-counter" id="contador-imagenes">0 imágenes seleccionadas</p>
+                </div>
+
+                <!-- Selector de imagen principal -->
+                <div id="principal-selector" class="form-group">
+                    <label for="principal_idx" class="form-label">
+                        Imagen principal:
+                    </label>
+                    <select name="principal_idx" id="principal_idx" class="form-input">
+                        <option value="0">Primera imagen</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Botones -->
+            <div class="form-buttons">
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-save"></i> Crear Producto
+                </button>
+                <a href="{% url 'listar_productos' %}" class="btn-secondary">
+                    Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/forms.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Inicializar notificación si viene de crear
+    initFormNotification('productoCreado', 'notificacion-producto');
+    
+    // Marcar formulario para notificación
+    markFormForNotification('form[method="POST"]', 'productoCreado');
+    
+    // Inicializar upload de archivos
+    initFileUpload('id_imagenes', 'contador-imagenes', {
+        checkbox360Id: 'id_es_360',
+        principalSelectorId: 'principal-selector',
+        principalSelectId: 'principal_idx'
+    });
+    
+    // Inicializar drag & drop
+    initDragDrop('upload-area', 'id_imagenes');
+});
+</script>
+{% endblock %}

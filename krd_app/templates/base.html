@@ -4,23 +4,22 @@
     {% load static %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KRD Club</title>
+    <title>{% block title %}KRD Club{% endblock %}</title>
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Lato:wght@300;400;500;700&family=Cormorant+Garamond:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        * {
-            font-family: 'Lato', sans-serif;
-        }
-        h1, h2, h3, h4, h5, h6 {
-            font-family: 'Playfair Display', serif;
-            font-weight: 600;
-            letter-spacing: 0.05em;
-        }
-        .luxury-shadow {
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-        }
-    </style>
+    
+    <!-- CSS Principal -->
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    
+    <!-- CSS Adicional por página -->
+    {% block extra_css %}{% endblock %}
 </head>
 <body class="bg-white min-h-screen">
     <!-- Navbar -->
@@ -29,34 +28,55 @@
             <div class="flex justify-between h-20 items-center">
                 <!-- Logo -->
                 <div class="flex-shrink-0">
-                    <a href="/" class="text-2xl font-bold tracking-[0.3em] text-black">KRD</a>
+                    <a href="/" class="text-2xl font-bold tracking-[0.3em] text-black luxury-text">KRD</a>
                 </div>
+                
                 <!-- Menu Desktop -->
                 <div class="hidden md:flex space-x-8 items-center">
-                    <a href="/" class="text-gray-700 hover:text-black font-medium text-sm tracking-wider transition">INICIO</a>
-                    <a href="{% url 'listar_productos' %}" class="text-gray-700 hover:text-black font-medium text-sm tracking-wider transition">CATÁLOGO</a>
-                    <a href="{% url 'lista_vehiculo' %}" class="text-gray-700 hover:text-black font-medium text-sm tracking-wider transition">VEHÍCULOS</a>
+                    <a href="/" class="underline-gold text-gray-700 hover:text-black font-medium text-sm tracking-wider transition">INICIO</a>
+                    <a href="{% url 'listar_productos' %}" class="underline-gold text-gray-700 hover:text-black font-medium text-sm tracking-wider transition">CATÁLOGO</a>
+                    {% comment %} <a href="{% url 'lista_vehiculo' %}" class="underline-gold text-gray-700 hover:text-black font-medium text-sm tracking-wider transition">VEHÍCULOS</a> {% endcomment %}
                 </div>
-                <!-- Carrito -->
+                
+                <!-- Carrito y Menu Mobile -->
                 <div class="flex items-center space-x-6">
                     <a href="{% url 'ver_carrito' %}" class="relative text-gray-600 hover:text-black transition">
                         <i class="fas fa-shopping-bag text-lg"></i>
                         <span id="carrito-contador" class="absolute -top-2 -right-2 bg-black text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">0</span>
                     </a>
+                    <button id="menu-btn" class="md:hidden text-gray-700 focus:outline-none">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                        </svg>
+                    </button>
                 </div>
+            </div>
+        </div>
+        
+        <!-- Mobile menu -->
+        <div id="mobile-menu" class="md:hidden hidden bg-gray-50 border-t border-gray-200">
+            <div class="px-4 py-4 space-y-3">
+                <a href="/" class="block px-4 py-3 text-gray-700 hover:bg-white font-medium text-sm tracking-wider">INICIO</a>
+                <a href="{% url 'listar_productos' %}" class="block px-4 py-3 text-gray-700 hover:bg-white font-medium text-sm tracking-wider">CATÁLOGO</a>
+                {% comment %} <a href="{% url 'lista_vehiculo' %}" class="block px-4 py-3 text-gray-700 hover:bg-white font-medium text-sm tracking-wider">VEHÍCULOS</a> {% endcomment %}
             </div>
         </div>
     </nav>
 
-    <!-- Contenido -->
-    {% block content %}{% endblock %}
+    <!-- Contenedor de Alertas -->
+    <div id="alert-container" class="fixed top-24 right-4 z-50 max-w-md"></div>
+
+    <!-- Contenido Principal -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
 
     <!-- Footer -->
     <footer class="bg-black text-white mt-20">
         <div class="max-w-7xl mx-auto px-6 py-16">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
                 <div>
-                    <h3 class="text-xl font-bold tracking-[0.2em] mb-4">KRD CLUB</h3>
+                    <h3 class="text-xl font-bold tracking-[0.2em] mb-4 luxury-text">KRD CLUB</h3>
                     <p class="text-gray-400 text-sm font-light">Lujo y elegancia en cada producto. Para quienes demandan lo mejor.</p>
                 </div>
                 <div>
@@ -71,7 +91,7 @@
                     <h4 class="font-bold text-sm tracking-wider mb-4 uppercase">Contacto</h4>
                     <ul class="space-y-2 text-gray-400 text-sm font-light">
                         <li><a href="mailto:info@krdclub.com" class="hover:text-white transition">info@krdclub.com</a></li>
-                        <li><a href="tel:+34900000000" class="hover:text-white transition">+34 900 000 000</a></li>
+                        <li><a href="tel:+56944987339" class="hover:text-white transition">+56 9 4498 7339</a></li>
                     </ul>
                 </div>
                 <div>
@@ -89,19 +109,10 @@
         </div>
     </footer>
 
-    <script>
-        function actualizarContadorCarrito() {
-            fetch("{% url 'contador_carrito' %}")
-                .then(r => r.json())
-                .then(data => {
-                    document.getElementById("carrito-contador").textContent = data.total_items || 0;
-                })
-                .catch(() => {
-                    document.getElementById("carrito-contador").textContent = '0';
-                });
-        }
-        document.addEventListener('DOMContentLoaded', actualizarContadorCarrito);
-        window.actualizarContadorCarrito = actualizarContadorCarrito;
-    </script>
+    <!-- JavaScript Principal -->
+    <script src="{% static 'js/main.js' %}"></script>
+    
+    <!-- JavaScript Adicional por página -->
+    {% block extra_js %}{% endblock %}
 </body>
 </html>

@@ -1,0 +1,200 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block title %}Ventas{% endblock %}
+{% block page_title %}Gestión de Ventas{% endblock %}
+{% block page_subtitle %}Historial y seguimiento de ventas{% endblock %}
+
+{% block content %}
+<!-- Stats -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+    <div class="bg-white rounded-lg p-4 border border-gray-100">
+        <p class="text-sm text-gray-500">Ventas Hoy</p>
+        <p class="text-2xl font-bold text-gray-900">${{ stats.ventas_hoy|floatformat:0|default:"0" }}</p>
+    </div>
+    <div class="bg-white rounded-lg p-4 border border-gray-100">
+        <p class="text-sm text-gray-500">Ventas Esta Semana</p>
+        <p class="text-2xl font-bold text-gray-900">${{ stats.ventas_semana|floatformat:0|default:"0" }}</p>
+    </div>
+    <div class="bg-white rounded-lg p-4 border border-gray-100">
+        <p class="text-sm text-gray-500">Ventas Este Mes</p>
+        <p class="text-2xl font-bold text-gray-900">${{ stats.ventas_mes|floatformat:0|default:"0" }}</p>
+    </div>
+    <div class="bg-white rounded-lg p-4 border border-gray-100">
+        <p class="text-sm text-gray-500">Total Ventas</p>
+        <p class="text-2xl font-bold text-gray-900">{{ stats.total_ventas }}</p>
+    </div>
+</div>
+
+<!-- Filtros -->
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6">
+    <form method="GET" class="flex flex-wrap gap-4 items-end">
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Desde</label>
+            <input type="date" name="fecha_desde" value="{{ request.GET.fecha_desde }}" 
+                   class="border border-gray-300 rounded-lg px-3 py-2">
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Hasta</label>
+            <input type="date" name="fecha_hasta" value="{{ request.GET.fecha_hasta }}"
+                   class="border border-gray-300 rounded-lg px-3 py-2">
+        </div>
+        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+            <i class="fas fa-filter mr-2"></i>Filtrar
+        </button>
+        <a href="{% url 'admin_ventas' %}" class="text-gray-600 px-4 py-2 hover:text-gray-900">
+            Limpiar filtros
+        </a>
+    </form>
+</div>
+
+<!-- Tabla de Ventas -->
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead class="bg-gray-50 border-b border-gray-200">
+                <tr>
+                    <th class="text-left px-6 py-4 text-xs font-semibold text-gray-600 uppercase">ID Venta</th>
+                    <th class="text-left px-6 py-4 text-xs font-semibold text-gray-600 uppercase">Fecha</th>
+                    <th class="text-left px-6 py-4 text-xs font-semibold text-gray-600 uppercase">Productos</th>
+                    <th class="text-center px-6 py-4 text-xs font-semibold text-gray-600 uppercase">Cantidad</th>
+                    <th class="text-right px-6 py-4 text-xs font-semibold text-gray-600 uppercase">Total</th>
+                    <th class="text-center px-6 py-4 text-xs font-semibold text-gray-600 uppercase">Acciones</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                {% for venta in ventas %}
+                <tr class="hover:bg-gray-50 transition">
+                    <td class="px-6 py-4">
+                        <span class="font-mono font-bold text-blue-600">#{{ venta.id }}</span>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div>
+                            <p class="font-medium text-gray-900">{{ venta.fecha_venta|date:"d/m/Y" }}</p>
+                            <p class="text-sm text-gray-500">{{ venta.fecha_venta|time:"H:i" }}</p>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="space-y-1">
+                            {% for item in venta.productos_venta.all|slice:":2" %}
+                            <p class="text-sm text-gray-700">{{ item.id_producto.n_producto|truncatechars:30 }} x{{ item.cantidad }}</p>
+                            {% endfor %}
+                            {% if venta.productos_venta.count > 2 %}
+                            <p class="text-xs text-gray-500">+{{ venta.productos_venta.count|add:"-2" }} más...</p>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        <span class="inline-block bg-gray-100 px-3 py-1 rounded-full text-sm font-medium">
+                            {{ venta.cantidad_total }} items
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                        <span class="text-lg font-bold text-gray-900">${{ venta.precio_venta|floatformat:0 }}</span>
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        <button onclick="verDetalle({{ venta.id }})" 
+                                class="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition"
+                                title="Ver detalle">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="px-6 py-12 text-center text-gray-500">
+                        <i class="fas fa-receipt text-4xl mb-4 text-gray-300"></i>
+                        <p>No hay ventas registradas</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal Detalle Venta -->
+<div id="modal-detalle" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-xl p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-xl font-bold text-gray-900">Detalle de Venta <span id="venta-id"></span></h3>
+            <button onclick="cerrarModalDetalle()" class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        <div id="detalle-contenido">
+            <!-- Se llena dinámicamente -->
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const ventasData = {
+    {% for venta in ventas %}
+    {{ venta.id }}: {
+        id: {{ venta.id }},
+        fecha: "{{ venta.fecha_venta|date:'d/m/Y H:i' }}",
+        total: "{{ venta.precio_venta|floatformat:0 }}",
+        productos: [
+            {% for item in venta.productos_venta.all %}
+            {
+                nombre: "{{ item.id_producto.n_producto }}",
+                cantidad: {{ item.cantidad }},
+                precio: "{{ item.precio_unitario|floatformat:0 }}",
+                subtotal: "{{ item.subtotal|floatformat:0 }}"
+            },
+            {% endfor %}
+        ]
+    },
+    {% endfor %}
+};
+
+function verDetalle(id) {
+    const venta = ventasData[id];
+    if (!venta) return;
+    
+    document.getElementById('venta-id').textContent = '#' + venta.id;
+    
+    let productosHtml = venta.productos.map(p => `
+        <tr class="border-b border-gray-100">
+            <td class="py-3">${p.nombre}</td>
+            <td class="py-3 text-center">${p.cantidad}</td>
+            <td class="py-3 text-right">$${p.precio}</td>
+            <td class="py-3 text-right font-medium">$${p.subtotal}</td>
+        </tr>
+    `).join('');
+    
+    document.getElementById('detalle-contenido').innerHTML = `
+        <div class="mb-4 p-4 bg-gray-50 rounded-lg">
+            <p class="text-sm text-gray-600">Fecha: <span class="font-medium text-gray-900">${venta.fecha}</span></p>
+        </div>
+        <table class="w-full">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="text-left py-3 px-2 text-sm font-semibold">Producto</th>
+                    <th class="text-center py-3 px-2 text-sm font-semibold">Cant.</th>
+                    <th class="text-right py-3 px-2 text-sm font-semibold">P.Unit</th>
+                    <th class="text-right py-3 px-2 text-sm font-semibold">Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>${productosHtml}</tbody>
+            <tfoot class="bg-gray-50">
+                <tr>
+                    <td colspan="3" class="py-4 text-right font-bold">TOTAL:</td>
+                    <td class="py-4 text-right text-xl font-bold text-green-600">$${venta.total}</td>
+                </tr>
+            </tfoot>
+        </table>
+    `;
+    
+    document.getElementById('modal-detalle').classList.remove('hidden');
+    document.getElementById('modal-detalle').classList.add('flex');
+}
+
+function cerrarModalDetalle() {
+    document.getElementById('modal-detalle').classList.add('hidden');
+    document.getElementById('modal-detalle').classList.remove('flex');
+}
+</script>
+{% endblock %}
