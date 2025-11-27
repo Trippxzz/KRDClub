@@ -40,10 +40,23 @@ urlpatterns = [
     path('carrito/', views.getCarrito, name='ver_carrito'),
     path('agregar/<uuid:producto_id>/', views.addCarrito, name='agregar_al_carrito'),
     path('quitar/<uuid:producto_id>/', views.eliminardelCarrito, name='remover_del_carrito'),
-    path('procesarCompra', views.procesarCompra, name='procesar_compra'),
+    path('checkout/', views.procesarCompra, name='procesar_compra'),
+    path('buscar-usuario/', views.buscar_usuario_rut, name='buscar_usuario_rut'),
+    path('webpay/', views.webpay_iniciar, name='webpay_iniciar'),
+    path('webpay/retorno/', views.webpay_retorno, name='webpay_retorno'),
     path('contador_carrito/', views.contador_carrito, name='contador_carrito'),
-
+    
+    # API Filtro de Vehículos
+    path('api/modelos/', views.get_modelos_por_marca, name='get_modelos'),
+    path('api/cilindradas/', views.get_cilindradas_por_modelo, name='get_cilindradas'),
+    path('api/anios/', views.get_anios_por_cilindrada, name='get_anios'),
+    path('api/buscar-vehiculo/', views.buscar_productos_por_vehiculo, name='buscar_vehiculo'),
+    
+    # Panel de Administración
+    path('panel/', views.admin_dashboard, name='admin_dashboard'),
+    path('panel/productos/', views.admin_productos, name='admin_productos'),
+    path('panel/ventas/', views.admin_ventas, name='admin_ventas'),
+    path('panel/compras/', views.admin_compras, name='admin_compras'),
 ]
-
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
     "krd_app" #INTEGRAMOS KRD APP
 ]
 
@@ -115,9 +116,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'es-cl'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/Santiago'
 
 USE_I18N = True
 
@@ -135,3 +136,25 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+
+
+
+# ==================== WEBPAY TRANSBANK ====================
+# Por defecto usa credenciales de integración (prueba)
+# Para producción, descomentar y configurar con credenciales reales
+
+# Modo de prueba (integración) - No requiere configuración, usa credenciales por defecto
+WEBPAY_PRODUCTION = False  # Cambiar a True para producción
+
+# Credenciales de producción (descomentar y configurar cuando tengas las credenciales)
+# WEBPAY_COMMERCE_CODE = 'tu_codigo_de_comercio'
+# WEBPAY_API_KEY = 'tu_api_key_secreta'
+
+# Tarjetas de prueba Webpay:
+# VISA: 4051 8856 0044 6623
+# CVV: 123
+# Fecha: Cualquier fecha futura
+# RUT: 11.111.111-1
+# Clave: 123 

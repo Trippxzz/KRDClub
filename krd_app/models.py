@@ -16,6 +16,11 @@ class Producto(models.Model):
     ancho=models.CharField(max_length=5)
     offset=models.IntegerField()
     centro_llanta=models.CharField(max_length=5)
+    # Sprite 360 - Una sola imagen que contiene todas las vistas
+    sprite_360 = models.ImageField(upload_to="sprites/", null=True, blank=True)
+    sprite_cols = models.IntegerField(default=6)  # Columnas en el sprite
+    sprite_rows = models.IntegerField(default=6)  # Filas en el sprite
+    sprite_total = models.IntegerField(default=36)  # Total de frames
 
     def __str__(self):
         return self.n_producto
@@ -90,14 +95,22 @@ class Producto_Vehiculo(models.Model): ##PARA CREARLE APLICACIONES A LOS PRODUCT
 ### Seccion de ventas
 
 class Venta(models.Model):
+    ESTADO_CHOICES = [
+        ('pendiente', 'Pendiente de procesamiento'),
+        ('enviado', 'Enviado'),
+        ('entregado', 'Entregado'),
+        ('cancelado', 'Cancelado'),
+    ]
+    
     # id_venta eliminado: se usará el id autoincremental por defecto
     id_usuario = models.CharField(max_length=50, null=True, blank=True)  # si no hay login
     # cantidad = models.IntegerField(default=0)
     precio_venta = models.DecimalField(max_digits=10, decimal_places=0)
     fecha_venta = models.DateTimeField(default=timezone.now)
+    
 
     def __str__(self):
-        return f"Venta {self.id} - {self.fecha_venta.date()}"
+        return f"Venta {self.id} - {self.fecha_venta.date()} - {self.get_estado_display()}"
 
 
 class Producto_Venta(models.Model):

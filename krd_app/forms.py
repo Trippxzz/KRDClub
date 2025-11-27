@@ -1,6 +1,6 @@
 from django import forms
 from django.forms import inlineformset_factory
-from .models import Producto, Compra, ProductoCompra, vehiculo, Usuario, ProductoImagen
+from .models import Producto, Compra, ProductoCompra, vehiculo, Usuario, ProductoImagen, Venta
 from datetime import date
 from django.contrib.auth.forms import UserCreationForm ##Para la creacion de usuarios, se usará para completar datos al momento de comprar
 
@@ -8,7 +8,7 @@ from django.contrib.auth.forms import UserCreationForm ##Para la creacion de usu
 class ProductoForm(forms.ModelForm):
     class Meta:
         model = Producto
-        exclude = ("id_producto", "stock")
+        exclude = ("id_producto", "stock", "sprite_360", "sprite_cols", "sprite_rows", "sprite_total")
         labels = {
             'n_producto': 'Nombre del producto',
             'desc_producto': 'Descripción del producto',
@@ -59,6 +59,12 @@ class CompraForm(forms.ModelForm):
         model = Compra
         exclude = ("subtotalc",)
         widgets = {
+            'fecha': forms.DateInput(attrs={
+                'type': 'text',
+                'class': 'fecha-picker',
+                'placeholder': 'Seleccionar fecha',
+                'autocomplete': 'off'
+            }),
             'pdf': forms.ClearableFileInput(attrs={'accept': 'application/pdf'}),
         }
 
@@ -99,3 +105,5 @@ class UsuarioForm(UserCreationForm):
     email=forms.CharField(label="Correo electronico")
     telefono=forms.CharField(label="Telefono")
     direccion=forms.CharField(label="Direccion")
+
+
