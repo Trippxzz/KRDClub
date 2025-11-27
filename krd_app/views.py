@@ -74,6 +74,11 @@ def buscar_productos_por_vehiculo(request):
     
     return JsonResponse({'success': False, 'message': 'No se encontraron productos para este vehículo'})
 
+def sobre_nosotros(request):
+    """
+    Página 'Sobre nosotros'
+    """
+    return render(request, 'public/sobre_nosotros.html', {})
 
 ####OPTIMIZACION IMAGENES
 def crear_sprite_360(imagenes_paths, producto_id, img_deseadas=36):

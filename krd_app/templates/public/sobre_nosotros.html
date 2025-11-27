@@ -1,0 +1,37 @@
+{% extends 'base.html' %} {% load static %} {% block title %}Sobre nosotros -
+KRD{% endblock %} {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/sobre.css' %}" />
+{% endblock %} {% block content %}
+
+<section class="bg-black py-20 relative z-10">
+  <div class="max-w-6xl mx-auto px-6">
+    <div class="bg-white rounded-2xl shadow-2xl p-8">
+      <div class="text-center mb-5">
+        <h2
+          class="text-2xl md:text-3xl mt-2 font-bold text-black luxury-text mb-4"
+        >
+          Misión
+        </h2>
+        <p class="text-gray-700 text-base md:text-lg">
+          En KRD se especializa en la venta de llantas Premium certificadas,
+          combinando diseño, calidad estructural y asesoría personalizada.
+          Nuestra misión es entregar una experiencia de compra única y flexible,
+          con opciones personalizadas según el estilo y las especificaciones del
+          vehículo en formato digital.
+        </p>
+        <h2
+          class="text-2xl md:text-3xl mt-6 font-bold text-black luxury-text mb-4"
+        >
+          Visión
+        </h2>
+        <p class="text-gray-700 text-base md:text-lg">
+          Posicionar a KRD como la marca referente en Chile en llantas y
+          accesorios Premium para vehículos de alta gama, reconocida por su
+          excelencia en diseño, servicio y compromiso con un mercado automotriz
+          más sofisticado, transparente y conectado.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

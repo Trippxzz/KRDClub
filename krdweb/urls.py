@@ -45,6 +45,7 @@ urlpatterns = [
     path('webpay/', views.webpay_iniciar, name='webpay_iniciar'),
     path('webpay/retorno/', views.webpay_retorno, name='webpay_retorno'),
     path('contador_carrito/', views.contador_carrito, name='contador_carrito'),
+    path('sobre-nosotros/', views.sobre_nosotros, name='sobre_nosotros'),
     
     # API Filtro de Vehículos
     path('api/modelos/', views.get_modelos_por_marca, name='get_modelos'),
