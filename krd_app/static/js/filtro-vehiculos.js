@@ -14,9 +14,62 @@ document.addEventListener('DOMContentLoaded', function() {
     // Verificar si los elementos existen
     if (!filtroMarca) return;
 
+    // ============ MAPEO DE MARCAS A IDs DE FONDO ============
+    const marcaBackgrounds = {
+        'bmw': 'vehicle-bg-bmw',
+        'mercedes': 'vehicle-bg-mercedes',
+        'mercedes-benz': 'vehicle-bg-mercedes',
+        'mercedes benz': 'vehicle-bg-mercedes',
+        'audi': 'vehicle-bg-audi',
+        'porsche': 'vehicle-bg-porsche',
+        'ferrari': 'vehicle-bg-ferrari',
+        'lamborghini': 'vehicle-bg-lamborghini',
+        'maserati': 'vehicle-bg-maserati',
+        'lexus': 'vehicle-bg-lexus',
+        'jaguar': 'vehicle-bg-jaguar',
+        'bentley': 'vehicle-bg-bentley',
+        'rolls-royce': 'vehicle-bg-rollsroyce',
+        'rolls royce': 'vehicle-bg-rollsroyce',
+        'land rover': 'vehicle-bg-landrover',
+        'land-rover': 'vehicle-bg-landrover',
+        'range rover': 'vehicle-bg-landrover'
+    };
+
+    // ============ FUNCIÓN CAMBIAR FONDO ============
+    function cambiarFondo(marca) {
+        // Obtener todas las imágenes de fondo
+        const allBgs = document.querySelectorAll('.vehicle-bg-image');
+        const defaultBg = document.getElementById('vehicle-bg-default');
+        
+        if (!allBgs.length) return;
+        
+        // Normalizar la marca a minúsculas
+        const marcaNormalizada = marca ? marca.toLowerCase().trim() : '';
+        
+        // Buscar el fondo correspondiente
+        let targetBgId = marcaBackgrounds[marcaNormalizada];
+        let targetBg = targetBgId ? document.getElementById(targetBgId) : null;
+        
+        // Si no hay fondo específico, usar el default
+        if (!targetBg) {
+            targetBg = defaultBg;
+        }
+        
+        // Remover clase active de todos
+        allBgs.forEach(bg => bg.classList.remove('active'));
+        
+        // Agregar clase active al fondo objetivo
+        if (targetBg) {
+            targetBg.classList.add('active');
+        }
+    }
+
     // ============ CUANDO CAMBIA LA MARCA ============
     filtroMarca.addEventListener('change', async function() {
         const marca = this.value;
+        
+        // Cambiar el fondo según la marca
+        cambiarFondo(marca);
         
         // Resetear selects dependientes
         filtroModelo.innerHTML = '<option value="">Cargando...</option>';
@@ -43,6 +96,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         } else {
             filtroModelo.innerHTML = '<option value="">Primero selecciona marca</option>';
+            // Volver al fondo por defecto
+            cambiarFondo('');
         }
     });
 
@@ -136,13 +191,13 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 mostrarMensaje(data.message, 'error');
                 btnBuscar.disabled = false;
-                btnBuscar.innerHTML = '<i class="fas fa-search mr-2"></i>Buscar';
+                btnBuscar.innerHTML = '<i class="fas fa-search"></i><span>BUSCAR</span>';
             }
         } catch (error) {
             console.error('Error en la búsqueda:', error);
             mostrarMensaje('Error al realizar la búsqueda', 'error');
             btnBuscar.disabled = false;
-            btnBuscar.innerHTML = '<i class="fas fa-search mr-2"></i>Buscar';
+            btnBuscar.innerHTML = '<i class="fas fa-search"></i><span>BUSCAR</span>';
         }
     });
 
@@ -153,7 +208,9 @@ document.addEventListener('DOMContentLoaded', function() {
         filtroMensaje.classList.remove('hidden');
         const p = filtroMensaje.querySelector('p');
         p.textContent = texto;
-        p.className = tipo === 'error' ? 'text-red-500' : 'text-green-500';
+        p.className = tipo === 'error' 
+            ? 'text-red-400 bg-red-500/20 rounded-lg py-3 px-6 inline-block' 
+            : 'text-green-400 bg-green-500/20 rounded-lg py-3 px-6 inline-block';
         
         setTimeout(() => {
             filtroMensaje.classList.add('hidden');

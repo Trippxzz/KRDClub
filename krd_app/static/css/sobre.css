@@ -1,0 +1,384 @@
+/* ==============================================
+   KRD - Sobre Nosotros - Diseño Premium
+   ============================================== */
+
+/* ============ HERO SECTION ============ */
+.sobre-hero {
+    background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0d0d0d 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.sobre-hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    opacity: 0.5;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 10;
+}
+
+.hero-line {
+    width: 80px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #fff, transparent);
+    margin: 0 auto;
+}
+
+.hero-subtitle {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    letter-spacing: 0.3em;
+    font-size: 0.875rem;
+}
+
+/* ============ ABOUT INTRO SECTION ============ */
+.about-intro {
+    background: #fafafa;
+}
+
+.intro-card {
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    position: relative;
+}
+
+.intro-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background: #000;
+}
+
+.intro-text {
+    font-family: 'Lato', sans-serif;
+    font-weight: 300;
+    line-height: 1.9;
+    color: #4a4a4a;
+}
+
+.intro-highlight {
+    font-family: 'Playfair Display', serif;
+    font-weight: 500;
+    color: #000;
+    font-style: italic;
+}
+
+/* ============ VALUES SECTION ============ */
+.values-section {
+    background: #fff;
+    position: relative;
+}
+
+.value-card {
+    background: #fafafa;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.value-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #000, #333);
+    transform: scaleX(0);
+    transition: transform 0.4s ease;
+}
+
+.value-card:hover {
+    background: #fff;
+    transform: translateY(-8px);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.1);
+}
+
+.value-card:hover::after {
+    transform: scaleX(1);
+}
+
+.value-icon {
+    width: 60px;
+    height: 60px;
+    background: #000;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    transition: all 0.4s ease;
+}
+
+.value-card:hover .value-icon {
+    transform: scale(1.1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.value-icon i {
+    color: #fff;
+    font-size: 1.5rem;
+}
+
+.value-title {
+    font-family: 'Playfair Display', serif;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    color: #000;
+}
+
+.value-text {
+    font-family: 'Lato', sans-serif;
+    font-weight: 300;
+    color: #666;
+    line-height: 1.7;
+}
+
+/* ============ MISSION & VISION SECTION ============ */
+.mission-vision-section {
+    background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+    position: relative;
+}
+
+.mv-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    transition: all 0.4s ease;
+}
+
+.mv-card:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-5px);
+}
+
+.mv-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 4rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.08);
+    position: absolute;
+    top: -10px;
+    left: 20px;
+    line-height: 1;
+}
+
+.mv-title {
+    font-family: 'Playfair Display', serif;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    color: #fff;
+    position: relative;
+    padding-bottom: 1rem;
+}
+
+.mv-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 40px;
+    height: 2px;
+    background: linear-gradient(90deg, #fff, transparent);
+}
+
+.mv-text {
+    font-family: 'Lato', sans-serif;
+    font-weight: 300;
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.9;
+}
+
+/* ============ STATS SECTION ============ */
+.stats-section {
+    background: #fafafa;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 2rem;
+    position: relative;
+}
+
+.stat-item::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 60%;
+    width: 1px;
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.stat-item:last-child::after {
+    display: none;
+}
+
+.stat-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 3.5rem;
+    font-weight: 700;
+    color: #000;
+    line-height: 1;
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    font-family: 'Lato', sans-serif;
+    font-weight: 400;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    color: #666;
+}
+
+/* ============ COMMITMENT SECTION ============ */
+.commitment-section {
+    background: #fff;
+}
+
+.commitment-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1px;
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.commitment-item {
+    background: #fff;
+    padding: 3rem;
+    transition: all 0.4s ease;
+    position: relative;
+}
+
+.commitment-item:hover {
+    background: #fafafa;
+}
+
+.commitment-item::before {
+    content: '';
+    position: absolute;
+    top: 2rem;
+    left: 0;
+    width: 4px;
+    height: 30px;
+    background: #000;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+
+.commitment-item:hover::before {
+    opacity: 1;
+}
+
+.commitment-title {
+    font-family: 'Playfair Display', serif;
+    font-weight: 600;
+    font-size: 1.25rem;
+    color: #000;
+    margin-bottom: 0.75rem;
+}
+
+.commitment-text {
+    font-family: 'Lato', sans-serif;
+    font-weight: 300;
+    color: #666;
+    line-height: 1.7;
+    font-size: 0.95rem;
+}
+
+/* ============ CTA SECTION ============ */
+.cta-section {
+    background: linear-gradient(135deg, #000 0%, #1a1a1a 100%);
+    position: relative;
+}
+
+.cta-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.02' fill-rule='evenodd'/%3E%3C/svg%3E");
+}
+
+.cta-btn {
+    background: #fff;
+    color: #000;
+    padding: 1rem 3rem;
+    font-family: 'Lato', sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    font-size: 0.875rem;
+    transition: all 0.4s ease;
+    display: inline-block;
+    text-decoration: none;
+}
+
+.cta-btn:hover {
+    background: transparent;
+    color: #fff;
+    box-shadow: inset 0 0 0 2px #fff;
+}
+
+/* ============ ANIMATIONS ============ */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in-up {
+    animation: fadeInUp 0.8s ease-out forwards;
+}
+
+.delay-100 { animation-delay: 0.1s; }
+.delay-200 { animation-delay: 0.2s; }
+.delay-300 { animation-delay: 0.3s; }
+.delay-400 { animation-delay: 0.4s; }
+
+/* ============ RESPONSIVE ============ */
+@media (max-width: 768px) {
+    .stat-item::after {
+        display: none;
+    }
+    
+    .stat-number {
+        font-size: 2.5rem;
+    }
+    
+    .commitment-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .mv-number {
+        font-size: 3rem;
+    }
+    
+    .hero-subtitle {
+        letter-spacing: 0.15em;
+        font-size: 0.75rem;
+    }
+}

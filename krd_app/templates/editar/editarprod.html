@@ -79,14 +79,33 @@
                     {% if imgs %}
                         <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
                             {% for img in imgs %}
-                            <div class="bg-white rounded-lg overflow-hidden border border-gray-200 p-3">
-                                <img src="{{ img.imagen.url }}" alt="Imagen" class="w-full h-32 object-cover rounded mb-3">
+                            <div class="bg-white rounded-lg overflow-hidden border border-gray-200 p-3 {% if img.es_360 %}ring-2 ring-blue-500{% endif %}">
+                                <div class="relative">
+                                    <img src="{{ img.imagen.url }}" alt="Imagen" class="w-full h-32 object-cover rounded mb-3">
+                                    {% if img.es_360 %}
+                                    <span class="absolute top-1 right-1 bg-blue-600 text-white text-xs px-2 py-1 rounded font-medium">
+                                        360°
+                                    </span>
+                                    {% endif %}
+                                </div>
                                 <div class="space-y-2 text-xs">
+                                    <!-- Principal -->
                                     <form method="POST" action="{% url 'cambiar_principal' img.id %}" class="flex items-center gap-2">
                                         {% csrf_token %}
                                         <input type="radio" name="principal_{{ img.id }}" {% if img.es_principal %}checked{% endif %} onchange="this.form.submit()"> 
                                         <span>Principal</span>
                                     </form>
+                                    
+                                    <!-- Tipo 360 -->
+                                    <form method="POST" action="{% url 'cambiar_tipo_360' img.id %}" class="flex items-center gap-2">
+                                        {% csrf_token %}
+                                        <button type="submit" class="w-full {% if img.es_360 %}bg-blue-600 hover:bg-blue-700{% else %}bg-gray-500 hover:bg-gray-600{% endif %} text-white px-3 py-2 rounded text-xs font-medium transition">
+                                            <i class="fas fa-sync-alt mr-1"></i>
+                                            {% if img.es_360 %}Quitar 360°{% else %}Hacer 360°{% endif %}
+                                        </button>
+                                    </form>
+                                    
+                                    <!-- Eliminar -->
                                     <form method="POST" action="{% url 'eliminar_imagen' img.id %}">
                                         {% csrf_token %}
                                         <button type="submit" onclick="return confirm('¿Eliminar esta imagen?')" class="w-full bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded text-xs font-medium transition">

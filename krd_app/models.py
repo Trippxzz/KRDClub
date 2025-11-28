@@ -128,6 +128,31 @@ class Producto_Venta(models.Model):
         return f"{self.id_producto.n_producto} x{self.cantidad}"
 
 
+### Seccion Logistica (Envíos)
+
+class Logistica(models.Model):
+    ESTADO_CHOICES = [
+        ('pendiente', 'Pendiente de Envío'),
+        ('enviado', 'Enviado'),
+        ('entregado', 'Entregado'),
+    ]
+    
+    venta = models.OneToOneField(Venta, on_delete=models.CASCADE, related_name='logistica')
+    estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='pendiente')
+    empresa_envio = models.CharField(max_length=50, null=True, blank=True)
+    n_seguimiento = models.CharField(max_length=50, null=True, blank=True)
+    fecha_envio = models.DateField(null=True, blank=True)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    fecha_actualizacion = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Logística Venta #{self.venta.id} - {self.get_estado_display()}"
+
+    class Meta:
+        verbose_name = "Logística"
+        verbose_name_plural = "Logísticas"
+
+
 ### Seccion Usuario
 
 class Usuario(AbstractBaseUser):

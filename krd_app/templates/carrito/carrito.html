@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load formato_precio %}
 
 {% block title %}Carrito de Compras - KRD Club{% endblock %}
 
@@ -53,8 +54,8 @@
                                         {{ item.cantidad }} unid.
                                     </span>
                                 </td>
-                                <td class="px-6 py-6 text-right carrito-precio">${{ item.precio }}</td>
-                                <td class="px-6 py-6 text-right carrito-subtotal">${{ item.subtotal }}</td>
+                                <td class="px-6 py-6 text-right carrito-precio">${{ item.precio|formato_miles }}</td>
+                                <td class="px-6 py-6 text-right carrito-subtotal">${{ item.subtotal|formato_miles }}</td>
                                 <td class="px-6 py-6 text-center">
                                     <a href="{% url 'remover_del_carrito' id %}" class="carrito-btn-eliminar">
                                         <i class="fas fa-trash"></i>
@@ -82,7 +83,7 @@
                     <div class="space-y-4 mb-8 pb-8 border-b border-gray-200">
                         <div class="carrito-resumen-linea">
                             <span>Subtotal</span>
-                            <span>${{ total }}</span>
+                            <span>${{ total|formato_miles }}</span>
                         </div>
                         <div class="carrito-resumen-linea">
                             <span>Envío</span>
@@ -92,7 +93,7 @@
 
                     <div class="carrito-resumen-total">
                         <span>Total:</span>
-                        <span class="carrito-total-precio">${{ total }}</span>
+                        <span class="carrito-total-precio">${{ total|formato_miles }}</span>
                     </div>
 
                     <a href="{% url 'procesar_compra' %}" class="carrito-btn-pagar">

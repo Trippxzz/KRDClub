@@ -1,37 +1,114 @@
-{% extends 'base.html' %} {% load static %} {% block title %}Sobre nosotros -
-KRD{% endblock %} {% block extra_css %}
+{% extends 'base.html' %} {% load static %} {% block title %}Sobre Nosotros - KRD{% endblock %} {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/sobre.css' %}" />
 {% endblock %} {% block content %}
 
-<section class="bg-black py-20 relative z-10">
+<!-- Hero Section -->
+<section class="sobre-hero py-24 md:py-32">
+  <div class="hero-content max-w-4xl mx-auto px-6 text-center">
+    <p class="hero-subtitle text-white mb-4 opacity-80">EXCELENCIA AUTOMOTRIZ</p>
+    <h1 class="text-4xl md:text-6xl font-bold text-white luxury-text mb-6">
+      Sobre Nosotros
+    </h1>
+    <div class="hero-line mb-6"></div>
+    <p class="text-gray-400 text-lg md:text-xl font-light max-w-2xl mx-auto">
+      Donde la pasión por los vehículos de alta gama se encuentra con la excelencia en servicio
+    </p>
+  </div>
+</section>
+
+<!-- About Intro Section -->
+<section class="about-intro py-20 md:py-28">
+  <div class="max-w-5xl mx-auto px-6">
+    <div class="intro-card rounded-lg p-10 md:p-16 shadow-lg">
+      <div class="text-center mb-8">
+        <h2 class="text-2xl md:text-3xl font-bold text-black luxury-text mb-2">¿Quiénes Somos?</h2>
+      </div>
+      <p class="intro-text text-lg md:text-xl text-center mb-8">
+        <span class="intro-highlight">KDR es una empresa dedicada a la comercialización de repuestos y accesorios de vehículos alta gama.</span> 
+        Su actividad se centra en ofrecer productos de alto rendimiento para vehículos premium.
+      </p>
+      <p class="intro-text text-base md:text-lg text-center">
+        Con experiencia en el rubro automotriz, KDR cuenta con rigurosos controles de calidad de productos 
+        y mantiene una sólida red de proveedores que garantiza una amplia disponibilidad de productos 
+        para satisfacer las necesidades más exigentes del mercado automotriz de lujo.
+      </p>
+    </div>
+  </div>
+</section>
+
+
+<!-- Mission & Vision Section -->
+<section class="mission-vision-section py-20 md:py-28">
   <div class="max-w-6xl mx-auto px-6">
-    <div class="bg-white rounded-2xl shadow-2xl p-8">
-      <div class="text-center mb-5">
-        <h2
-          class="text-2xl md:text-3xl mt-2 font-bold text-black luxury-text mb-4"
-        >
-          Misión
-        </h2>
-        <p class="text-gray-700 text-base md:text-lg">
-          En KRD se especializa en la venta de llantas Premium certificadas,
-          combinando diseño, calidad estructural y asesoría personalizada.
-          Nuestra misión es entregar una experiencia de compra única y flexible,
-          con opciones personalizadas según el estilo y las especificaciones del
-          vehículo en formato digital.
+    <div class="text-center mb-16">
+      <p class="text-sm tracking-[0.3em] text-gray-400 mb-3">NUESTRA DIRECCIÓN</p>
+      <h2 class="text-3xl md:text-4xl font-bold text-white luxury-text">Misión & Visión</h2>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <!-- Mission -->
+      <div class="mv-card rounded-lg p-10 relative">
+        <span class="mv-number">01</span>
+        <h3 class="mv-title text-2xl mb-6">Misión</h3>
+        <p class="mv-text">
+          En KRD nos especializamos en la venta de llantas Premium certificadas, 
+          combinando diseño, calidad estructural y asesoría personalizada. 
+          Nuestra misión es entregar una experiencia de compra única y flexible, 
+          con opciones personalizadas según el estilo y las especificaciones 
+          del vehículo en formato digital.
         </p>
-        <h2
-          class="text-2xl md:text-3xl mt-6 font-bold text-black luxury-text mb-4"
-        >
-          Visión
-        </h2>
-        <p class="text-gray-700 text-base md:text-lg">
-          Posicionar a KRD como la marca referente en Chile en llantas y
-          accesorios Premium para vehículos de alta gama, reconocida por su
-          excelencia en diseño, servicio y compromiso con un mercado automotriz
+      </div>
+      <!-- Vision -->
+      <div class="mv-card rounded-lg p-10 relative">
+        <span class="mv-number">02</span>
+        <h3 class="mv-title text-2xl mb-6">Visión</h3>
+        <p class="mv-text">
+          Posicionar a KRD como la marca referente en Chile en llantas y 
+          accesorios Premium para vehículos de alta gama, reconocida por su 
+          excelencia en diseño, servicio y compromiso con un mercado automotriz 
           más sofisticado, transparente y conectado.
         </p>
       </div>
     </div>
   </div>
 </section>
+
+<section class="commitment-section py-20 md:py-28">
+  <div class="max-w-6xl mx-auto px-6">
+    <div class="text-center mb-16">
+      <p class="text-sm tracking-[0.3em] text-gray-500 mb-3">POR QUÉ ELEGIRNOS</p>
+      <h2 class="text-3xl md:text-4xl font-bold text-black luxury-text">Nuestro Compromiso</h2>
+    </div>
+    <div class="commitment-grid rounded-lg overflow-hidden shadow-lg">
+      <div class="commitment-item">
+        <h4 class="commitment-title">Productos Certificados</h4>
+        <p class="commitment-text">
+          Todos nuestros productos cuentan con certificaciones de calidad 
+          y garantía de autenticidad.
+        </p>
+      </div>
+      <div class="commitment-item">
+        <h4 class="commitment-title">Red de Proveedores</h4>
+        <p class="commitment-text">
+          Mantenemos alianzas con los mejores proveedores del mercado 
+          para asegurar disponibilidad constante.
+        </p>
+      </div>
+      <div class="commitment-item">
+        <h4 class="commitment-title">Asesoría Especializada</h4>
+        <p class="commitment-text">
+          Nuestro equipo cuenta con amplia experiencia para guiarte 
+          en la mejor elección para tu vehículo.
+        </p>
+      </div>
+      <div class="commitment-item">
+        <h4 class="commitment-title">Satisfacción Garantizada</h4>
+        <p class="commitment-text">
+          Tu satisfacción es nuestra prioridad. Trabajamos para superar 
+          tus expectativas en cada compra.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
 {% endblock %}

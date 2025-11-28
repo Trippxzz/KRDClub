@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load formato_precio %}
 
 {% block title %}Catálogo de Productos - KRD Club{% endblock %}
 
@@ -21,9 +22,6 @@
                 </p>
             {% endif %}
         </div>
-        <a href="{% url 'crear_producto' %}" class="mt-8 md:mt-0 inline-flex items-center px-8 py-4 bg-black text-white font-medium tracking-wider hover:bg-gray-900 transition text-sm rounded">
-            <i class="fas fa-plus mr-2"></i> Agregar Producto
-        </a>
     </div>
 
     {% if prods %}
@@ -51,16 +49,14 @@
                 <!-- Contenido -->
                 <div class="p-8">
                     <h3 class="text-xl font-bold text-black mb-2 truncate">{{ p.n_producto }}</h3>
-                    <p class="text-2xl font-bold text-black mb-4">${{ p.precio|floatformat:0 }}</p>
+                    <p class="text-2xl font-bold text-black mb-4">${{ p.precio|formato_miles }}</p>
                     <p class="text-gray-600 text-sm mb-6 line-clamp-2 font-light leading-relaxed">{{ p.desc_producto }}</p>
                     
                     <div class="flex gap-3">
                         <a href="{% url 'detproducto' p.id_producto %}" class="flex-1 bg-black text-white px-4 py-3 text-center font-medium tracking-wider hover:bg-gray-900 transition text-sm rounded">
                             VER DETALLE
                         </a>
-                        <a href="{% url 'editar_producto' p.id_producto %}" class="flex-1 bg-white border-2 border-black text-black px-4 py-3 text-center font-medium tracking-wider hover:bg-black hover:text-white transition text-sm rounded">
-                            EDITAR
-                        </a>
+
                     </div>
                 </div>
             </div>

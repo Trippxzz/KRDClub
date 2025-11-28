@@ -25,7 +25,7 @@
     </div>
 </div>
 
-<!-- Filtros -->
+{% comment %} <!-- Filtros -->
 <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6">
     <form method="GET" class="flex flex-wrap gap-4 items-end">
         <div>
@@ -45,7 +45,7 @@
             Limpiar filtros
         </a>
     </form>
-</div>
+</div> {% endcomment %}
 
 <!-- Tabla de Ventas -->
 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
@@ -130,12 +130,16 @@
 
 {% block extra_js %}
 <script>
+
 const ventasData = {
     {% for venta in ventas %}
     {{ venta.id }}: {
         id: {{ venta.id }},
         fecha: "{{ venta.fecha_venta|date:'d/m/Y H:i' }}",
         total: "{{ venta.precio_venta|floatformat:0 }}",
+        cliente:{
+            rut: "{{venta.id_usuario}}"
+        },
         productos: [
             {% for item in venta.productos_venta.all %}
             {
@@ -168,6 +172,9 @@ function verDetalle(id) {
     document.getElementById('detalle-contenido').innerHTML = `
         <div class="mb-4 p-4 bg-gray-50 rounded-lg">
             <p class="text-sm text-gray-600">Fecha: <span class="font-medium text-gray-900">${venta.fecha}</span></p>
+        </div>
+        <div class="mb-4 p-4 bg-gray-50 rounded-lg">
+            <p class="text-sm text-gray-600">Cliente: <span class="font-medium text-gray-900">${venta.cliente.rut}</span></p>
         </div>
         <table class="w-full">
             <thead class="bg-gray-100">

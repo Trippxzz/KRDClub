@@ -34,6 +34,7 @@
                 <!-- Menu Desktop -->
                 <div class="hidden md:flex space-x-8 items-center">
                     <a href="/" class="underline-gold text-gray-700 hover:text-black font-medium text-sm tracking-wider transition">INICIO</a>
+                    <a href="{% url 'sobre_nosotros' %}" class="underline-gold text-gray-700 hover:text-black font-medium text-sm tracking-wider transition">SOBRE NOSOTROS</a>
                     <a href="{% url 'listar_productos' %}" class="underline-gold text-gray-700 hover:text-black font-medium text-sm tracking-wider transition">CATÁLOGO</a>
                     {% comment %} <a href="{% url 'lista_vehiculo' %}" class="underline-gold text-gray-700 hover:text-black font-medium text-sm tracking-wider transition">VEHÍCULOS</a> {% endcomment %}
                 </div>
@@ -43,7 +44,8 @@
                     <!-- Botón Acceso Panel -->
                     {% if request.user.is_authenticated %}
                     <div class="hidden md:flex items-center space-x-3">
-                        <span class="text-xs text-gray-500">{{ request.user.nombre }}</span>
+                        {% comment %} <span class="text-xs text-gray-500">{{ request.user.nombre }}</span> {% endcomment %}
+                        <a href="{% url 'admin_dashboard' %}" class="underline-gold text-gray-700 hover:text-black font-medium text-sm tracking-wider transition">PANEL</a>
                         <a href="{% url 'panel_logout' %}" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded text-xs font-medium tracking-wider transition">
                             <i class="fas fa-sign-out-alt mr-1"></i>SALIR
                         </a>
@@ -105,15 +107,14 @@
                     <h4 class="font-bold text-sm tracking-wider mb-4 uppercase">Empresa</h4>
                     <ul class="space-y-2 text-gray-400 text-sm font-light">
                         <li><a href="{% url 'sobre_nosotros' %}" class="hover:text-white transition">Sobre Nosotros</a></li>
-                        <li><a href="#" class="hover:text-white transition">Sostenibilidad</a></li>
-                        <li><a href="#" class="hover:text-white transition">Blog</a></li>
+                        
                     </ul>
                 </div>
                 <div>
                     <h4 class="font-bold text-sm tracking-wider mb-4 uppercase">Contacto</h4>
                     <ul class="space-y-2 text-gray-400 text-sm font-light">
                         <li><a href="mailto:info@krdclub.com" class="hover:text-white transition">info@krdclub.com</a></li>
-                        <li><a href="tel:+56944987339" class="hover:text-white transition">+56 9 4498 7339</a></li>
+                        <li><a href="tel:+56944987339" class="hover:text-white transition">+56 9 94837564</a></li>
                     </ul>
                 </div>
                 <div>
@@ -121,7 +122,6 @@
                     <div class="flex space-x-4">
                         <a href="#" class="text-gray-400 hover:text-white transition text-lg"><i class="fab fa-instagram"></i></a>
                         <a href="#" class="text-gray-400 hover:text-white transition text-lg"><i class="fab fa-facebook"></i></a>
-                        <a href="#" class="text-gray-400 hover:text-white transition text-lg"><i class="fab fa-linkedin"></i></a>
                     </div>
                 </div>
             </div>

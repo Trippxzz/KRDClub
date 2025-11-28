@@ -47,20 +47,24 @@
                 </form>
             </div>
 
-            <!-- Imágenes actuales -->
+            <!-- Imágenes actuales (normales) -->
             <div class="form-container">
-                <h3 class="form-section-title">Imágenes Actuales</h3>
+                <h3 class="form-section-title">Imágenes del Catálogo</h3>
                 {% if imgs %}
                     <div class="images-grid">
                         {% for img in imgs %}
                         <div class="image-card">
-                            <img src="{{ img.imagen.url }}" alt="Imagen">
+                            <div class="relative">
+                                <img src="{{ img.imagen.url }}" alt="Imagen">
+                            </div>
                             <div class="image-card-actions">
+                                <!-- Principal -->
                                 <form method="POST" action="{% url 'cambiar_principal' img.id %}" class="flex items-center gap-2">
                                     {% csrf_token %}
                                     <input type="radio" name="principal_{{ img.id }}" {% if img.es_principal %}checked{% endif %} onchange="this.form.submit()"> 
                                     <span>Principal</span>
                                 </form>
+                                <!-- Eliminar -->
                                 <form method="POST" action="{% url 'eliminar_imagen' img.id %}">
                                     {% csrf_token %}
                                     <button type="submit" onclick="return confirm('¿Eliminar esta imagen?')" class="btn-danger btn-small">
@@ -74,6 +78,61 @@
                 {% else %}
                     <p class="text-gray-600">No hay imágenes para este producto.</p>
                 {% endif %}
+            </div>
+
+            <!-- Sección Sprite 360° -->
+            <div class="form-container mt-8">
+                <h3 class="form-section-title">
+                    <i class="fas fa-sync-alt mr-2"></i>Vista 360°
+                </h3>
+                
+                {% if prod.sprite_360 %}
+                <!-- Tiene sprite 360° -->
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="font-medium text-blue-800">
+                                <i class="fas fa-check-circle mr-2"></i>Sprite 360° activo
+                            </p>
+                            <p class="text-sm text-blue-600">
+                                {{ prod.sprite_total }} frames ({{ prod.sprite_cols }}x{{ prod.sprite_rows }})
+                            </p>
+                        </div>
+                        <form method="POST" action="{% url 'eliminar_sprite_360' prod.id_producto %}">
+                            {% csrf_token %}
+                            <button type="submit" onclick="return confirm('¿Eliminar el sprite 360°? El producto mostrará las imágenes normales.')" 
+                                    class="bg-red-100 hover:bg-red-200 text-red-700 px-4 py-2 rounded text-sm font-medium transition">
+                                <i class="fas fa-times mr-1"></i> Eliminar 360°
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Preview del sprite -->
+                <div class="bg-gray-100 rounded-lg p-4 mb-4">
+                    <p class="text-sm text-gray-600 mb-2">Preview del sprite:</p>
+                    <img src="{{ prod.sprite_360.url }}" alt="Sprite 360" class="max-w-full h-auto rounded border">
+                </div>
+                {% endif %}
+                
+                <!-- Formulario para crear/regenerar sprite -->
+                <form method="POST" action="{% url 'generar_sprite_360' prod.id_producto %}" enctype="multipart/form-data" class="space-y-4">
+                    {% csrf_token %}
+                    <div>
+                        <label class="form-label">
+                            {% if prod.sprite_360 %}Regenerar sprite con nuevas imágenes:{% else %}Subir imágenes para crear vista 360°:{% endif %}
+                        </label>
+                        <input type="file" name="imagenes_360" multiple accept="image/*" class="form-input" required>
+                        <p class="text-xs text-gray-500 mt-1">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Sube múltiples imágenes (recomendado 36) de la llanta en diferentes ángulos. Se generará un sprite automáticamente.
+                        </p>
+                    </div>
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded font-medium transition w-full">
+                        <i class="fas fa-magic mr-2"></i>
+                        {% if prod.sprite_360 %}Regenerar Sprite 360°{% else %}Crear Sprite 360°{% endif %}
+                    </button>
+                </form>
             </div>
         </div>
 

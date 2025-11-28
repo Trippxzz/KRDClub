@@ -1,6 +1,3 @@
-/**
- * Visor 360° con Sprites - Optimizado para 1 sola petición HTTP
- */
 class Visor360Sprite {
     constructor(containerSelector, spriteData) {
         this.container = document.querySelector(containerSelector);

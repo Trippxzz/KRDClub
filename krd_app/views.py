@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from .models import Producto, ProductoImagen, Compra, ProductoCompra, vehiculo, Producto_Vehiculo, Venta, Producto_Venta, Usuario
+from .models import Producto, ProductoImagen, Compra, ProductoCompra, vehiculo, Producto_Vehiculo, Venta, Producto_Venta, Usuario, Logistica
 from .forms import ProductoForm, ProductoImagenForm, CompraForm, ProductoCompraForm, VehiculoForm, UsuarioForm
 from django.http import HttpResponse, JsonResponse
 from decimal import Decimal
@@ -496,6 +496,7 @@ def cambiar_principal(request, imagen_id):
         messages.success(request, "Imagen principal actualizada.")
         return redirect(reverse('editar_producto', args=[producto.id_producto]))
     return HttpResponse("Método no permitido", status=405)
+
 def eliminar_imagen(request, imagen_id):
     imagen = get_object_or_404(ProductoImagen, id=imagen_id)
     producto_id = imagen.producto.id_producto
@@ -503,6 +504,96 @@ def eliminar_imagen(request, imagen_id):
         imagen.delete()
         messages.success(request, "Imagen eliminada correctamente.")
         return redirect(reverse('editar_producto', args=[producto_id]))
+    return HttpResponse("Método no permitido", status=405)
+
+
+def generar_sprite_360(request, id):
+    """Generar o regenerar sprite 360° para un producto"""
+    producto = get_object_or_404(Producto, id_producto=id)
+    
+    if request.method == "POST":
+        imagenes = request.FILES.getlist('imagenes_360')
+        
+        if not imagenes or len(imagenes) < 2:
+            messages.error(request, "Debes subir al menos 2 imágenes para crear el sprite 360°")
+            return redirect(reverse('editar_producto', args=[id]))
+        
+        # Crear directorio temporal para las imágenes
+        temp_dir = tempfile.mkdtemp()
+        
+        try:
+            # Guardar imágenes temporalmente
+            imagenes_paths = []
+            for i, img in enumerate(imagenes):
+                ruta_temp = os.path.join(temp_dir, f"img_{i:03d}.jpg")
+                with open(ruta_temp, 'wb+') as destination:
+                    for chunk in img.chunks():
+                        destination.write(chunk)
+                imagenes_paths.append(ruta_temp)
+            
+            # Eliminar sprite anterior si existe
+            if producto.sprite_360:
+                try:
+                    old_sprite_path = os.path.join(settings.MEDIA_ROOT, str(producto.sprite_360))
+                    if os.path.exists(old_sprite_path):
+                        os.remove(old_sprite_path)
+                except Exception as e:
+                    print(f"Error eliminando sprite anterior: {e}")
+            
+            # Crear el sprite
+            sprite_path, cols, rows, total = crear_sprite_360(
+                imagenes_paths, 
+                producto.id_producto,
+                img_deseadas=36
+            )
+            
+            # Actualizar producto con datos del sprite
+            producto.sprite_360 = sprite_path
+            producto.sprite_cols = cols
+            producto.sprite_rows = rows
+            producto.sprite_total = total
+            producto.save()
+            
+            messages.success(request, f"Sprite 360° generado exitosamente ({total} frames)")
+            
+        except Exception as e:
+            messages.error(request, f"Error al generar sprite: {str(e)}")
+        finally:
+            # Limpiar temporales
+            shutil.rmtree(temp_dir)
+        
+        return redirect(reverse('editar_producto', args=[id]))
+    
+    return HttpResponse("Método no permitido", status=405)
+
+
+def eliminar_sprite_360(request, id):
+    """Eliminar sprite 360° de un producto"""
+    producto = get_object_or_404(Producto, id_producto=id)
+    
+    if request.method == "POST":
+        if producto.sprite_360:
+            try:
+                # Eliminar archivo físico
+                sprite_path = os.path.join(settings.MEDIA_ROOT, str(producto.sprite_360))
+                if os.path.exists(sprite_path):
+                    os.remove(sprite_path)
+            except Exception as e:
+                print(f"Error eliminando archivo: {e}")
+            
+            # Limpiar campos del modelo
+            producto.sprite_360 = None
+            producto.sprite_cols = 6
+            producto.sprite_rows = 6
+            producto.sprite_total = 36
+            producto.save()
+            
+            messages.success(request, "Sprite 360° eliminado. El producto mostrará las imágenes normales.")
+        else:
+            messages.warning(request, "Este producto no tiene sprite 360°")
+        
+        return redirect(reverse('editar_producto', args=[id]))
+    
     return HttpResponse("Método no permitido", status=405)
 
 
@@ -833,16 +924,7 @@ def admin_ventas(request):
     inicio_mes = hoy.replace(day=1)
     inicio_semana = hoy - timedelta(days=hoy.weekday())
     
-    # Filtros de fecha
-    fecha_desde = request.GET.get('fecha_desde')
-    fecha_hasta = request.GET.get('fecha_hasta')
-    
     ventas = Venta.objects.prefetch_related('productos_venta__id_producto').order_by('-fecha_venta')
-    
-    if fecha_desde:
-        ventas = ventas.filter(fecha_venta__date__gte=fecha_desde)
-    if fecha_hasta:
-        ventas = ventas.filter(fecha_venta__date__lte=fecha_hasta)
     
     # Agregar cantidad total a cada venta
     for venta in ventas:
@@ -896,11 +978,103 @@ def admin_compras(request):
     })
 
 
+def admin_logistica(request):
+    """Panel de logística - gestión de envíos"""
+    if not request.user.is_authenticated or not getattr(request.user, 'admin', False):
+        messages.error(request, 'No tienes permisos de administrador')
+        return redirect('panel_login')
+    
+    # Crear registros de logística para ventas que no tengan
+    ventas_sin_logistica = Venta.objects.filter(logistica__isnull=True)
+    for venta in ventas_sin_logistica:
+        Logistica.objects.create(venta=venta, estado='pendiente')
+    
+    # Filtro por estado
+    estado_filtro = request.GET.get('estado', 'todos')
+    
+    logisticas = Logistica.objects.select_related('venta').prefetch_related(
+        'venta__productos_venta__id_producto'
+    ).order_by('-venta__fecha_venta')
+    
+    if estado_filtro != 'todos':
+        logisticas = logisticas.filter(estado=estado_filtro)
+    
+    # Agregar datos del usuario a cada logística
+    for log in logisticas:
+        if log.venta.id_usuario:
+            try:
+                log.usuario = Usuario.objects.get(rut=log.venta.id_usuario)
+            except Usuario.DoesNotExist:
+                log.usuario = None
+        else:
+            log.usuario = None
+    
+    # Stats
+    stats = {
+        'pendientes': Logistica.objects.filter(estado='pendiente').count(),
+        'enviados': Logistica.objects.filter(estado='enviado').count(),
+        'entregados': Logistica.objects.filter(estado='entregado').count(),
+        'total': Logistica.objects.count(),
+    }
+    
+    return render(request, 'panel/logistica.html', {
+        'logisticas': logisticas,
+        'stats': stats,
+        'estado_filtro': estado_filtro,
+    })
+
+
+def marcar_enviado(request, venta_id):
+    """Marcar una venta como enviada"""
+    if not request.user.is_authenticated or not getattr(request.user, 'admin', False):
+        return JsonResponse({'error': 'Sin permisos'}, status=403)
+    
+    if request.method == 'POST':
+        try:
+            logistica = get_object_or_404(Logistica, venta_id=venta_id)
+            
+            empresa = request.POST.get('empresa_envio', '').strip()
+            n_seguimiento = request.POST.get('n_seguimiento', '').strip()
+            fecha_envio = request.POST.get('fecha_envio', '')
+            
+            if not empresa or not n_seguimiento or not fecha_envio:
+                messages.error(request, 'Todos los campos son obligatorios')
+                return redirect('admin_logistica')
+            
+            logistica.empresa_envio = empresa
+            logistica.n_seguimiento = n_seguimiento
+            logistica.fecha_envio = fecha_envio
+            logistica.estado = 'enviado'
+            logistica.save()
+            
+            messages.success(request, f'Venta #{venta_id} marcada como enviada')
+        except Exception as e:
+            messages.error(request, f'Error: {str(e)}')
+    
+    return redirect('admin_logistica')
+
+
+def marcar_entregado(request, venta_id):
+    """Marcar una venta como entregada"""
+    if not request.user.is_authenticated or not getattr(request.user, 'admin', False):
+        return JsonResponse({'error': 'Sin permisos'}, status=403)
+    
+    try:
+        logistica = get_object_or_404(Logistica, venta_id=venta_id)
+        logistica.estado = 'entregado'
+        logistica.save()
+        messages.success(request, f'Venta #{venta_id} marcada como entregada')
+    except Exception as e:
+        messages.error(request, f'Error: {str(e)}')
+    
+    return redirect('admin_logistica')
+
+
 ### Login Panel de Administración
 from django.contrib.auth import login, logout, authenticate
 import re
 
-def validar_rut_chileno(rut):
+def formato_rut(rut):
     """Valida formato y dígito verificador de RUT chileno"""
     # Limpiar el RUT
     rut = rut.replace(".", "").replace("-", "").upper()
@@ -947,7 +1121,7 @@ def panel_login(request):
         password = request.POST.get('password', '')
         
         # Validar RUT chileno
-        if not validar_rut_chileno(rut):
+        if not formato_rut(rut):
             messages.error(request, 'El RUT ingresado no es válido.')
             return render(request, 'panel/login.html', {'rut': rut})
         
