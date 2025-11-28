@@ -14,15 +14,15 @@
         </div>
         <div class="bg-white rounded-lg p-4 border border-gray-100">
             <p class="text-sm text-gray-500">Total Neto</p>
-            <p class="text-2xl font-bold text-gray-900">${{ total_neto|floatformat:0|default:"0" }}</p>
+            <p class="text-2xl font-bold text-gray-900">${{ total_neto|floatformat:0|default:"0"|formato_miles }}</p>
         </div>
         <div class="bg-white rounded-lg p-4 border border-gray-100">
             <p class="text-sm text-gray-500">IVA (19%)</p>
-            <p class="text-2xl font-bold text-orange-600">${{ total_iva|floatformat:0|default:"0" }}</p>
+            <p class="text-2xl font-bold text-orange-600">${{ total_iva|floatformat:0|default:"0"|formato_miles }}</p>
         </div>
         <div class="bg-white rounded-lg p-4 border border-gray-100">
             <p class="text-sm text-gray-500">Total Bruto</p>
-            <p class="text-2xl font-bold text-green-600">${{ total_bruto|floatformat:0|default:"0" }}</p>
+            <p class="text-2xl font-bold text-green-600">${{ total_bruto|floatformat:0|default:"0"|formato_miles }}</p>
         </div>
     </div>
     <a href="{% url 'crear_compra' %}" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition flex items-center">
@@ -71,13 +71,13 @@
                         </span>
                     </td>
                     <td class="px-6 py-4 text-right">
-                        <span class="text-gray-900">${{ compra.neto|floatformat:0 }}</span>
+                        <span class="text-gray-900">${{ compra.neto|floatformat:0|formato_miles|formato_miles }}</span>
                     </td>
                     <td class="px-6 py-4 text-right">
-                        <span class="text-orange-600 text-sm">${{ compra.iva|floatformat:0 }}</span>
+                        <span class="text-orange-600 text-sm">${{ compra.iva|floatformat:0|formato_miles }}</span>
                     </td>
                     <td class="px-6 py-4 text-right">
-                        <span class="text-lg font-bold text-green-700">${{ compra.bruto|floatformat:0 }}</span>
+                        <span class="text-lg font-bold text-green-700">${{ compra.bruto|floatformat:0|formato_miles }}</span>
                     </td>
                     <td class="px-6 py-4 text-center">
                         {% if compra.pdf %}

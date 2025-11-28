@@ -5,25 +5,6 @@
 {% block page_subtitle %}Historial y seguimiento de ventas{% endblock %}
 
 {% block content %}
-<!-- Stats -->
-<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-    <div class="bg-white rounded-lg p-4 border border-gray-100">
-        <p class="text-sm text-gray-500">Ventas Hoy</p>
-        <p class="text-2xl font-bold text-gray-900">${{ stats.ventas_hoy|floatformat:0|default:"0" }}</p>
-    </div>
-    <div class="bg-white rounded-lg p-4 border border-gray-100">
-        <p class="text-sm text-gray-500">Ventas Esta Semana</p>
-        <p class="text-2xl font-bold text-gray-900">${{ stats.ventas_semana|floatformat:0|default:"0" }}</p>
-    </div>
-    <div class="bg-white rounded-lg p-4 border border-gray-100">
-        <p class="text-sm text-gray-500">Ventas Este Mes</p>
-        <p class="text-2xl font-bold text-gray-900">${{ stats.ventas_mes|floatformat:0|default:"0" }}</p>
-    </div>
-    <div class="bg-white rounded-lg p-4 border border-gray-100">
-        <p class="text-sm text-gray-500">Total Ventas</p>
-        <p class="text-2xl font-bold text-gray-900">{{ stats.total_ventas }}</p>
-    </div>
-</div>
 
 {% comment %} <!-- Filtros -->
 <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6">
@@ -89,7 +70,7 @@
                         </span>
                     </td>
                     <td class="px-6 py-4 text-right">
-                        <span class="text-lg font-bold text-gray-900">${{ venta.precio_venta|floatformat:0 }}</span>
+                        <span class="text-lg font-bold text-gray-900">${{ venta.precio_venta|floatformat:0|formato_miles }}</span>
                     </td>
                     <td class="px-6 py-4 text-center">
                         <button onclick="verDetalle({{ venta.id }})" 
@@ -136,7 +117,7 @@ const ventasData = {
     {{ venta.id }}: {
         id: {{ venta.id }},
         fecha: "{{ venta.fecha_venta|date:'d/m/Y H:i' }}",
-        total: "{{ venta.precio_venta|floatformat:0 }}",
+        total: "{{ venta.precio_venta|floatformat:0 |formato_miles}}",
         cliente:{
             rut: "{{venta.id_usuario}}"
         },
@@ -145,8 +126,8 @@ const ventasData = {
             {
                 nombre: "{{ item.id_producto.n_producto }}",
                 cantidad: {{ item.cantidad }},
-                precio: "{{ item.precio_unitario|floatformat:0 }}",
-                subtotal: "{{ item.subtotal|floatformat:0 }}"
+                precio: "{{ item.precio_unitario|floatformat:0 |formato_miles}}",
+                subtotal: "{{ item.subtotal|floatformat:0|formato_miles }}"
             },
             {% endfor %}
         ]

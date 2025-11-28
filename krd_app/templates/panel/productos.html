@@ -42,7 +42,7 @@
                             {% endif %}
                             <div>
                                 <p class="font-medium text-gray-900">{{ prod.n_producto }}</p>
-                                 <p class="text-sm text-gray-500">ID: {{ prod.id_producto|truncatechars:50 }}</p>{% comment %} SIGNIFICA QUE A LOS 13 CARACTERES SE CORTA {% endcomment %}
+                                 <p class="text-sm text-gray-500">ID: {{ prod.id_producto|truncatechars:50 }}</p>{% comment %} SIGNIFICA QUE A LOS 50 CARACTERES SE CORTA {% endcomment %}
                             </div>
                         </div>
                     </td>
@@ -69,7 +69,7 @@
                         {% endif %}
                     </td>
                     <td class="px-6 py-4 text-right">
-                        <span class="font-bold text-gray-900">${{ prod.precio|floatformat:0 }}</span>
+                        <span class="font-bold text-gray-900">${{ prod.precio|floatformat:0|formato_miles }}</span>
                     </td>
                     <td class="px-6 py-4 text-center">
                         {% if prod.sprite_360 %}

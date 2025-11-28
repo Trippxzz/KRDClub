@@ -92,7 +92,7 @@
                         <div>
                             <p class="font-bold text-gray-900">#{{ log.venta.id }}</p>
                             <p class="text-xs text-gray-500">{{ log.venta.fecha_venta|date:"d/m/Y H:i" }}</p>
-                            <p class="text-sm font-semibold text-green-600">${{ log.venta.precio_venta|floatformat:0 }}</p>
+                            <p class="text-sm font-semibold text-green-600">${{ log.venta.precio_venta|floatformat:0|formato_miles }}</p>
                         </div>
                     </td>
                     <td class="py-4 px-6">
