@@ -5,22 +5,106 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/home.css' %}">
+<style>
+    .hero-section {
+        background: #fafafa;
+        position: relative;
+        overflow: hidden;
+    }
+    .hero-title {
+        font-family: 'Playfair Display', serif;
+        letter-spacing: 0.02em;
+        line-height: 1.1;
+        color: #111;
+    }
+    .hero-title-accent {
+        display: block;
+        font-style: italic;
+        font-weight: 400;
+        color: #666;
+    }
+    .hero-divider {
+        width: 60px;
+        height: 2px;
+        background: linear-gradient(to right, #b8860b, #d4a853);
+    }
+    /* Tooltip styles */
+    .info-tooltip {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        font-size: 14px;
+        color: rgba(255,255,255,0.6);
+        cursor: help;
+        transition: color 0.2s ease;
+    }
+    .info-tooltip:hover {
+        color: #fff;
+    }
+    .info-tooltip .tooltip-text {
+        visibility: hidden;
+        opacity: 0;
+        position: absolute;
+        bottom: 130%;
+        right: 0;
+        transform: none;
+        background: rgba(0,0,0,0.95);
+        color: #fff;
+        padding: 12px 16px;
+        border-radius: 8px;
+        font-size: 13px;
+        line-height: 1.5;
+        white-space: nowrap;
+        z-index: 100;
+        border: 1px solid rgba(255,255,255,0.2);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        transition: all 0.2s ease;
+    }
+    .info-tooltip .tooltip-text::after {
+        content: '';
+        position: absolute;
+        top: 100%;
+        right: 8px;
+        transform: none;
+        border: 6px solid transparent;
+        border-top-color: rgba(0,0,0,0.95);
+    }
+    .info-tooltip:hover .tooltip-text {
+        visibility: visible;
+        opacity: 1;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
-    <!-- Hero Section Lujoso -->
-    <section class="luxury-gradient relative overflow-hidden">
-        <div class="absolute top-0 right-0 w-96 h-96 bg-gray-100 rounded-full opacity-20 -mr-48 -mt-48"></div>
-        <div class="absolute bottom-0 left-0 w-80 h-80 bg-gray-100 rounded-full opacity-20 -ml-40 -mb-40"></div>
+    
+    <section class="hero-section relative overflow-hidden min-h-[70vh] flex items-center">
         
-        <div class="relative max-w-7xl mx-auto px-6 py-32 lg:py-48">
-            <div class="max-w-3xl">
-                <h1 class="text-5xl sm:text-6xl md:text-7xl font-bold text-black mb-6 luxury-text leading-tight">
-                    Elegancia <span class="text-gray-600">en Movimiento</span>
+        <div class="relative w-full px-8 md:px-16 lg:px-24 py-20 lg:py-28 z-10">
+            <div class="max-w-4xl mx-auto text-center">
+                <!-- Línea decorativa superior -->
+                <div class="hero-divider mx-auto mb-10"></div>
+                
+                <!-- Logo grande -->
+                <h1 class="hero-title text-8xl sm:text-9xl md:text-[12rem] lg:text-[14rem] tracking-[0.3em] font-bold mb-6">
+                    KRD
                 </h1>
-                <p class="text-lg md:text-xl text-gray-600 mb-8 max-w-2xl leading-relaxed font-light">
-                    Experimenta la perfección de llantas premium diseñadas para quienes demandan lo mejor. Lujo, rendimiento y distinción en cada kilómetro.
+                
+                <!-- Eslogan -->
+                <p class="text-lg md:text-xl lg:text-2xl text-gray-400 tracking-[0.25em] uppercase font-light mb-8">
+                    Elegancia en Movimiento
                 </p>
+                
+                <!-- Línea decorativa -->
+                <div class="hero-divider mx-auto my-10"></div>
+                
+                <p class="text-base md:text-lg text-gray-500 max-w-xl mx-auto leading-relaxed font-light font-precio">
+                    Llantas premium diseñadas para quienes demandan lo mejor.
+                </p>
+                
             </div>
         </div>
     </section>
@@ -29,19 +113,18 @@
     <section id="filtro-vehiculos-section" class="vehicle-filter-section relative py-20 md:py-28 -mt-16 z-10 overflow-hidden bg-black">
        
         <div id="vehicle-bg-container" class="absolute inset-0 z-0">
-           
-            <!-- Overlay oscuro -->
             <div class="absolute inset-0 bg-black"></div>
         </div>
         
         <div class="relative z-10 max-w-6xl mx-auto px-6">
             <div class="text-center mb-12">
-                <p class="text-sm tracking-[0.3em] text-gray-400 mb-3 uppercase">Búsqueda Inteligente</p>
+                <p class="text-sm tracking-[0.3em] text-gray-400 mb-3 uppercase font-precio">Búsqueda Inteligente</p>
                 <h2 class="text-3xl md:text-5xl font-bold text-white mb-4" style="font-family: 'Cormorant Garamond', serif;">
-                    Encuentra tu Match Perfecto</span>
+                    Encuentra tu Match Perfecto
+                    <span class="info-tooltip ml-2">ⓘ<span class="tooltip-text">Utiliza el filtro para buscar productos compatibles con tu vehículo.<br>Selecciona marca, modelo, cilindrada y año.</span></span>
                 </h2>
-                <p class="text-gray-400 text-lg max-w-2xl mx-auto">
-                    Selecciona tu vehículo y descubre los productos diseñados específicamente para él
+                <p class="text-gray-400 text-lg max-w-2xl mx-auto font-precio">
+                    Selecciona tu vehículo y descubre la llanta diseñada específicamente para él
                 </p>
             </div>
             
@@ -51,10 +134,10 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 items-end">
                     <!-- Marca -->
                     <div class="filter-field">
-                        <label class="block text-sm font-medium text-gray-300 mb-3 tracking-wider uppercase">
+                        <label class="block text-sm font-medium text-gray-300 mb-3 tracking-wider uppercase font-precio">
                             <i class="fas fa-trademark mr-2"></i>Marca
                         </label>
-                        <select id="filtro-marca" class="filter-select w-full px-5 py-4 bg-white/10 border border-white/30 rounded-xl text-white focus:ring-2 focus:ring-white/50 focus:border-white/50 transition-all backdrop-blur-sm">
+                        <select id="filtro-marca" class="filter-select w-full px-5 py-4 bg-white/10 border border-white/30 rounded-xl text-white focus:ring-2 focus:ring-white/50 focus:border-white/50 transition-all backdrop-blur-sm font-precio">
                             <option value="" class="text-gray-900">Seleccionar marca</option>
                             {% for value, label in marcas %}
                                 <option value="{{ value }}" class="text-gray-900">{{ label }}</option>
@@ -64,30 +147,30 @@
                     
                     <!-- Modelo -->
                     <div class="filter-field">
-                        <label class="block text-sm font-medium text-gray-300 mb-3 tracking-wider uppercase">
+                        <label class="block text-sm font-medium text-gray-300 mb-3 tracking-wider uppercase font-precio">
                             <i class="fas fa-car mr-2"></i>Modelo
                         </label>
-                        <select id="filtro-modelo" class="filter-select w-full px-5 py-4 bg-white/10 border border-white/30 rounded-xl text-white focus:ring-2 focus:ring-white/50 focus:border-white/50 transition-all backdrop-blur-sm disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                        <select id="filtro-modelo" class="filter-select w-full px-5 py-4 bg-white/10 border border-white/30 rounded-xl text-white focus:ring-2 focus:ring-white/50 focus:border-white/50 transition-all backdrop-blur-sm disabled:opacity-50 disabled:cursor-not-allowed font-precio" disabled>
                             <option value="" class="text-gray-900">Primero selecciona marca</option>
                         </select>
                     </div>
                     
                     <!-- Cilindrada -->
                     <div class="filter-field">
-                        <label class="block text-sm font-medium text-gray-300 mb-3 tracking-wider uppercase">
+                        <label class="block text-sm font-medium text-gray-300 mb-3 tracking-wider uppercase font-precio">
                             <i class="fas fa-tachometer-alt mr-2"></i>Cilindrada
                         </label>
-                        <select id="filtro-cilindrada" class="filter-select w-full px-5 py-4 bg-white/10 border border-white/30 rounded-xl text-white focus:ring-2 focus:ring-white/50 focus:border-white/50 transition-all backdrop-blur-sm disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                        <select id="filtro-cilindrada" class="filter-select w-full px-5 py-4 bg-white/10 border border-white/30 rounded-xl text-white focus:ring-2 focus:ring-white/50 focus:border-white/50 transition-all backdrop-blur-sm disabled:opacity-50 disabled:cursor-not-allowed font-precio" disabled>
                             <option value="" class="text-gray-900">Selecciona modelo</option>
                         </select>
                     </div>
                     
                     <!-- Año -->
                     <div class="filter-field">
-                        <label class="block text-sm font-medium text-gray-300 mb-3 tracking-wider uppercase">
+                        <label class="block text-sm font-medium text-gray-300 mb-3 tracking-wider uppercase font-precio">
                             <i class="fas fa-calendar-alt mr-2"></i>Año
                         </label>
-                        <select id="filtro-anio" class="filter-select w-full px-5 py-4 bg-white/10 border border-white/30 rounded-xl text-white focus:ring-2 focus:ring-white/50 focus:border-white/50 transition-all backdrop-blur-sm disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                        <select id="filtro-anio" class="filter-select w-full px-5 py-4 bg-white/10 border border-white/30 rounded-xl text-white focus:ring-2 focus:ring-white/50 focus:border-white/50 transition-all backdrop-blur-sm disabled:opacity-50 disabled:cursor-not-allowed font-precio" disabled>
                             <option value="" class="text-gray-900">Selecciona cilindrada</option>
                         </select>
                     </div>
@@ -95,7 +178,7 @@
                     <!-- Botón Buscar -->
                     <div class="filter-field">
                         <label class="block text-sm font-medium text-transparent mb-3">.</label>
-                        <button id="btn-buscar-vehiculo" class="search-btn w-full bg-white text-black px-6 py-4 rounded-xl font-bold tracking-wider hover:bg-gray-100 transition-all disabled:bg-gray-500 disabled:text-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-3" disabled>
+                        <button id="btn-buscar-vehiculo" class="search-btn w-full bg-white text-black px-6 py-4 rounded-xl font-bold tracking-wider hover:bg-gray-100 transition-all disabled:bg-gray-500 disabled:text-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-3 font-precio" disabled>
                             <i class="fas fa-search"></i>
                             <span>BUSCAR</span>
                         </button>
@@ -115,55 +198,52 @@
     <section class="bg-gray-50 py-20">
         <div class="max-w-7xl mx-auto px-6">
             <div class="text-center mb-16">
-                <p class="text-gray-600 text-sm tracking-[0.3em] mb-3 uppercase">Porqué elegirnos</p>
+                <p class="text-gray-600 text-sm tracking-[0.3em] mb-3 uppercase font-precio">Porqué elegirnos</p>
                 <h2 class="text-4xl md:text-5xl font-bold text-black luxury-text mb-4">Excelencia Garantizada</h2>
                 <div class="w-16 h-1 bg-black mx-auto"></div>
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
-                <!-- Característica 1 -->
                 <div class="text-center hover-lift">
                     <div class="mb-6 flex justify-center">
                         <div class="w-20 h-20 bg-black rounded-lg flex items-center justify-center">
                             <i class="fas fa-crown text-white text-2xl"></i>
                         </div>
                     </div>
-                    <h3 class="text-2xl font-bold text-black mb-3 luxury-text">Calidad Premium</h3>
-                    <p class="text-gray-600 leading-relaxed font-light">
-                        Materiales de la más alta calidad, seleccionados meticulosamente para garantizar durabilidad y rendimiento excepcional.
+                    <h3 class="text-2xl font-bold text-black mb-3 luxury-text">Aleación Premium</h3>
+                    <p class="text-gray-600 leading-relaxed font-light font-precio">
+                        Llantas fabricadas con aleaciones de aluminio de alta resistencia, más livianas y duraderas que el acero convencional.
                     </p>
                 </div>
 
-                <!-- Característica 2 -->
                 <div class="text-center hover-lift">
                     <div class="mb-6 flex justify-center">
                         <div class="w-20 h-20 bg-black rounded-lg flex items-center justify-center">
-                            <i class="fas fa-tachometer-alt text-white text-2xl"></i>
+                            <i class="fas fa-car text-white text-2xl"></i>
                         </div>
                     </div>
-                    <h3 class="text-2xl font-bold text-black mb-3 luxury-text">Rendimiento</h3>
-                    <p class="text-gray-600 leading-relaxed font-light">
-                        Diseño aerodinámico y tecnología avanzada para máxima velocidad, agarre y seguridad en cualquier condición.
+                    <h3 class="text-2xl font-bold text-black mb-3 luxury-text">Compatibilidad Total</h3>
+                    <p class="text-gray-600 leading-relaxed font-light font-precio">
+                        Amplio catálogo de llantas compatibles con las principales marcas y modelos de alta gama de vehículos del mercado chileno.
                     </p>
                 </div>
 
-                <!-- Característica 3 -->
                 <div class="text-center hover-lift">
                     <div class="mb-6 flex justify-center">
                         <div class="w-20 h-20 bg-black rounded-lg flex items-center justify-center">
                             <i class="fas fa-check-circle text-white text-2xl"></i>
                         </div>
                     </div>
-                    <h3 class="text-2xl font-bold text-black mb-3 luxury-text">Garantía Vitalicia</h3>
-                    <p class="text-gray-600 leading-relaxed font-light">
-                        Respaldamos todos nuestros productos con una garantía exhaustiva que refleja nuestra confianza en la calidad.
+                    <h3 class="text-2xl font-bold text-black mb-3 luxury-text">Garantía de Fábrica</h3>
+                    <p class="text-gray-600 leading-relaxed font-light font-precio">
+                        Todas nuestras llantas cuentan con garantía del fabricante contra defectos de manufactura y materiales.
                     </p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Carrusel de Productos Destacados -->
+    {% comment %} <!-- Carrusel de Productos Destacados -->
     <section class="bg-white py-24">
         <div class="max-w-7xl mx-auto px-6">
             <div class="text-center mb-16">
@@ -172,17 +252,15 @@
                 <div class="w-16 h-1 bg-black mx-auto"></div>
             </div>
 
-            <!-- Carrusel Container -->
             <div class="carousel-container relative">
                 <!-- Botón Anterior -->
                 <button id="carousel-prev" class="carousel-btn carousel-btn-prev" aria-label="Anterior">
                     <i class="fas fa-chevron-left"></i>
                 </button>
-                
-                <!-- Carrusel Track -->
+               
                 <div class="carousel-viewport overflow-hidden">
                     <div id="carousel-track" class="carousel-track flex transition-transform duration-500 ease-out">
-                        <!-- Producto 1 -->
+                        
                         <div class="carousel-slide flex-shrink-0 w-full md:w-1/3 px-4">
                             <div class="group hover-lift bg-gray-50 rounded-lg overflow-hidden h-full">
                                 <div class="relative h-80 bg-gradient-to-br from-gray-200 to-gray-100 overflow-hidden flex items-center justify-center">
@@ -202,124 +280,18 @@
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Producto 2 -->
-                        <div class="carousel-slide flex-shrink-0 w-full md:w-1/3 px-4">
-                            <div class="group hover-lift bg-gray-50 rounded-lg overflow-hidden h-full">
-                                <div class="relative h-80 bg-gradient-to-br from-gray-200 to-gray-100 overflow-hidden flex items-center justify-center">
-                                    <svg class="w-40 h-40 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" />
-                                    </svg>
-                                </div>
-                                <div class="p-8">
-                                    <p class="text-gray-500 text-sm tracking-wider mb-2">LLANTAS 2</p>
-                                    <div class="flex items-center justify-between">
-                                        <span class="text-2xl font-bold text-black">$350.000</span>
-                                        <a href="{% url 'listar_productos' %}" class="bg-black text-white px-6 py-2 text-sm font-medium tracking-wider hover:bg-gray-900 transition">
-                                            VER
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Producto 3 -->
-                        <div class="carousel-slide flex-shrink-0 w-full md:w-1/3 px-4">
-                            <div class="group hover-lift bg-gray-50 rounded-lg overflow-hidden h-full">
-                                <div class="relative h-80 bg-gradient-to-br from-gray-200 to-gray-100 overflow-hidden flex items-center justify-center">
-                                    <svg class="w-40 h-40 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" />
-                                    </svg>
-                                    <div class="absolute top-4 left-4 bg-red-600 text-white px-4 py-2 text-xs tracking-widest font-bold">LIMITADO</div>
-                                </div>
-                                <div class="p-8">
-                                    <p class="text-gray-500 text-sm tracking-wider mb-2">LLANTAS 3</p>
-                                    <div class="flex items-center justify-between">
-                                        <span class="text-2xl font-bold text-black">$499.990</span>
-                                        <a href="{% url 'listar_productos' %}" class="bg-black text-white px-6 py-2 text-sm font-medium tracking-wider hover:bg-gray-900 transition">
-                                            VER
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Producto 4 -->
-                        <div class="carousel-slide flex-shrink-0 w-full md:w-1/3 px-4">
-                            <div class="group hover-lift bg-gray-50 rounded-lg overflow-hidden h-full">
-                                <div class="relative h-80 bg-gradient-to-br from-gray-200 to-gray-100 overflow-hidden flex items-center justify-center">
-                                    <svg class="w-40 h-40 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" />
-                                    </svg>
-                                </div>
-                                <div class="p-8">
-                                    <p class="text-gray-500 text-sm tracking-wider mb-2">LLANTAS 4</p>
-                                    <div class="flex items-center justify-between">
-                                        <span class="text-2xl font-bold text-black">$389.990</span>
-                                        <a href="{% url 'listar_productos' %}" class="bg-black text-white px-6 py-2 text-sm font-medium tracking-wider hover:bg-gray-900 transition">
-                                            VER
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Producto 5 -->
-                        <div class="carousel-slide flex-shrink-0 w-full md:w-1/3 px-4">
-                            <div class="group hover-lift bg-gray-50 rounded-lg overflow-hidden h-full">
-                                <div class="relative h-80 bg-gradient-to-br from-gray-200 to-gray-100 overflow-hidden flex items-center justify-center">
-                                    <svg class="w-40 h-40 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" />
-                                    </svg>
-                                    <div class="absolute top-4 right-4 bg-black text-white px-4 py-2 text-xs tracking-widest font-bold">POPULAR</div>
-                                </div>
-                                <div class="p-8">
-                                    <p class="text-gray-500 text-sm tracking-wider mb-2">LLANTAS 5</p>
-                                    <h3 class="text-2xl font-bold text-black mb-2 luxury-text"></h3>
-                                    <p class="text-gray-600 text-sm mb-6 font-light leading-relaxed">
-                                    </p>
-                                    <div class="flex items-center justify-between">
-                                        <span class="text-2xl font-bold text-black">$329.990</span>
-                                        <a href="{% url 'listar_productos' %}" class="bg-black text-white px-6 py-2 text-sm font-medium tracking-wider hover:bg-gray-900 transition">
-                                            VER
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Producto 6 -->
-                        <div class="carousel-slide flex-shrink-0 w-full md:w-1/3 px-4">
-                            <div class="group hover-lift bg-gray-50 rounded-lg overflow-hidden h-full">
-                                <div class="relative h-80 bg-gradient-to-br from-gray-200 to-gray-100 overflow-hidden flex items-center justify-center">
-                                    <svg class="w-40 h-40 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" />
-                                    </svg>
-                                </div>
-                                <div class="p-8">
-                                    <p class="text-gray-500 text-sm tracking-wider mb-2">ACCESORIOS</p>
-                                    <h3 class="text-2xl font-bold text-black mb-2 luxury-text">Kit Premium Plus</h3>                               
-                                    <div class="flex items-center justify-between">
-                                        <span class="text-2xl font-bold text-black">$89.990</span>
-                                        <a href="{% url 'listar_productos' %}" class="bg-black text-white px-6 py-2 text-sm font-medium tracking-wider hover:bg-gray-900 transition">
-                                            VER
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
                 
-                <!-- Botón Siguiente -->
+                
                 <button id="carousel-next" class="carousel-btn carousel-btn-next" aria-label="Siguiente">
                     <i class="fas fa-chevron-right"></i>
                 </button>
             </div>
 
-            <!-- Indicadores del Carrusel -->
+            
             <div id="carousel-indicators" class="flex justify-center mt-8 gap-3">
-                <!-- Los indicadores se generan dinámicamente con JS -->
+                
             </div>
             
             <div class="text-center mt-12">
@@ -328,7 +300,7 @@
                 </a>
             </div>
         </div>
-    </section>
+    </section> {% endcomment %}
 
 {% endblock %}
 

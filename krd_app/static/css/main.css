@@ -60,6 +60,16 @@ h1, h2, h3, h4, h5, h6 {
     transform: scaleX(1);
 }
 
+/* Navegación activa - mantener línea visible */
+.underline-gold.nav-active::after {
+    transform: scaleX(1);
+    background: linear-gradient(90deg, #b8860b, #d4a853);
+}
+
+.nav-active {
+    color: #000 !important;
+}
+
 /* ============ CARDS Y PRODUCTOS ============ */
 .product-card {
     transition: transform 0.3s ease, box-shadow 0.3s ease;

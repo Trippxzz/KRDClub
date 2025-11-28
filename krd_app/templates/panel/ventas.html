@@ -31,30 +31,30 @@
 <!-- Tabla de Ventas -->
 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
     <div class="overflow-x-auto">
-        <table class="w-full">
+        <table class="w-full min-w-[600px] md:min-w-0">
             <thead class="bg-gray-50 border-b border-gray-200">
                 <tr>
-                    <th class="text-left px-6 py-4 text-xs font-semibold text-gray-600 uppercase">ID Venta</th>
-                    <th class="text-left px-6 py-4 text-xs font-semibold text-gray-600 uppercase">Fecha</th>
-                    <th class="text-left px-6 py-4 text-xs font-semibold text-gray-600 uppercase">Productos</th>
-                    <th class="text-center px-6 py-4 text-xs font-semibold text-gray-600 uppercase">Cantidad</th>
-                    <th class="text-right px-6 py-4 text-xs font-semibold text-gray-600 uppercase">Total</th>
-                    <th class="text-center px-6 py-4 text-xs font-semibold text-gray-600 uppercase">Acciones</th>
+                    <th class="text-left px-4 md:px-6 py-4 text-xs font-semibold text-gray-600 uppercase">ID</th>
+                    <th class="text-left px-4 md:px-6 py-4 text-xs font-semibold text-gray-600 uppercase">Fecha</th>
+                    <th class="text-left px-4 md:px-6 py-4 text-xs font-semibold text-gray-600 uppercase hidden md:table-cell">Productos</th>
+                    <th class="text-center px-4 md:px-6 py-4 text-xs font-semibold text-gray-600 uppercase hidden sm:table-cell">Cant.</th>
+                    <th class="text-right px-4 md:px-6 py-4 text-xs font-semibold text-gray-600 uppercase">Total</th>
+                    <th class="text-center px-4 md:px-6 py-4 text-xs font-semibold text-gray-600 uppercase">Ver</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
                 {% for venta in ventas %}
                 <tr class="hover:bg-gray-50 transition">
-                    <td class="px-6 py-4">
+                    <td class="px-4 md:px-6 py-4">
                         <span class="font-mono font-bold text-blue-600">#{{ venta.id }}</span>
                     </td>
-                    <td class="px-6 py-4">
+                    <td class="px-4 md:px-6 py-4">
                         <div>
-                            <p class="font-medium text-gray-900">{{ venta.fecha_venta|date:"d/m/Y" }}</p>
-                            <p class="text-sm text-gray-500">{{ venta.fecha_venta|time:"H:i" }}</p>
+                            <p class="font-medium text-gray-900 text-sm md:text-base">{{ venta.fecha_venta|date:"d/m/Y" }}</p>
+                            <p class="text-xs md:text-sm text-gray-500">{{ venta.fecha_venta|time:"H:i" }}</p>
                         </div>
                     </td>
-                    <td class="px-6 py-4">
+                    <td class="px-4 md:px-6 py-4 hidden md:table-cell">
                         <div class="space-y-1">
                             {% for item in venta.productos_venta.all|slice:":2" %}
                             <p class="text-sm text-gray-700">{{ item.id_producto.n_producto|truncatechars:30 }} x{{ item.cantidad }}</p>
@@ -64,15 +64,15 @@
                             {% endif %}
                         </div>
                     </td>
-                    <td class="px-6 py-4 text-center">
-                        <span class="inline-block bg-gray-100 px-3 py-1 rounded-full text-sm font-medium">
-                            {{ venta.cantidad_total }} items
+                    <td class="px-4 md:px-6 py-4 text-center hidden sm:table-cell">
+                        <span class="inline-block bg-gray-100 px-2 md:px-3 py-1 rounded-full text-xs md:text-sm font-medium">
+                            {{ venta.cantidad_total }}
                         </span>
                     </td>
-                    <td class="px-6 py-4 text-right">
-                        <span class="text-lg font-bold text-gray-900">${{ venta.precio_venta|floatformat:0|formato_miles }}</span>
+                    <td class="px-4 md:px-6 py-4 text-right">
+                        <span class="text-sm md:text-lg font-bold text-gray-900 font-precio">${{ venta.precio_venta|floatformat:0|formato_miles }}</span>
                     </td>
-                    <td class="px-6 py-4 text-center">
+                    <td class="px-4 md:px-6 py-4 text-center">
                         <button onclick="verDetalle({{ venta.id }})" 
                                 class="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition"
                                 title="Ver detalle">
@@ -145,8 +145,8 @@ function verDetalle(id) {
         <tr class="border-b border-gray-100">
             <td class="py-3">${p.nombre}</td>
             <td class="py-3 text-center">${p.cantidad}</td>
-            <td class="py-3 text-right">$${p.precio}</td>
-            <td class="py-3 text-right font-medium">$${p.subtotal}</td>
+            <td class="py-3 text-right font-precio">$${p.precio}</td>
+            <td class="py-3 text-right font-medium font-precio">$${p.subtotal}</td>
         </tr>
     `).join('');
     
@@ -170,7 +170,7 @@ function verDetalle(id) {
             <tfoot class="bg-gray-50">
                 <tr>
                     <td colspan="3" class="py-4 text-right font-bold">TOTAL:</td>
-                    <td class="py-4 text-right text-xl font-bold text-green-600">$${venta.total}</td>
+                    <td class="py-4 text-right text-xl font-bold text-green-600 font-precio">$${venta.total}</td>
                 </tr>
             </tfoot>
         </table>

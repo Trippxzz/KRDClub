@@ -26,7 +26,7 @@
         <!-- Imagen Producto -->
         <div>
             {% if sprite_360_data %}
-                <!-- Visor 360° con Sprite (1 sola petición HTTP) -->
+                 {% comment %} Visor 360 hace 1 sola peticion http {% endcomment %}
                 <div class="visor-360-wrapper">
                     <div id="visor-360-container" class="visor-360">
                         <div class="loading-spinner">
@@ -83,14 +83,14 @@
         <div class="lg:pl-8">
             <!-- Subtítulo de categoría -->
             
-            <h1 class="producto-titulo">{{ prod.n_producto }}</h1>
+            <h1 class="producto-titulo ">{{ prod.n_producto }}</h1>
             
             <div class="separador-premium"></div>
             
             <!-- Precio -->
             <div class="mb-10">
                 <p class="text-gray-400 text-xs tracking-[0.2em] uppercase mb-3 font-light">Precio</p>
-                <h2 class="producto-precio" style="font-family: 'Cormorant Garamond', serif;">${{ prod.precio|formato_miles }}</h2>
+                <h2 class="producto-precio font-precio">${{ prod.precio|formato_miles }}</h2>
             </div>
 
             <!-- Stock -->

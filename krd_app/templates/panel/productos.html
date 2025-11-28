@@ -15,15 +15,15 @@
 <!-- Products Table -->
 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
     <div class="overflow-x-auto">
-        <table class="w-full">
+        <table class="w-full min-w-[500px] md:min-w-0">
             <thead class="bg-gray-50 border-b border-gray-200">
                 <tr>
-                    <th class="text-left px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Producto</th>
+                    <th class="text-left px-3 md:px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Producto</th>
                     {% comment %} <th class="text-left px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Especificaciones</th> {% endcomment %}
-                    <th class="text-center px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Stock</th>
-                    <th class="text-right px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Precio</th>
-                    <th class="text-center px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">360°</th>
-                    <th class="text-center px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Acciones</th>
+                    <th class="text-center px-3 md:px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Stock</th>
+                    <th class="text-right px-3 md:px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Precio</th>
+                    <th class="text-center px-3 md:px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider hidden sm:table-cell">360°</th>
+                    <th class="text-center px-3 md:px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Acciones</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
@@ -31,18 +31,18 @@
                 <tr class="hover:bg-gray-50 transition producto-row" 
                     data-nombre="{{ prod.n_producto|lower }}"
                     data-stock="{{ prod.stock }}">
-                    <td class="px-6 py-4">
+                    <td class="px-3 md:px-6 py-4">
                         <div class="flex items-center">
                             {% if prod.imagen_principal %}
-                            <img src="{{ prod.imagen_principal.imagen.url }}" class="w-12 h-12 rounded-lg object-cover mr-4">
+                            <img src="{{ prod.imagen_principal.imagen.url }}" class="w-10 h-10 md:w-12 md:h-12 rounded-lg object-cover mr-3 md:mr-4">
                             {% else %}
-                            <div class="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center mr-4">
+                            <div class="w-10 h-10 md:w-12 md:h-12 bg-gray-200 rounded-lg flex items-center justify-center mr-3 md:mr-4">
                                 <i class="fas fa-image text-gray-400"></i>
                             </div>
                             {% endif %}
                             <div>
-                                <p class="font-medium text-gray-900">{{ prod.n_producto }}</p>
-                                 <p class="text-sm text-gray-500">ID: {{ prod.id_producto|truncatechars:50 }}</p>{% comment %} SIGNIFICA QUE A LOS 50 CARACTERES SE CORTA {% endcomment %}
+                                <p class="font-medium text-gray-900 text-sm md:text-base">{{ prod.n_producto|truncatechars:25 }}</p>
+                                <p class="text-xs text-gray-500 hidden sm:block">ID: {{ prod.id_producto|truncatechars:20 }}</p>
                             </div>
                         </div>
                     </td>
@@ -53,33 +53,33 @@
                             <span class="inline-block bg-gray-100 px-2 py-1 rounded">{{ prod.apernadura }}</span>
                         </div>
                     </td> {% endcomment %}
-                    <td class="px-6 py-4 text-center">
+                    <td class="px-3 md:px-6 py-4 text-center">
                         {% if prod.stock == 0 %}
-                        <span class="inline-block px-3 py-1 text-xs font-bold rounded-full bg-red-100 text-red-700">
-                            Sin stock
+                        <span class="inline-block px-2 md:px-3 py-1 text-xs font-bold rounded-full bg-red-100 text-red-700">
+                            0
                         </span>
                         {% elif prod.stock < 5 %}
-                        <span class="inline-block px-3 py-1 text-xs font-bold rounded-full bg-yellow-100 text-yellow-700">
-                            {{ prod.stock }} unid.
+                        <span class="inline-block px-2 md:px-3 py-1 text-xs font-bold rounded-full bg-yellow-100 text-yellow-700">
+                            {{ prod.stock }}
                         </span>
                         {% else %}
-                        <span class="inline-block px-3 py-1 text-xs font-bold rounded-full bg-green-100 text-green-700">
-                            {{ prod.stock }} unid.
+                        <span class="inline-block px-2 md:px-3 py-1 text-xs font-bold rounded-full bg-green-100 text-green-700">
+                            {{ prod.stock }}
                         </span>
                         {% endif %}
                     </td>
-                    <td class="px-6 py-4 text-right">
-                        <span class="font-bold text-gray-900">${{ prod.precio|floatformat:0|formato_miles }}</span>
+                    <td class="px-3 md:px-6 py-4 text-right">
+                        <span class="font-bold text-gray-900 font-precio text-sm md:text-base">${{ prod.precio|floatformat:0|formato_miles }}</span>
                     </td>
-                    <td class="px-6 py-4 text-center">
+                    <td class="px-3 md:px-6 py-4 text-center hidden sm:table-cell">
                         {% if prod.sprite_360 %}
                         <span class="text-green-600"><i class="fas fa-check-circle"></i></span>
                         {% else %}
                         <span class="text-gray-300"><i class="fas fa-times-circle"></i></span>
                         {% endif %}
                     </td>
-                    <td class="px-6 py-4 text-center">
-                        <div class="flex justify-center space-x-2">
+                    <td class="px-3 md:px-6 py-4 text-center">
+                        <div class="flex justify-center space-x-1 md:space-x-2">
                             <a href="{% url 'detproducto' prod.id_producto %}" 
                                class="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition"
                                title="Ver">
@@ -91,7 +91,7 @@
                                 <i class="fas fa-edit"></i>
                             </a>
                             <button onclick="confirmarEliminar('{{ prod.id_producto }}', '{{ prod.n_producto }}')"
-                                    class="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
+                                    class="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition hidden sm:inline-block"
                                     title="Eliminar">
                                 <i class="fas fa-trash"></i>
                             </button>

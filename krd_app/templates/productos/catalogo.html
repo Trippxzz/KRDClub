@@ -6,77 +6,383 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/catalogo.css' %}">
+<style>
+    .filtro-sidebar {
+        background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%);
+    }
+    .filtro-grupo {
+        border-bottom: 1px solid #e5e5e5;
+    }
+    .filtro-grupo:last-child {
+        border-bottom: none;
+    }
+    .filtro-select {
+        transition: all 0.2s ease;
+        font-family: 'Charis SIL', serif;
+    }
+    .filtro-select:focus {
+        border-color: #000;
+        box-shadow: 0 0 0 2px rgba(0,0,0,0.1);
+    }
+    .filtro-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: #000;
+        color: #fff;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-family: 'Charis SIL', serif;
+    }
+    .filtro-badge button {
+        opacity: 0.7;
+        transition: opacity 0.2s;
+    }
+    .filtro-badge button:hover {
+        opacity: 1;
+    }
+    /* Tooltip styles */
+    .info-tooltip {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        font-size: 16px;
+        color: rgba(0,0,0,0.5);
+        cursor: help;
+        transition: color 0.2s ease;
+    }
+    .info-tooltip:hover {
+        color: #000;
+    }
+    .info-tooltip .tooltip-text {
+        visibility: hidden;
+        opacity: 0;
+        position: absolute;
+        bottom: 130%;
+        right: 0;
+        transform: translateX(0);
+        background: rgba(0,0,0,0.95);
+        color: #fff;
+        padding: 12px 16px;
+        border-radius: 8px;
+        font-size: 13px;
+        line-height: 1.5;
+        white-space: nowrap;
+        z-index: 100;
+        border: 1px solid rgba(0,0,0,0.1);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        transition: all 0.2s ease;
+    }
+    .info-tooltip .tooltip-text::after {
+        content: '';
+        position: absolute;
+        top: 100%;
+        right: 10px;
+        border: 6px solid transparent;
+        border-top-color: rgba(0,0,0,0.95);
+    }
+    .info-tooltip:hover .tooltip-text {
+        visibility: visible;
+        opacity: 1;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
 <div class="max-w-7xl mx-auto px-6 py-20">
-    <!-- Header -->
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-16">
+    
+    <!-- Tooltip informativo -->
+    <div style="text-align: right; margin-bottom: -1rem;">
+        <span class="info-tooltip">ⓘ<span class="tooltip-text">Aquí puedes visualizar los productos y ver su descripción</span></span>
+    </div>
+    
+    <!-- Encabezado -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-12">
         <div>
-            <h1 class="text-5xl font-bold text-black luxury-text mb-4">Catálogo</h1>
-            <div class="w-16 h-1 bg-black"></div>
-            {% if filtrado_vehiculo %}
-                <p class="mt-4 text-gray-600">
-                    <i class="fas fa-filter mr-2"></i>Mostrando productos compatibles con tu vehículo
-                    <a href="{% url 'listar_productos' %}" class="ml-2 text-black underline">Ver todos</a>
-                </p>
-            {% endif %}
+            <h1 class="text-5xl md:text-6xl font-light text-black mb-4" style="font-family: 'Playfair Display', serif;">Catálogo</h1>
+            <div class="w-20 h-1 bg-black"></div>
+        </div>
+        <div class="mt-4 md:mt-0 flex items-center gap-4">
+            <span class="text-gray-600 font-precio">{{ total_productos }} producto{{ total_productos|pluralize:"s" }}</span>
+            <button id="toggle-filtros" class="md:hidden bg-black text-white px-4 py-2 rounded-lg flex items-center gap-2">
+                <i class="fas fa-filter"></i> Filtros
+            </button>
         </div>
     </div>
 
-    {% if prods %}
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {% for p in prods %}
-            <div class="group hover-lift bg-gray-50 rounded-lg overflow-hidden luxury-shadow">
-                <!-- Imagen -->
-                <div class="relative h-64 bg-gradient-to-br from-gray-200 to-gray-100 overflow-hidden flex items-center justify-center">
-                    {% if p.imagen_principal %}
-                        <img src="{{ p.imagen_principal.imagen.url }}" alt="{{ p.n_producto }}" class="w-full h-full object-cover group-hover:scale-110 transition duration-300">
-                    {% else %}
-                        <div class="w-full h-full flex items-center justify-center bg-gray-200">
-                            <svg class="w-32 h-32 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" />
-                            </svg>
+    <!-- Filtros activos -->
+    {% if filtros_activos %}
+    <div class="mb-8 flex flex-wrap gap-2 items-center">
+        <span class="text-sm text-gray-600 mr-2 font-precio">Filtros activos:</span>
+        {% for key, value in filtros_activos.items %}
+        <span class="filtro-badge">
+            {% if key == 'aro' %}Aro: {{ value }}"
+            {% elif key == 'ancho' %}Ancho: {{ value }}
+            {% elif key == 'apernadura' %}Apernadura: {{ value }}
+            {% elif key == 'offset' %}Offset: ET{{ value }}
+            {% elif key == 'centro' %}Centro: {{ value }}mm
+            {% elif key == 'marca_vehiculo' %}Marca: {{ value }}
+            {% elif key == 'modelo_vehiculo' %}Modelo: {{ value }}
+            {% elif key == 'anio_vehiculo' %}Año: {{ value }}
+            {% endif %}
+        </span>
+        {% endfor %}
+        <a href="{% url 'listar_productos' %}" class="text-sm text-red-600 hover:text-red-800 ml-2 underline">
+            <i class="fas fa-times mr-1"></i>Limpiar filtros
+        </a>
+    </div>
+    {% endif %}
+    
+    {% if filtrado_vehiculo %}
+    <div class="mb-8 bg-green-50 border border-green-200 rounded-lg p-4 flex items-center justify-between">
+        <p class="text-green-800">
+            <i class="fas fa-check-circle mr-2"></i>Mostrando productos compatibles con tu vehículo
+        </p>
+        <a href="{% url 'listar_productos' %}" class="text-green-700 underline hover:text-green-900">Ver todos</a>
+    </div>
+    {% endif %}
+
+    <div class="flex flex-col md:flex-row gap-8">
+        <!-- Sidebar de Filtros -->
+        <aside id="filtros-panel" class="w-full md:w-72 filtro-sidebar rounded-xl p-6 h-fit md:sticky md:top-24 hidden md:block">
+            <form method="GET" action="{% url 'listar_productos' %}" id="form-filtros">
+                <h2 class="text-lg font-bold text-black mb-6 flex items-center gap-2 font-precio">
+                    <i class="fas fa-sliders-h"></i> Filtrar por:
+                </h2>
+                
+                <!-- Filtro por Vehículo -->
+                <div class="filtro-grupo pb-5 mb-5"> 
+                    <h3 class="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wider font-precio">Vehículo</h3>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block font-precio">Marca</label>
+                            <select name="marca_vehiculo" id="filtro-marca" class="filtro-select w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none">
+                                <option value="">Todas las marcas</option>
+                                {% for codigo, nombre in marcas_vehiculo %}
+                                <option value="{{ codigo }}" {% if filtros_activos.marca_vehiculo == codigo %}selected{% endif %}>{{ nombre }}</option>
+                                {% endfor %}
+                            </select>
                         </div>
-                    {% endif %}
-                    {% if p.stock <= 0 %}
-                        <div class="absolute top-4 right-4 bg-red-500 text-white px-3 py-1 text-xs font-bold rounded">SIN STOCK</div>
-                    {% elif p.stock <= 5 %}
-                        <div class="absolute top-4 right-4 bg-yellow-500 text-white px-3 py-1 text-xs font-bold rounded">ÚLTIMAS UNIDADES</div>
-                    {% endif %}
-                </div>
-
-                <!-- Contenido -->
-                <div class="p-8">
-                    <h3 class="text-xl font-bold text-black mb-2 truncate">{{ p.n_producto }}</h3>
-                    <p class="text-2xl font-bold text-black mb-4">${{ p.precio|formato_miles }}</p>
-                    <p class="text-gray-600 text-sm mb-6 line-clamp-2 font-light leading-relaxed">{{ p.desc_producto }}</p>
-                    
-                    <div class="flex gap-3">
-                        <a href="{% url 'detproducto' p.id_producto %}" class="flex-1 bg-black text-white px-4 py-3 text-center font-medium tracking-wider hover:bg-gray-900 transition text-sm rounded">
-                            VER DETALLE
-                        </a>
-
+                        
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block font-precio">Modelo</label>
+                            <select name="modelo_vehiculo" id="filtro-modelo" class="filtro-select w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none" {% if not filtros_activos.marca_vehiculo %}disabled{% endif %}>
+                                <option value="">Todos los modelos</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block font-precio">Año</label>
+                            <select name="anio_vehiculo" id="filtro-anio" class="filtro-select w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none">
+                                <option value="">Todos los años</option>
+                                {% for anio in anios_disponibles %}
+                                <option value="{{ anio }}" {% if filtros_activos.anio_vehiculo == anio|stringformat:"s" %}selected{% endif %}>{{ anio }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
                     </div>
                 </div>
-            </div>
-            {% endfor %}
+                
+                <!-- Filtro por Especificaciones -->
+                <div class="filtro-grupo pb-5 mb-5">
+                    <h3 class="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wider font-precio">Especificaciones</h3>
+                    
+                    <div class="space-y-3">
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block font-precio">Aro</label>
+                            <select name="aro" class="filtro-select w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none">
+                                <option value="">Todos</option>
+                                {% for a in aros_disponibles %}
+                                <option value="{{ a }}" {% if filtros_activos.aro == a|stringformat:"s" %}selected{% endif %}>{{ a }}"</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block font-precio">Ancho</label>
+                            <select name="ancho" class="filtro-select w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none">
+                                <option value="">Todos</option>
+                                {% for a in anchos_disponibles %}
+                                <option value="{{ a }}" {% if filtros_activos.ancho == a %}selected{% endif %}>{{ a }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block font-precio">Apernadura</label>
+                            <select name="apernadura" class="filtro-select w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none">
+                                <option value="">Todas</option>
+                                {% for a in apernaduras_disponibles %}
+                                <option value="{{ a }}" {% if filtros_activos.apernadura == a %}selected{% endif %}>{{ a }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block font-precio">Offset (ET)</label>
+                            <select name="offset" class="filtro-select w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none">
+                                <option value="">Todos</option>
+                                {% for o in offsets_disponibles %}
+                                <option value="{{ o }}" {% if filtros_activos.offset == o|stringformat:"s" %}selected{% endif %}>ET{{ o }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block font-precio">Centro de Llanta</label>
+                            <select name="centro" class="filtro-select w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none">
+                                <option value="">Todos</option>
+                                {% for c in centros_disponibles %}
+                                <option value="{{ c }}" {% if filtros_activos.centro == c %}selected{% endif %}>{{ c }}mm</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Botones -->
+                <div class="space-y-3">
+                    <button type="submit" class="w-full bg-black text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition flex items-center justify-center gap-2 font-precio">
+                        <i class="fas fa-search"></i> Aplicar Filtros
+                    </button>
+                    <a href="{% url 'listar_productos' %}" class="block w-full text-center border border-gray-300 py-3 rounded-lg font-medium text-gray-700 hover:bg-gray-100 transition font-precio">
+                        Limpiar
+                    </a>
+                </div>
+            </form>
+        </aside>
+
+        <!-- Grid de Productos -->
+        <div class="flex-1">
+            {% if prods %}
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {% for p in prods %}
+                    <div class="group hover-lift bg-gray-50 rounded-lg overflow-hidden luxury-shadow">
+                        <!-- Imagen -->
+                        <div class="relative h-56 bg-gradient-to-br from-gray-200 to-gray-100 overflow-hidden flex items-center justify-center">
+                            {% if p.imagen_principal %}
+                                <img src="{{ p.imagen_principal.imagen.url }}" alt="{{ p.n_producto }}" class="w-full h-full object-cover group-hover:scale-110 transition duration-300">
+                            {% else %}
+                                <div class="w-full h-full flex items-center justify-center bg-gray-200">
+                                    <svg class="w-24 h-24 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" />
+                                    </svg>
+                                </div>
+                            {% endif %}
+                            {% if p.stock <= 0 %}
+                                <div class="absolute top-3 right-3 bg-red-500 text-white px-2 py-1 text-xs font-bold rounded">SIN STOCK</div>
+                            {% elif p.stock <= 5 %}
+                                <div class="absolute top-3 right-3 bg-yellow-500 text-white px-2 py-1 text-xs font-bold rounded">ÚLTIMAS UNIDADES</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Contenido -->
+                        <div class="p-6">
+                            <h3 class="text-lg font-bold text-black mb-1 truncate font-precio">{{ p.n_producto }}</h3>
+                            
+                            <!-- Especificaciones rápidas -->
+                            <div class="flex flex-wrap gap-1 mb-3">
+                                <span class="text-xs bg-gray-200 text-gray-700 px-2 py-0.5 rounded font-precio">{{ p.aro }}"</span>
+                                <span class="text-xs bg-gray-200 text-gray-700 px-2 py-0.5 rounded font-precio">{{ p.ancho }}</span>
+                                <span class="text-xs bg-gray-200 text-gray-700 px-2 py-0.5 rounded font-precio">{{ p.apernadura }}</span>
+                            </div>
+                            
+                            <p class="text-2xl font-bold text-black mb-3 font-precio">${{ p.precio|formato_miles }}</p>
+                            <p class="text-gray-600 text-sm mb-4 line-clamp-2 font-light leading-relaxed font-precio">{{ p.desc_producto }}</p>
+                            
+                            <a href="{% url 'detproducto' p.id_producto %}" class="block w-full bg-black text-white px-4 py-2.5 text-center font-medium tracking-wider hover:bg-gray-900 transition text-sm rounded font-precio">
+                                VER DETALLE
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <!-- Sin productos -->
+                <div class="text-center py-20 bg-gray-50 rounded-xl">
+                    <div class="mb-8">
+                        <i class="fas fa-inbox text-6xl text-gray-300"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4 font-precio">No hay productos</h2>
+                    <p class="text-gray-600 mb-6 font-precio">
+                        {% if filtros_activos or filtrado_vehiculo %}
+                            No se encontraron productos con los filtros seleccionados.
+                        {% else %}
+                            Aún no hay productos en el catálogo.
+                        {% endif %}
+                    </p>
+                    {% if filtros_activos or filtrado_vehiculo %}
+                    <a href="{% url 'listar_productos' %}" class="inline-block bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-800 transition font-precio">
+                        Ver todos los productos
+                    </a>
+                    {% endif %}
+                </div>
+            {% endif %}
         </div>
-    {% else %}
-        <!-- Sin productos -->
-        <div class="text-center py-20">
-            <div class="mb-8">
-                <i class="fas fa-inbox text-6xl text-gray-300"></i>
-            </div>
-            <h2 class="text-3xl font-bold text-gray-900 mb-4">No hay productos</h2>
-            <p class="text-gray-600 mb-8">
-                {% if filtrado_vehiculo %}
-                    No se encontraron productos compatibles con el vehículo seleccionado.
-                {% else %}
-                    Aún no hay productos en el catálogo.
-                {% endif %}
-            </p>
-        </div>
-    {% endif %}
+    </div>
 </div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const filtroMarca = document.getElementById('filtro-marca');
+    const filtroModelo = document.getElementById('filtro-modelo');
+    const toggleFiltros = document.getElementById('toggle-filtros');
+    const filtrosPanel = document.getElementById('filtros-panel');
+    
+    // Toggle filtros en móvil
+    if (toggleFiltros) {
+        toggleFiltros.addEventListener('click', function() {
+            filtrosPanel.classList.toggle('hidden');
+        });
+    }
+    
+    // Cargar modelos cuando cambia la marca
+    filtroMarca.addEventListener('change', function() {
+        const marca = this.value;
+        filtroModelo.innerHTML = '<option value="">Todos los modelos</option>';
+        
+        if (marca) {
+            filtroModelo.disabled = false;
+            fetch(`/api/catalogo/modelos/?marca=${encodeURIComponent(marca)}`)
+                .then(response => response.json())
+                .then(data => {
+                    data.modelos.forEach(modelo => {
+                        const option = document.createElement('option');
+                        option.value = modelo;
+                        option.textContent = modelo;
+                        filtroModelo.appendChild(option);
+                    });
+                });
+        } else {
+            filtroModelo.disabled = true;
+        }
+    });
+    
+    // Cargar modelos guardados si existe marca seleccionada
+    {% if filtros_activos.marca_vehiculo %}
+    fetch(`/api/catalogo/modelos/?marca={{ filtros_activos.marca_vehiculo }}`)
+        .then(response => response.json())
+        .then(data => {
+            data.modelos.forEach(modelo => {
+                const option = document.createElement('option');
+                option.value = modelo;
+                option.textContent = modelo;
+                {% if filtros_activos.modelo_vehiculo %}
+                if (modelo === '{{ filtros_activos.modelo_vehiculo }}') {
+                    option.selected = true;
+                }
+                {% endif %}
+                filtroModelo.appendChild(option);
+            });
+            filtroModelo.disabled = false;
+        });
+    {% endif %}
+});
+</script>
+{% endblock %}
 {% endblock %}
