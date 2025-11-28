@@ -42,6 +42,7 @@ urlpatterns = [
     path('carrito/', views.getCarrito, name='ver_carrito'),
     path('agregar/<uuid:producto_id>/', views.addCarrito, name='agregar_al_carrito'),
     path('quitar/<uuid:producto_id>/', views.eliminardelCarrito, name='remover_del_carrito'),
+    path('actualizar/<uuid:producto_id>/', views.actualizarCantidadCarrito, name='actualizar_cantidad'),
     path('checkout/', views.procesarCompra, name='procesar_compra'),
     path('buscar-usuario/', views.buscar_usuario_rut, name='buscar_usuario_rut'),
     path('webpay/', views.webpay_iniciar, name='webpay_iniciar'),
@@ -55,6 +56,10 @@ urlpatterns = [
     path('api/anios/', views.get_anios_por_cilindrada, name='get_anios'),
     path('api/buscar-vehiculo/', views.buscar_productos_por_vehiculo, name='buscar_vehiculo'),
     path('api/debug-vehiculos/', views.debug_vehiculos, name='debug_vehiculos'),
+    
+    # API Filtro de Catálogo
+    path('api/catalogo/modelos/', views.api_modelos_catalogo, name='api_modelos_catalogo'),
+    path('api/catalogo/anios/', views.api_anios_catalogo, name='api_anios_catalogo'),
     
     # Panel de Administración
     path('panel/', views.admin_dashboard, name='admin_dashboard'),

@@ -131,9 +131,6 @@ def debug_vehiculos(request):
     }, indent=2)
 
 def sobre_nosotros(request):
-    """
-    Página 'Sobre nosotros'
-    """
     return render(request, 'public/sobre_nosotros.html', {})
 
 ####OPTIMIZACION IMAGENES
@@ -428,30 +425,124 @@ def addCarrito(request, producto_id):
 ### SECCION GET (MODELS)
 def getCatalogo(request):
     if request.method=="GET":
-        # Verificar si hay filtro por vehículo
-        vehiculo_ids = request.GET.get('vehiculo_ids', '')
+        prods = Producto.objects.all()
         filtrado_vehiculo = False
+        filtros_activos = {}
         
+        # Filtro por vehículo (desde home)
+        vehiculo_ids = request.GET.get('vehiculo_ids', '')
         if vehiculo_ids:
-            # Filtrar productos por IDs de productos compatibles con vehículos
             try:
                 producto_ids = [pid.strip() for pid in vehiculo_ids.split(',') if pid.strip()]
                 if producto_ids:
-                    prods = Producto.objects.filter(id_producto__in=producto_ids)
+                    prods = prods.filter(id_producto__in=producto_ids)
                     filtrado_vehiculo = True
-                else:
-                    prods = Producto.objects.all()
             except Exception as e:
                 print(f"Error al filtrar productos: {e}")
-                prods = Producto.objects.all()
-        else:
-            prods = Producto.objects.all()
+        
+        # Filtros por especificaciones técnicas
+        aro = request.GET.get('aro', '')
+        if aro:
+            prods = prods.filter(aro=int(aro))
+            filtros_activos['aro'] = aro
+            
+        ancho = request.GET.get('ancho', '')
+        if ancho:
+            prods = prods.filter(ancho=ancho)
+            filtros_activos['ancho'] = ancho
+            
+        apernadura = request.GET.get('apernadura', '')
+        if apernadura:
+            prods = prods.filter(apernadura=apernadura)
+            filtros_activos['apernadura'] = apernadura
+            
+        offset = request.GET.get('offset', '')
+        if offset:
+            prods = prods.filter(offset=int(offset))
+            filtros_activos['offset'] = offset
+            
+        centro = request.GET.get('centro', '')
+        if centro:
+            prods = prods.filter(centro_llanta=centro)
+            filtros_activos['centro'] = centro
+        
+        # Filtro por marca de vehículo compatible
+        marca_vehiculo = request.GET.get('marca_vehiculo', '')
+        if marca_vehiculo:
+            producto_ids = Producto_Vehiculo.objects.filter(
+                vehiculo__marca__iexact=marca_vehiculo
+            ).values_list('producto_id', flat=True).distinct()
+            prods = prods.filter(id_producto__in=producto_ids)
+            filtros_activos['marca_vehiculo'] = marca_vehiculo
+            
+        # Filtro por modelo de vehículo compatible
+        modelo_vehiculo = request.GET.get('modelo_vehiculo', '')
+        if modelo_vehiculo:
+            producto_ids = Producto_Vehiculo.objects.filter(
+                vehiculo__modelo__iexact=modelo_vehiculo
+            ).values_list('producto_id', flat=True).distinct()
+            prods = prods.filter(id_producto__in=producto_ids)
+            filtros_activos['modelo_vehiculo'] = modelo_vehiculo
+            
+        # Filtro por año de vehículo compatible
+        anio_vehiculo = request.GET.get('anio_vehiculo', '')
+        if anio_vehiculo:
+            producto_ids = Producto_Vehiculo.objects.filter(
+                vehiculo__anio=int(anio_vehiculo)
+            ).values_list('producto_id', flat=True).distinct()
+            prods = prods.filter(id_producto__in=producto_ids)
+            filtros_activos['anio_vehiculo'] = anio_vehiculo
+        
+        # Obtener opciones para los filtros
+        marcas_vehiculo = vehiculo.MARCAS
+        todos_productos = Producto.objects.all()
+        aros_disponibles = sorted(todos_productos.values_list('aro', flat=True).distinct())
+        anchos_disponibles = sorted(todos_productos.values_list('ancho', flat=True).distinct())
+        apernaduras_disponibles = sorted(todos_productos.values_list('apernadura', flat=True).distinct())
+        offsets_disponibles = sorted(todos_productos.values_list('offset', flat=True).distinct())
+        centros_disponibles = sorted(todos_productos.values_list('centro_llanta', flat=True).distinct())
+        
+        # Lista de años fija de 2025 a 1990
+        anios_disponibles = list(range(2025, 1989, -1))
             
         return render(request, "productos/catalogo.html", {
             "prods": prods, 
             "filtrado_vehiculo": filtrado_vehiculo,
-            "total_productos": prods.count()
+            "filtros_activos": filtros_activos,
+            "total_productos": prods.count(),
+            # Opciones de filtros
+            "marcas_vehiculo": marcas_vehiculo,
+            "aros_disponibles": aros_disponibles,
+            "anchos_disponibles": anchos_disponibles,
+            "apernaduras_disponibles": apernaduras_disponibles,
+            "offsets_disponibles": offsets_disponibles,
+            "centros_disponibles": centros_disponibles,
+            "anios_disponibles": anios_disponibles,
         })
+
+
+# APIs para filtros dinámicos del catálogo
+def api_modelos_catalogo(request):
+    """Retorna los modelos de vehículos para una marca (para filtro del catálogo)"""
+    marca = request.GET.get('marca', '')
+    if marca:
+        modelos = vehiculo.objects.filter(marca__iexact=marca).values_list('modelo', flat=True).distinct()
+        return JsonResponse({'modelos': sorted(list(set(modelos)))})
+    return JsonResponse({'modelos': []})
+
+def api_anios_catalogo(request):
+    """Retorna los años disponibles para marca/modelo (para filtro del catálogo)"""
+    marca = request.GET.get('marca', '')
+    modelo = request.GET.get('modelo', '')
+    
+    qs = vehiculo.objects.all()
+    if marca:
+        qs = qs.filter(marca__iexact=marca)
+    if modelo:
+        qs = qs.filter(modelo__iexact=modelo)
+    
+    anios = qs.values_list('anio', flat=True).distinct()
+    return JsonResponse({'anios': sorted(list(set(anios)))})
     
 
 def getProducto(request, id):
@@ -681,6 +772,47 @@ def eliminardelCarrito(request, producto_id):
         messages.success(request, "Producto eliminado del carrito.")
     return redirect('/catalogo/')
 
+def actualizarCantidadCarrito(request, producto_id):
+    """Actualiza la cantidad de un producto en el carrito"""
+    if request.method == 'POST':
+        carrito = request.session.get('carrito', {})
+        id_str = str(producto_id)
+        
+        if id_str in carrito:
+            try:
+                nueva_cantidad = int(request.POST.get('cantidad', 4))
+                
+                # Validar que sea múltiplo de 4
+                if nueva_cantidad % 4 != 0:
+                    nueva_cantidad = (nueva_cantidad // 4) * 4
+                    if nueva_cantidad < 4:
+                        nueva_cantidad = 4
+                
+                # Validar stock disponible
+                try:
+                    producto = Producto.objects.get(id_producto=producto_id)
+                    if nueva_cantidad > producto.stock:
+                        messages.error(request, f"Stock insuficiente. Disponible: {producto.stock}")
+                        return redirect('ver_carrito')
+                except Producto.DoesNotExist:
+                    messages.error(request, "Producto no encontrado.")
+                    return redirect('ver_carrito')
+                
+                if nueva_cantidad <= 0:
+                    # Si la cantidad es 0 o negativa, eliminar del carrito
+                    del carrito[id_str]
+                    messages.success(request, "Producto eliminado del carrito.")
+                else:
+                    carrito[id_str]['cantidad'] = nueva_cantidad
+                    carrito[id_str]['subtotal'] = carrito[id_str]['precio'] * nueva_cantidad
+                    messages.success(request, "Cantidad actualizada.")
+                
+                request.session['carrito'] = carrito
+                request.session.modified = True
+            except ValueError:
+                messages.error(request, "Cantidad inválida.")
+    
+    return redirect('ver_carrito')
 
 
 ### SECCION CONTROL DE STOCK Y SEGURIDAD
@@ -898,6 +1030,63 @@ def webpay_retorno(request):
                     Logistica.objects.create(venta=venta)
                     
                     venta_id = venta.id
+
+                    ####PARTE DEL CORREO
+                    try:
+                        # Obtener el usuario recién creado/actualizado
+                        cliente = usuario
+                        
+                        # Construir lista de productos
+                        lista_productos = ""
+                        for id_prod, item in carrito.items():
+                            lista_productos += f"   • {item['nombre']} x {item['cantidad']} unidades - ${item['subtotal']:,.0f}\n"
+                        
+                        subject = '✅ ¡Compra confirmada! - KRD Club'
+                        message = f'''
+¡Hola {cliente.nombre}! 👋
+
+¡Gracias por tu compra en KRD Club! 🎉
+
+Tu pago ha sido procesado exitosamente via WEBPAY.
+
+📋 DETALLE DE TU PEDIDO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+N° de Orden: #{venta_id}
+Fecha: {venta.fecha_venta.strftime('%d/%m/%Y %H:%M')}
+
+🛒 PRODUCTOS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+{lista_productos}
+💰 TOTAL PAGADO: ${total:,.0f}
+
+📍 DIRECCIÓN DE ENVÍO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+{cliente.direccion}
+
+📦 ¿QUÉ SIGUE?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. Estamos preparando tu pedido
+2. Te notificaremos cuando sea despachado
+3. Recibirás el número de seguimiento por correo
+
+⏰ Tiempo estimado de entrega: 2 a 5 días hábiles
+.
+
+¡Gracias por confiar en nosotros! 🏎️
+
+Saludos,
+El equipo de KRD Club ❤️
+'''
+                        send_mail(
+                            subject,
+                            message,
+                            settings.DEFAULT_FROM_EMAIL,
+                            [cliente.email],
+                            fail_silently=False,
+                        )
+                    except Exception as e:
+                        print(f"Error enviando correo de confirmación: {e}")
+                        # No fallar la compra si el correo falla
                     
             except Exception as e:
                 # Error al crear la venta - informar al usuario
@@ -915,8 +1104,8 @@ def webpay_retorno(request):
                 'response': response,
             })
         else:
-            # Pago rechazado - NO se crea ninguna venta
-            # El carrito se mantiene disponible
+            # Pago rechazado /// NO se crea ninguna venta
+            # El carrito se mantiene disponible!!!!!!
             for key in ['cliente_temp', 'total_venta', 'webpay_token', 'webpay_buy_order']:
                 request.session.pop(key, None)
             request.session.modified = True
@@ -934,7 +1123,7 @@ def webpay_retorno(request):
         messages.error(request, f"Error al procesar el pago: {str(e)}")
         return redirect('ver_carrito')
 
-### Contador carrito
+### Contador carrito ES X CACHÉ
 def contador_carrito(request):
     carrito = request.session.get('carrito', {})
     total_items = sum(item['cantidad'] for item in carrito.values())
@@ -979,6 +1168,8 @@ def admin_ventas(request):
     
     ventas = Venta.objects.prefetch_related('productos_venta__id_producto').order_by('-fecha_venta')
     
+    for venta in ventas:
+        venta.cantidad_total = sum(item.cantidad for item in venta.productos_venta.all())
     
     return render(request, 'panel/ventas.html', {
         'ventas': ventas,
@@ -1134,6 +1325,45 @@ def marcar_entregado(request, venta_id):
         logistica.estado = 'entregado'
         logistica.save()
         messages.success(request, f'Venta #{venta_id} marcada como entregada')
+        rut_cliente = logistica.venta.id_usuario
+        try:
+            cliente = Usuario.objects.get(rut=rut_cliente)
+            venta = logistica.venta
+            subject = '📦 Recibiste tu pedido - KRD CLUB'
+            message = f'''
+¡Hola {cliente.nombre}!👋 
+
+¡Confirmamos que tu pedido #{venta.id} ha sido entregado! 🎉
+
+
+⭐ ¿QUÉ TE PARECIÓ TU COMPRA?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Tu opinión es muy importante para nosotros.
+¡Nos encantaría saber qué te parecieron tus llantas! 
+
+Puedes dejarnos tu valoración ingresando a nuestra página
+con tu número de orden #{venta.id} y tu RUT.
+
+🔧 ¿NECESITAS AYUDA?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Si tienes algún problema con tu pedido o necesitas 
+asesoría para la instalación, no dudes en contactarnos.
+
+¡Gracias por confiar en KRD Club! 🏎️
+Esperamos verte pronto.
+
+Saludos,
+El equipo de KRD Club ❤️
+            '''
+            send_mail(
+                subject,
+                message,
+                settings.DEFAULT_FROM_EMAIL,
+                [cliente.email],
+                fail_silently=False,
+                )
+        except Usuario.DoesNotExist:
+                print("Cliente no encontrado con RUT:", rut_cliente)
 
     except Exception as e:
         messages.error(request, f'Error: {str(e)}')
@@ -1230,11 +1460,11 @@ def panel_logout(request):
     return redirect('home')
 
 
-### SISTEMA DE VALORACIONES / RESEÑAS
+### SISTEMA DE VALORACIONES
 
 def crear_valoracion(request, venta_id):
     """
-    Vista para que el cliente cree una valoración de su compra.
+    el cliente crea una valoración de su compra.
     Solo puede valorar ventas entregadas y que no hayan sido valoradas.
     """
     # Obtener la venta
