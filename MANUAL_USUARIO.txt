@@ -1,0 +1,361 @@
+================================================================================
+                       MANUAL DE USUARIO - KRD CLUB
+                    Sistema de E-Commerce de Llantas Premium
+================================================================================
+
+                            ÍNDICE
+--------------------------------------------------------------------------------
+1. ACCESO AL SITIO WEB
+2. NAVEGACIÓN DEL CATÁLOGO
+3. BÚSQUEDA POR VEHÍCULO
+4. VISTA DE PRODUCTO
+5. CARRITO DE COMPRAS
+6. PROCESO DE COMPRA
+7. PAGO CON WEBPAY
+8. SEGUIMIENTO DE PEDIDO
+9. VALORACIONES
+10. PREGUNTAS FRECUENTES
+
+================================================================================
+1. ACCESO AL SITIO WEB
+================================================================================
+
+DIRECCIÓN DEL SITIO:
+--------------------------------------------------------------------------------
+http://127.0.0.1:8000/ (desarrollo local)
+https://www.krdclub.cl/ (cuando esté en producción)
+
+NAVEGADORES COMPATIBLES:
+--------------------------------------------------------------------------------
+- Google Chrome (recomendado)
+- Mozilla Firefox
+- Microsoft Edge
+- Safari
+
+NOTA: Se recomienda usar la última versión de cualquier navegador.
+
+================================================================================
+2. NAVEGACIÓN DEL CATÁLOGO
+================================================================================
+
+PÁGINA PRINCIPAL:
+--------------------------------------------------------------------------------
+- Muestra productos destacados
+- Acceso rápido a categorías
+- Buscador de productos
+
+CATÁLOGO COMPLETO:
+--------------------------------------------------------------------------------
+1. Clic en "Catálogo" en el menú principal
+2. Se muestran todas las llantas disponibles
+3. Cada producto muestra:
+   - Imagen principal
+   - Nombre
+   - Marca
+   - Precio (IVA incluido)
+   - Stock disponible
+
+FILTRAR PRODUCTOS:
+--------------------------------------------------------------------------------
+Puedes filtrar por:
+- Marca
+- Medida de aro
+- Rango de precios
+- Apernadura
+
+================================================================================
+3. BÚSQUEDA POR VEHÍCULO
+================================================================================
+
+¿No sabes qué llanta es compatible con tu auto? Usa el buscador.
+
+PASOS:
+--------------------------------------------------------------------------------
+1. Clic en "Buscar por Vehículo"
+2. Seleccionar:
+   - Marca del vehículo (ej: Toyota, Chevrolet, Mazda)
+   - Modelo (ej: Corolla, Spark, CX-5)
+   - Año
+   - Cilindrada (si aplica)
+3. Clic en "Buscar"
+4. Se mostrarán solo las llantas compatibles con tu vehículo
+
+NOTA: Si no encuentras tu vehículo, contacta al administrador para agregarlo.
+
+================================================================================
+4. VISTA DE PRODUCTO
+================================================================================
+
+Al hacer clic en un producto del catálogo, verás:
+
+INFORMACIÓN DEL PRODUCTO:
+--------------------------------------------------------------------------------
+- Nombre completo
+- Marca
+- Precio (con IVA incluido)
+- Stock disponible
+- Descripción detallada
+
+ESPECIFICACIONES TÉCNICAS:
+--------------------------------------------------------------------------------
+- Aro: Diámetro en pulgadas (ej: 17", 18", 20")
+- Ancho: Ancho de la llanta
+- Apernadura: Patrón de pernos (ej: 5x114.3)
+- Offset: Desplazamiento de la llanta
+- Centro de llanta: Diámetro del centro
+
+GALERÍA DE IMÁGENES:
+--------------------------------------------------------------------------------
+- Clic en las miniaturas para ver diferentes ángulos
+- Algunas llantas tienen vista 360°:
+  * Arrastra con el mouse para girar la llanta
+  * O usa los controles de reproducción automática
+
+VEHÍCULOS COMPATIBLES:
+--------------------------------------------------------------------------------
+Lista de marcas y modelos de autos donde cabe esta llanta.
+
+AGREGAR AL CARRITO:
+--------------------------------------------------------------------------------
+1. Seleccionar cantidad (no puede superar el stock)
+2. Clic en "Agregar al Carrito"
+3. Aparecerá confirmación de producto agregado
+
+================================================================================
+5. CARRITO DE COMPRAS
+================================================================================
+
+ACCEDER AL CARRITO:
+--------------------------------------------------------------------------------
+- Clic en el ícono de carrito en la barra superior
+- Se muestra el número de productos agregados
+
+CONTENIDO DEL CARRITO:
+--------------------------------------------------------------------------------
+- Lista de productos seleccionados
+- Imagen y nombre de cada producto
+- Precio unitario
+- Cantidad seleccionada
+- Subtotal por producto
+
+MODIFICAR CANTIDAD:
+--------------------------------------------------------------------------------
+1. Usar los botones + y - junto a cada producto
+2. El total se actualiza automáticamente
+
+ELIMINAR PRODUCTO:
+--------------------------------------------------------------------------------
+1. Clic en el ícono de basura junto al producto
+2. El producto se elimina del carrito
+
+RESUMEN DE COMPRA:
+--------------------------------------------------------------------------------
+- Subtotal: Suma de todos los productos
+- IVA (19%): Impuesto incluido en los precios
+- Total: Monto total a pagar
+
+PROCEDER AL PAGO:
+--------------------------------------------------------------------------------
+1. Verificar que los productos y cantidades son correctos
+2. Clic en "Proceder al Pago"
+
+================================================================================
+6. PROCESO DE COMPRA
+================================================================================
+
+PASO 1: Verificar sesión
+--------------------------------------------------------------------------------
+- Si nunca has comprado, deberás rellenar todos los datos
+- Si ya compraste, pon tu rut y haz click en el icono de lupa, rellenará tus datos
+
+PASO 2: Confirmar datos de envío
+--------------------------------------------------------------------------------
+- Verifica tu dirección de envío
+- Si necesitas cambiarla, puedes editarla
+- Esta será la dirección donde llegará tu pedido
+
+PASO 3: Resumen de la orden
+--------------------------------------------------------------------------------
+Revisa:
+- Productos a comprar
+- Cantidades
+- Precios
+- Total a pagar
+
+PASO 4: Proceder al pago
+--------------------------------------------------------------------------------
+- Clic en "Pagar con Webpay"
+- Serás redirigido a la plataforma segura de Transbank
+
+================================================================================
+7. PAGO CON WEBPAY
+================================================================================
+
+Webpay es la plataforma de pago segura de Transbank, utilizada por los 
+principales bancos de Chile.
+
+EN LA PÁGINA DE WEBPAY:
+--------------------------------------------------------------------------------
+1. Seleccionar tipo de tarjeta:
+   - Tarjeta de Crédito
+   - Tarjeta de Débito (Redcompra)
+
+2. Ingresar datos de la tarjeta:
+   - Número de tarjeta (16 dígitos)
+   - Fecha de vencimiento (MM/AA)
+   - Código de seguridad (CVV - 3 dígitos al reverso)
+
+3. Si es crédito, seleccionar número de cuotas
+
+4. Confirmar el pago
+
+5. Ingresar clave de autenticación del banco (si aplica)
+
+DESPUÉS DEL PAGO:
+--------------------------------------------------------------------------------
+PAGO EXITOSO:
+- Verás una página de confirmación
+- Recibirás un correo con los detalles de tu compra
+- Tu pedido pasará a estado "Pendiente de envío"
+
+PAGO RECHAZADO:
+- Verás un mensaje indicando el rechazo
+- Posibles causas:
+  * Fondos insuficientes
+  * Tarjeta bloqueada
+  * Datos incorrectos
+  * Límite de transacción excedido
+- Puedes intentar nuevamente con otra tarjeta
+
+================================================================================
+8. SEGUIMIENTO DE PEDIDO
+================================================================================
+
+ESTADOS DEL PEDIDO:
+--------------------------------------------------------------------------------
+
+1. PENDIENTE
+   - Tu pago fue exitoso
+   - El equipo está preparando tu pedido
+   - Recibirás un correo cuando sea enviado
+
+2. ENVIADO
+   - Tu pedido fue entregado a la empresa de transporte
+   - Recibirás un correo con:
+     * Nombre de la empresa de envío
+     * Número de seguimiento
+   - Usa el número para rastrear en la web del courier
+
+3. ENTREGADO
+   - Tu pedido llegó a destino
+   - Recibirás un correo de confirmación
+   - ¡No olvides dejar tu valoración!
+
+TIEMPOS DE ENVÍO ESTIMADOS:
+--------------------------------------------------------------------------------
+- Santiago y Región Metropolitana: 1-3 días hábiles
+- Otras regiones: 3-7 días hábiles
+- Zonas extremas: 5-10 días hábiles
+SOLO ESTIMACIONES, DEPENDE DE LA DISPONIBILIDAD DE CADA EMPRESA
+================================================================================
+9. VALORACIONES
+================================================================================
+
+Tu opinión nos ayuda a mejorar y ayuda a otros clientes a decidir.
+
+CUÁNDO PUEDES VALORAR:
+--------------------------------------------------------------------------------
+Solo cuando tu pedido esté marcado como "Entregado"
+
+CÓMO DEJAR UNA VALORACIÓN:
+--------------------------------------------------------------------------------
+1. Recibirás un correo invitándote a valorar
+2. Clic en el enlace del correo o ir a la sección de valoraciones
+3. Ingresar:
+   - Número de orden
+   - Tu RUT
+4. Seleccionar tu valoración:
+   - 1 estrella: Muy malo
+   - 2 estrellas: Malo
+   - 3 estrellas: Regular
+   - 4 estrellas: Bueno
+   - 5 estrellas: Excelente
+5. Escribir un comentario (opcional pero apreciado)
+6. Enviar valoración
+
+TUS VALORACIONES:
+--------------------------------------------------------------------------------
+- Se muestran públicamente en la página de testimonios
+- Ayudan a otros compradores a tomar decisiones
+- Nos ayudan a mejorar nuestro servicio
+
+================================================================================
+10. PREGUNTAS FRECUENTES
+================================================================================
+
+¿LOS PRECIOS INCLUYEN IVA?
+--------------------------------------------------------------------------------
+Sí, todos los precios mostrados incluyen el 19% de IVA.
+
+¿PUEDO COMPRAR SIN CREAR CUENTA?
+--------------------------------------------------------------------------------
+Si, el sistema funciona de esa manera, solo debes rellenar datos que son necesarios
+para proceder con tu compra
+
+¿CÓMO SÉ QUÉ LLANTAS SON COMPATIBLES CON MI AUTO?
+--------------------------------------------------------------------------------
+Usa el buscador por vehículo o revisa la sección "Vehículos compatibles" 
+en la página de cada producto.
+
+¿CUÁNTO DEMORA EL ENVÍO?
+--------------------------------------------------------------------------------
+- Santiago: 1-3 días hábiles
+- Regiones: 3-7 días hábiles
+- El tiempo comienza a contar desde que el pedido es despachado
+SOLO ESTIMACIONES, DEPENDE DE LA DISPONIBILIDAD DE CADA EMPRESA
+¿CUÁLES SON LOS MÉTODOS DE PAGO?
+--------------------------------------------------------------------------------
+Actualmente aceptamos:
+- Tarjeta de crédito (Visa, Mastercard, etc.)
+- Tarjeta de débito (Redcompra)
+- Todo a través de Webpay (Transbank)
+
+¿PUEDO PAGAR EN CUOTAS?
+--------------------------------------------------------------------------------
+Sí, si pagas con tarjeta de crédito puedes seleccionar el número de cuotas
+al momento del pago en Webpay.
+
+¿PUEDO CAMBIAR MI DIRECCIÓN DE ENVÍO DESPUÉS DE COMPRAR?
+--------------------------------------------------------------------------------
+Solo si el pedido aún no ha sido enviado. Contacta inmediatamente al 
+administrador de la tienda.
+
+¿QUÉ HAGO SI MI PEDIDO NO LLEGA?
+--------------------------------------------------------------------------------
+1. Verifica el estado del envío con el número de seguimiento
+2. Contacta a la empresa de transporte
+3. Si persiste el problema, contacta a la tienda
+
+¿TIENEN GARANTÍA LAS LLANTAS?
+--------------------------------------------------------------------------------
+Sí, todas nuestras llantas tienen garantía del fabricante. Consulta las 
+condiciones específicas de cada marca.
+
+¿PUEDO DEVOLVER UN PRODUCTO?
+--------------------------------------------------------------------------------
+Según la Ley del Consumidor, tienes derecho a retracto dentro de 10 días 
+desde la recepción. El producto debe estar sin uso y en su empaque original.
+
+¿CÓMO CONTACTO A LA TIENDA?
+--------------------------------------------------------------------------------
+TODA LA INFORMACIÓN DE CONTACTO SE ENCUENTRA EN LA PÁGINA
+
+================================================================================
+                        ¡GRACIAS POR PREFERIRNOS!
+                              KRD CLUB
+                       Llantas Premium para tu Auto
+================================================================================
+
+Versión del Manual: 1.0
+Última actualización: Noviembre 2025
+================================================================================

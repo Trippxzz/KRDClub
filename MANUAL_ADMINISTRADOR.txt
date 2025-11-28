@@ -1,0 +1,426 @@
+================================================================================
+                    MANUAL DE ADMINISTRADOR - KRD CLUB
+================================================================================
+
+                            ÍNDICE
+--------------------------------------------------------------------------------
+1. INSTALACIÓN DEL SISTEMA
+2. INICIO DEL SERVIDOR
+3. ACCESO AL PANEL DE ADMINISTRACIÓN
+4. GESTIÓN DE PRODUCTOS
+5. GESTIÓN DE COMPRAS (STOCK)
+6. GESTIÓN DE VENTAS
+7. GESTIÓN DE LOGÍSTICA (ENVÍOS)
+8. GESTIÓN DE VEHÍCULOS
+9. SISTEMA DE VALORACIONES
+10. SOLUCIÓN DE PROBLEMAS COMUNES
+11. RESPALDO DE DATOS
+
+================================================================================
+1. INSTALACIÓN DEL SISTEMA  | ⚠️⚠️ MANUAL_INSTALACION.txt TIENE TODO DE MANERA MAS DETALLADA
+                                    SI YA TIENE INSTALADO EL SISTEMA PUEDE PROCEDER HASTA EL PUNTO 3⚠️⚠️
+================================================================================
+
+REQUISITOS PREVIOS:
+- Windows 10 o superior
+- Conexión a Internet
+
+PASO 1: Instalar Python
+--------------------------------------------------------------------------------
+1. Descargar Python desde: https://www.python.org/downloads/
+2. Ejecutar el instalador
+3. IMPORTANTE: Marcar la casilla "Add Python to PATH" antes de instalar
+4. Hacer clic en "Install Now"
+5. Esperar a que termine la instalación
+
+Para verificar la instalación:
+- Abrir PowerShell (buscar "PowerShell" en el menú inicio)
+- Escribir: python --version
+- Debe mostrar algo como: Python 3.14
+
+PASO 2: Instalar dependencias del proyecto
+--------------------------------------------------------------------------------
+1. Abrir PowerShell
+2. Navegar a la carpeta del proyecto:
+   cd D:\KRDClub
+
+3. Instalar las dependencias:
+   pip install -r requirements.txt
+
+   Si no existe el archivo requirements.txt, instalar manualmente:
+   pip install django
+   pip install pillow
+   pip install python-dotenv
+   pip install transbank-sdk
+
+PASO 3: Configurar la base de datos
+--------------------------------------------------------------------------------
+1. En PowerShell, dentro de la carpeta del proyecto:
+   python manage.py migrate
+
+   Esto crea las tablas necesarias en la base de datos.
+
+================================================================================
+2. INICIO DEL SERVIDOR
+================================================================================
+
+PARA INICIAR EL SISTEMA:
+--------------------------------------------------------------------------------
+1. Abrir PowerShell
+2. Navegar a la carpeta del proyecto:
+   cd D:\KRDClub
+
+3. Iniciar el servidor:
+   python manage.py runserver
+
+4. Verás un mensaje como:
+   "Starting development server at http://127.0.0.1:8000/"
+
+5. Abrir el navegador web (Chrome, Firefox, Edge)
+6. Ir a la dirección: http://127.0.0.1:8000/
+
+PARA DETENER EL SERVIDOR:
+--------------------------------------------------------------------------------
+- En la ventana de PowerShell, presionar: Ctrl + C
+
+NOTA: El servidor debe estar corriendo para que la página web funcione.
+      Si cierras PowerShell, el servidor se detendrá.
+
+================================================================================
+3. ACCESO AL PANEL DE ADMINISTRACIÓN
+================================================================================
+
+URL DEL PANEL:
+--------------------------------------------------------------------------------
+http://127.0.0.1:8000/panel/
+
+CREDENCIALES:
+--------------------------------------------------------------------------------
+- RUT: Tu RUT de administrador (ej: 21.467.718-0)
+- Contraseña: La que configuraste al crear el usuario
+
+CREAR UN USUARIO ADMINISTRADOR:
+--------------------------------------------------------------------------------
+Si no tienes usuario administrador, créalo así:
+
+1. Abrir PowerShell en la carpeta del proyecto
+2. Ejecutar:
+   python manage.py shell
+
+3. En la consola de Python que se abre, escribir:
+
+   from krd_app.models import Usuario
+   u = Usuario(
+       rut='214677180',
+       nombre='TuNombre',
+       apellido='TuApellido',
+       email='tu@email.com',
+       telefono=912345678,
+       direccion='Tu dirección',
+       admin=True
+   )
+   u.set_password('tu_contraseña_segura')
+   u.save()
+   exit()
+
+IMPORTANTE: El RUT debe ser válido (con dígito verificador correcto).
+            Guárdalo SIN puntos ni guiones en la base de datos.
+
+================================================================================
+4. GESTIÓN DE PRODUCTOS
+================================================================================
+
+ACCESO: Panel > Productos (menú lateral)
+
+CREAR NUEVO PRODUCTO:
+--------------------------------------------------------------------------------
+1. Clic en "Nuevo Producto"
+2. Completar los campos:
+   - Nombre del producto
+   - Marca
+   - Precio (en pesos chilenos, con IVA incluido)
+   - Stock inicial
+   - Especificaciones técnicas:
+     * Aro (pulgadas)
+     * Ancho
+     * Apernadura (ej: 5x114.3)
+     * Offset
+     * Centro de llanta
+   - Descripción
+
+3. Subir imágenes:
+   - Para imágenes normales: Subir las fotos del producto
+   - Para vista 360°: Marcar "Es 360°" y subir múltiples fotos 
+     (mínimo 12, recomendado 36) tomadas alrededor del producto
+
+4. Clic en "Guardar"
+
+EDITAR PRODUCTO:
+--------------------------------------------------------------------------------
+1. En la lista de productos, clic en el ícono de lápiz
+2. Modificar los campos necesarios
+3. Para agregar imágenes: Subir nuevas en la sección de imágenes
+4. Para eliminar imagen: Clic en el ícono de basura sobre la imagen
+5. Para cambiar imagen principal: Clic en "Hacer principal"
+6. Guardar cambios
+
+GESTIONAR SPRITE 360°:
+--------------------------------------------------------------------------------
+En la página de edición del producto:
+- "Generar/Regenerar Sprite 360°": Subir nuevas imágenes para la vista 360
+- "Eliminar Sprite 360°": Quita la vista 360, mostrará imágenes normales
+
+ELIMINAR PRODUCTO:
+--------------------------------------------------------------------------------
+1. En la lista de productos, clic en el ícono de basura
+2. Confirmar la eliminación
+
+ASOCIAR VEHÍCULOS COMPATIBLES:
+--------------------------------------------------------------------------------
+1. En la edición del producto, sección "Aplicaciones"
+2. Buscar y seleccionar los vehículos compatibles
+3. Guardar cambios
+
+================================================================================
+5. GESTIÓN DE COMPRAS (STOCK)
+================================================================================
+
+ACCESO: Panel > Compras (menú lateral)
+
+Las COMPRAS son las adquisiciones de inventario (cuando compras mercadería 
+a tus proveedores). Aquí se registra el ingreso de stock.
+
+REGISTRAR NUEVA COMPRA:
+--------------------------------------------------------------------------------
+1. Clic en "Nueva Compra"
+2. Seleccionar fecha de la compra
+3. Agregar productos:
+   - Seleccionar producto del listado
+   - Indicar cantidad
+   - Indicar precio unitario NETO (sin IVA)
+   - Clic en "Agregar"
+   - Repetir para cada producto
+4. El sistema calcula automáticamente:
+   - Subtotal neto
+   - IVA (19%)
+   - Total bruto
+5. Clic en "Guardar Compra"
+
+IMPORTANTE: Al guardar una compra, el stock se actualiza automáticamente.
+
+VER HISTORIAL DE COMPRAS:
+--------------------------------------------------------------------------------
+- La lista muestra todas las compras ordenadas por fecha
+- Puedes ver el detalle de cada compra haciendo clic en ella
+- Se muestra el total neto, IVA y bruto de todas las compras
+
+================================================================================
+6. GESTIÓN DE VENTAS
+================================================================================
+
+ACCESO: Panel > Ventas (menú lateral)
+
+Las VENTAS se generan automáticamente cuando un cliente completa una compra
+a través de Webpay. NO se crean manualmente.
+
+VER DETALLE DE VENTA:
+--------------------------------------------------------------------------------
+1. En la lista de ventas, clic en el ícono de ojo
+2. Se muestra:
+   - Fecha y hora
+   - RUT del cliente
+   - Productos comprados con cantidades y precios
+   - Total de la venta
+
+INFORMACIÓN MOSTRADA:
+--------------------------------------------------------------------------------
+- ID de Venta: Número único de la transacción
+- Fecha: Cuándo se realizó la compra
+- Productos: Lista de items comprados
+- Cantidad: Total de unidades vendidas
+- Total: Monto pagado por el cliente
+
+NOTA: Las ventas NO se pueden eliminar ni modificar para mantener 
+      la integridad de los registros contables.
+
+================================================================================
+7. GESTIÓN DE LOGÍSTICA (ENVÍOS)
+================================================================================
+
+ACCESO: Panel > Logística (menú lateral)
+
+Aquí gestionas el estado de envío de cada venta.
+
+ESTADOS DE ENVÍO:
+--------------------------------------------------------------------------------
+- PENDIENTE: La venta está pagada pero no se ha enviado
+- ENVIADO: El paquete fue entregado a la empresa de transporte
+- ENTREGADO: El cliente recibió su pedido
+
+MARCAR COMO ENVIADO:
+--------------------------------------------------------------------------------
+1. Buscar la venta en estado "Pendiente"
+2. Clic en "Marcar Enviado"
+3. Completar:
+   - Empresa de envío (ej: Chilexpress, Starken, Blue Express)
+   - Número de seguimiento
+   - Fecha de envío
+4. Clic en "Confirmar"
+
+El sistema enviará automáticamente un correo al cliente con:
+- Confirmación de envío
+- Empresa de transporte
+- Número de seguimiento
+
+MARCAR COMO ENTREGADO:
+--------------------------------------------------------------------------------
+1. Buscar la venta en estado "Enviado"
+2. Clic en "Marcar Entregado"
+3. Confirmar
+
+El sistema enviará automáticamente un correo al cliente:
+- Confirmando la entrega
+- Invitándolo a dejar una valoración
+
+FILTRAR POR ESTADO:
+--------------------------------------------------------------------------------
+- Usa los botones de filtro para ver solo:
+  * Todos
+  * Pendientes
+  * Enviados
+  * Entregados
+
+================================================================================
+8. GESTIÓN DE VEHÍCULOS
+================================================================================
+
+ACCESO: Panel > Vehículos (o desde el menú de acciones rápidas)
+
+Los vehículos se usan para que los clientes busquen productos compatibles.
+
+AGREGAR VEHÍCULO:
+--------------------------------------------------------------------------------
+1. Clic en "Agregar Vehículo"
+2. Completar:
+   - Marca (seleccionar de la lista)
+   - Modelo
+   - Cilindrada (ej: 2.0, 3.5)
+   - Año
+3. Guardar
+
+VER LISTA DE VEHÍCULOS:
+--------------------------------------------------------------------------------
+- Muestra todos los vehículos registrados
+- Puedes eliminar vehículos que ya no necesites
+
+IMPORTANTE: Al agregar un producto, debes asociarle los vehículos compatibles
+            para que aparezca en las búsquedas de los clientes.
+
+================================================================================
+9. SISTEMA DE VALORACIONES
+================================================================================
+
+Los clientes pueden valorar sus compras una vez que el pedido está "Entregado".
+
+CÓMO FUNCIONA:
+--------------------------------------------------------------------------------
+1. Cliente recibe correo de "Pedido Entregado"
+2. Cliente ingresa a la página de valoraciones
+3. Ingresa número de orden y RUT
+4. Deja su valoración (1-5 estrellas) y comentario opcional
+
+VER VALORACIONES:
+--------------------------------------------------------------------------------
+- Las valoraciones se muestran públicamente en la página de testimonios
+- Ayudan a generar confianza en nuevos clientes
+
+================================================================================
+10. SOLUCIÓN DE PROBLEMAS COMUNES
+================================================================================
+
+PROBLEMA: "El servidor no inicia"
+--------------------------------------------------------------------------------
+Solución:
+1. Verificar que Python esté instalado: python --version
+2. Verificar que estás en la carpeta correcta: cd D:\KRDClub
+3. Verificar que las dependencias están instaladas: pip install -r requirements.txt
+4. Revisar si hay errores en la consola
+
+PROBLEMA: "No puedo iniciar sesión en el panel"
+--------------------------------------------------------------------------------
+Solución:
+1. Verificar que el RUT sea válido (dígito verificador correcto)
+2. Verificar que el usuario exista y tenga admin=True
+3. Verificar la contraseña
+4. Si olvidaste la contraseña, crear nuevo usuario admin (ver sección 3)
+
+PROBLEMA: "Los correos no se envían"
+--------------------------------------------------------------------------------
+Solución:
+1. Verificar archivo .env con credenciales de correo:
+   EMAIL_HOST_USER=tu_correo@gmail.com
+   EMAIL_HOST_PASSWORD=tu_contraseña_de_aplicacion
+
+2. Para Gmail, necesitas una "Contraseña de aplicación":
+   - Ir a tu cuenta de Google > Seguridad
+   - Activar verificación en 2 pasos
+   - Generar contraseña de aplicación
+   - Usar esa contraseña en EMAIL_HOST_PASSWORD
+
+PROBLEMA: "Las imágenes no se muestran"
+--------------------------------------------------------------------------------
+Solución:
+1. Verificar que la carpeta 'media' existe en D:\KRDClub
+2. Verificar permisos de la carpeta
+3. Reiniciar el servidor
+
+PROBLEMA: "Error al procesar pago con Webpay"
+--------------------------------------------------------------------------------
+Solución:
+1. En modo prueba (integración), usar tarjeta de prueba:
+   - Número: 4051 8856 0044 6623
+   - CVV: 123
+   - Fecha: Cualquier fecha futura
+   - RUT: 11.111.111-1
+   - Clave: 123
+
+PROBLEMA: "La base de datos está corrupta"
+--------------------------------------------------------------------------------
+Solución:
+1. Detener el servidor
+2. Hacer respaldo de db.sqlite3
+3. Ejecutar: python manage.py migrate
+4. Si persiste, restaurar desde respaldo
+
+================================================================================
+11. RESPALDO DE DATOS
+================================================================================
+
+ARCHIVOS IMPORTANTES A RESPALDAR:
+--------------------------------------------------------------------------------
+1. db.sqlite3 - La base de datos con todos los datos
+2. media/ - Carpeta con todas las imágenes de productos
+3. .env - Configuración de correo (si existe)
+
+CÓMO HACER RESPALDO:
+--------------------------------------------------------------------------------
+1. Detener el servidor (Ctrl+C)
+2. Copiar los archivos mencionados a una ubicación segura
+3. Recomendación: Hacer respaldo semanal
+
+RESTAURAR RESPALDO:
+--------------------------------------------------------------------------------
+1. Detener el servidor
+2. Reemplazar archivos con los del respaldo
+3. Iniciar el servidor
+
+================================================================================
+                        CONTACTO Y SOPORTE
+================================================================================
+
+Para soporte técnico o consultas sobre el sistema, contactar al equipo desarrollador.
+
+Versión del Manual: 1.0
+Última actualización: Noviembre 2025
+
+================================================================================

@@ -1,0 +1,350 @@
+================================================================================
+                    MANUAL DE INSTALACIÓN - KRD CLUB
+                    Sistema de E-Commerce de Llantas Premium
+================================================================================
+
+                            ÍNDICE
+--------------------------------------------------------------------------------
+1. REQUISITOS DEL SISTEMA
+2. INSTALACIÓN DE PYTHON
+3. DESCARGA DEL PROYECTO
+4. INSTALACIÓN DE DEPENDENCIAS
+5. CONFIGURACIÓN DE LA BASE DE DATOS
+6. CONFIGURACIÓN DE CORREO ELECTRÓNICO
+7. CREACIÓN DEL USUARIO ADMINISTRADOR
+8. VERIFICACIÓN DE LA INSTALACIÓN
+9. PUESTA EN PRODUCCIÓN (OPCIONAL)
+
+================================================================================
+1. REQUISITOS DEL SISTEMA
+================================================================================
+
+HARDWARE MÍNIMO:
+--------------------------------------------------------------------------------
+- Procesador: Intel Core i3 o equivalente
+- Memoria RAM: 4 GB mínimo (8 GB recomendado)
+- Espacio en disco: 2 GB libres
+- Conexión a Internet
+
+SOFTWARE REQUERIDO:
+--------------------------------------------------------------------------------
+- Sistema Operativo: Windows 10/11, macOS, o Linux
+- Python 3.10 o superior
+- Navegador web moderno (Chrome, Firefox, Edge)
+
+================================================================================
+2. INSTALACIÓN DE PYTHON
+================================================================================
+
+WINDOWS:
+--------------------------------------------------------------------------------
+1. Ir a https://www.python.org/downloads/
+2. Descargar la última versión de Python (3.12.x recomendado)
+3. Ejecutar el instalador descargado
+4. ¡IMPORTANTE! Marcar la casilla "Add Python to PATH"
+5. Clic en "Install Now"
+6. Esperar a que finalice la instalación
+7. Clic en "Close"
+
+VERIFICAR INSTALACIÓN:
+--------------------------------------------------------------------------------
+1. Abrir PowerShell:
+   - Presionar tecla Windows
+   - Escribir "PowerShell"
+   - Clic en "Windows PowerShell"
+
+2. Escribir el siguiente comando y presionar Enter:
+   
+   python --version
+
+3. Debe mostrar algo como: Python 3.12.0
+
+4. Verificar pip (gestor de paquetes):
+   
+   pip --version
+
+   Debe mostrar algo como: pip 24.0 from...
+
+SI PYTHON NO SE RECONOCE:
+--------------------------------------------------------------------------------
+1. Desinstalar Python
+2. Volver a instalar asegurándose de marcar "Add Python to PATH"
+3. Reiniciar el computador
+4. Volver a verificar
+
+================================================================================
+3. DESCARGA DEL PROYECTO
+================================================================================
+
+OPCIÓN A - Copiar carpeta existente:
+--------------------------------------------------------------------------------
+1. Copiar la carpeta completa del proyecto "KRDClub"
+2. Pegarla en la ubicación deseada (ej: D:\dev\KRDClub)
+
+ESTRUCTURA DE CARPETAS:
+--------------------------------------------------------------------------------
+Después de la descarga, deberías ver:
+
+KRDClub/
+├── krd_app/           (Aplicación principal)
+├── krdweb/            (Configuración Django)
+├── media/             (Imágenes de productos)
+├── manage.py          (Script de administración)
+├── db.sqlite3         (Base de datos - puede no existir aún)
+└── requirements.txt   (Lista de dependencias)
+
+================================================================================
+4. INSTALACIÓN DE DEPENDENCIAS
+================================================================================
+
+PASO 1: Abrir PowerShell en la carpeta del proyecto
+--------------------------------------------------------------------------------
+Método 1 - Desde el explorador:
+1. Abrir la carpeta del proyecto en el Explorador de Windows
+2. Clic derecho en un espacio vacío
+3. Seleccionar "Abrir en Terminal" o "Abrir ventana de PowerShell aquí"
+
+Método 2 - Navegando:
+1. Abrir PowerShell
+2. Escribir:
+   
+   cd D:\dev\KRDClub
+
+PASO 2: Crear entorno virtual (RECOMENDADO)
+--------------------------------------------------------------------------------
+Un entorno virtual aísla las dependencias del proyecto.
+
+1. Crear el entorno:
+   
+   python -m venv venv
+
+2. Activar el entorno:
+   
+   .\venv\Scripts\Activate
+
+3. Verás (venv) al inicio de la línea de comandos
+
+NOTA: Cada vez que abras PowerShell para trabajar con el proyecto,
+      debes activar el entorno virtual con: .\venv\Scripts\Activate
+
+PASO 3: Instalar dependencias
+--------------------------------------------------------------------------------
+Si existe requirements.txt:
+   
+   pip install -r requirements.txt
+
+Si NO existe requirements.txt, instalar manualmente:
+   
+   pip install django
+   pip install pillow
+   pip install python-dotenv
+   pip install transbank-sdk
+
+VERIFICAR INSTALACIÓN:
+--------------------------------------------------------------------------------
+   pip list
+
+Debe mostrar los paquetes instalados, incluyendo:
+- Django
+- Pillow
+- python-dotenv
+- transbank-sdk
+
+================================================================================
+5. CONFIGURACIÓN DE LA BASE DE DATOS
+================================================================================
+
+PASO 1: Crear las migraciones
+--------------------------------------------------------------------------------
+   python manage.py makemigrations
+
+PASO 2: Aplicar las migraciones
+--------------------------------------------------------------------------------
+   python manage.py migrate
+
+Verás una lista de migraciones aplicándose:
+   Applying contenttypes.0001_initial... OK
+   Applying krd_app.0001_initial... OK
+   ...
+
+PASO 3: Verificar la base de datos
+--------------------------------------------------------------------------------
+Debe existir el archivo db.sqlite3 en la carpeta del proyecto.
+
+SI HAY ERRORES:
+--------------------------------------------------------------------------------
+1. Eliminar el archivo db.sqlite3 (si existe)
+2. Eliminar la carpeta krd_app/migrations/__pycache__
+3. Eliminar archivos de migración (excepto __init__.py)
+4. Ejecutar nuevamente:
+   
+   python manage.py makemigrations krd_app
+   python manage.py migrate
+
+================================================================================
+6. CONFIGURACIÓN DE CORREO ELECTRÓNICO
+================================================================================
+
+El sistema envía correos para:
+- Confirmación de compra
+- Notificación de envío
+- Confirmación de entrega
+
+PASO 1: Crear archivo .env
+--------------------------------------------------------------------------------
+1. En la carpeta raíz del proyecto, crear archivo llamado: .env
+2. Abrir con un editor de texto (Notepad)
+3. Agregar las siguientes líneas:
+
+   EMAIL_HOST_USER=tu_correo@gmail.com
+   EMAIL_HOST_PASSWORD=tu_contraseña_de_aplicacion
+
+4. Guardar el archivo
+
+PASO 2: Configurar Gmail (recomendado)
+--------------------------------------------------------------------------------
+Para usar Gmail, necesitas una "Contraseña de aplicación":
+
+1. Ir a https://myaccount.google.com/
+2. Clic en "Seguridad"
+3. Activar "Verificación en 2 pasos" (si no está activa)
+4. Volver a "Seguridad"
+5. Buscar "Contraseñas de aplicaciones"
+6. Seleccionar:
+   - Aplicación: Correo
+   - Dispositivo: Computadora Windows
+7. Clic en "Generar"
+8. Copiar la contraseña de 16 caracteres generada
+9. Usar esa contraseña en EMAIL_HOST_PASSWORD
+
+IMPORTANTE: La contraseña de aplicación NO es tu contraseña normal de Gmail.
+
+================================================================================
+7. CREACIÓN DEL USUARIO ADMINISTRADOR
+================================================================================
+
+PASO 1: Abrir la consola de Django
+--------------------------------------------------------------------------------
+   python manage.py shell
+
+PASO 2: Crear el usuario
+--------------------------------------------------------------------------------
+Copiar y pegar el siguiente código (modificando los datos):
+
+from krd_app.models import Usuario
+
+# Crear usuario administrador
+admin = Usuario(
+    rut='123456789',
+    nombre='Juan',
+    apellido='Pérez',
+    email='admin@krdclub.cl',
+    telefono=912345678,
+    direccion='Av. Principal 123, Santiago',
+    admin=True
+)
+admin.set_password('contraseña_segura_123')
+admin.save()
+
+print("Usuario administrador creado exitosamente")
+exit()
+
+IMPORTANTE SOBRE EL RUT:
+--------------------------------------------------------------------------------
+- El RUT debe ser válido (con dígito verificador correcto)
+- Guardar SIN puntos ni guiones (ej: 123456789 en vez de 12.345.678-9)
+- Para validar tu RUT: https://validarutchile.cl/
+
+EJEMPLOS DE RUT VÁLIDOS:
+--------------------------------------------------------------------------------
+- 214677180 (DV: 0)
+- 216037111 (DV: 1)
+- 111111111 (DV: 1) - Solo para pruebas
+
+================================================================================
+8. VERIFICACIÓN DE LA INSTALACIÓN
+================================================================================
+
+PASO 1: Iniciar el servidor
+--------------------------------------------------------------------------------
+   python manage.py runserver
+
+Deberías ver:
+   Watching for file changes with StatReloader
+   Performing system checks...
+   
+   System check identified no issues (0 silenced).
+   Starting development server at http://127.0.0.1:8000/
+   Quit the server with CTRL-BREAK.
+
+PASO 2: Verificar el sitio web
+--------------------------------------------------------------------------------
+1. Abrir navegador web
+2. Ir a: http://127.0.0.1:8000/
+3. Debe cargar la página principal de KRD Club
+
+PASO 3: Verificar el panel de administración
+--------------------------------------------------------------------------------
+1. Ir a: http://127.0.0.1:8000/panel/
+2. Iniciar sesión con el RUT y contraseña del administrador creado
+3. Debe mostrar el panel de gestión
+
+PASO 4: Verificar estructura de carpetas
+--------------------------------------------------------------------------------
+Asegurarse de que existen:
+- media/prodimagen/ (para imágenes de productos)
+
+Si no existen, crearlas manualmente.
+
+================================================================================
+9. PUESTA EN PRODUCCIÓN (OPCIONAL)
+================================================================================
+
+Para un entorno de producción, se requieren pasos adicionales:
+
+CAMBIOS REQUERIDOS EN settings.py:
+--------------------------------------------------------------------------------
+1. DEBUG = False (actualmente True)
+2. ALLOWED_HOSTS = ['tudominio.cl', 'www.tudominio.cl']
+3. Configurar servidor web (Nginx/Apache)
+4. Usar base de datos PostgreSQL o MySQL
+5. Configurar HTTPS (certificado SSL)
+
+WEBPAY - CAMBIAR A PRODUCCIÓN:
+--------------------------------------------------------------------------------
+En krd_app/views.py, cambiar las credenciales de prueba por las de producción
+proporcionadas por Transbank.
+
+Credenciales actuales (PRUEBAS):
+- commerce_code: 597055555532
+- api_key: 579B532A7440BB0C9079... (de prueba)
+
+Credenciales de producción:
+- Solicitar a Transbank después de la certificación
+
+SERVIDOR RECOMENDADO:
+--------------------------------------------------------------------------------
+- Railway
+- Heroku
+- DigitalOcean
+- AWS
+- Azure
+
+================================================================================
+                    INSTALACIÓN COMPLETADA
+================================================================================
+
+Una vez completados todos los pasos:
+
+1. El servidor puede iniciarse con: python manage.py runserver
+2. El sitio estará disponible en: http://127.0.0.1:8000/
+3. El panel de administración en: http://127.0.0.1:8000/panel/
+
+Consultar:
+- MANUAL_USUARIO.txt - Para clientes de la tienda
+- MANUAL_ADMINISTRADOR.txt - Para gestión del sistema
+
+================================================================================
+Versión: 1.0
+Última actualización: Noviembre 2025
+================================================================================
