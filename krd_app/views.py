@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from .models import Producto, ProductoImagen, Compra, ProductoCompra, vehiculo, Producto_Vehiculo, Venta, Producto_Venta, Usuario, Logistica
+from .models import Producto, ProductoImagen, Compra, ProductoCompra, vehiculo, Producto_Vehiculo, Venta, Producto_Venta, Usuario, Logistica, Valoracion
 from .forms import ProductoForm, ProductoImagenForm, CompraForm, ProductoCompraForm, VehiculoForm, UsuarioForm
 from django.http import HttpResponse, JsonResponse
 from decimal import Decimal
@@ -48,31 +48,87 @@ def get_anios_por_cilindrada(request):
 
 def buscar_productos_por_vehiculo(request):
     """Busca productos compatibles con el vehículo seleccionado"""
-    marca = request.GET.get('marca', '')
-    modelo = request.GET.get('modelo', '')
-    cilindrada = request.GET.get('cilindrada', '')
-    anio = request.GET.get('anio', '')
+    marca = request.GET.get('marca', '').strip()
+    modelo = request.GET.get('modelo', '').strip()
+    cilindrada = request.GET.get('cilindrada', '').strip()
+    anio = request.GET.get('anio', '').strip()
     
     # Buscar el vehículo
     vehiculos_encontrados = vehiculo.objects.filter(
-        marca=marca,
-        modelo=modelo,
-        cilindrada=cilindrada,
-        anio=anio
+        marca__iexact=marca,
+        modelo__iexact=modelo,
+        cilindrada=float(cilindrada) if cilindrada else None,
+        anio=int(anio) if anio else None
     )
     
     if vehiculos_encontrados.exists():
         # Obtener productos compatibles
         productos_ids = Producto_Vehiculo.objects.filter(
             vehiculo__in=vehiculos_encontrados
-        ).values_list('producto_id', flat=True)
+        ).values_list('producto_id', flat=True).distinct()
         
-        return JsonResponse({
-            'success': True,
-            'redirect_url': f'/catalogo/?vehiculo_ids={",".join(str(p) for p in productos_ids)}'
-        })
+        if productos_ids:
+            productos_ids_str = ",".join(str(p) for p in productos_ids)
+            return JsonResponse({
+                'success': True,
+                'redirect_url': f'/catalogo/?vehiculo_ids={productos_ids_str}',
+                'debug': {
+                    'vehiculos_encontrados': vehiculos_encontrados.count(),
+                    'productos_encontrados': len(productos_ids)
+                }
+            })
+        else:
+            return JsonResponse({
+                'success': False, 
+                'message': 'No hay productos asociados al vehículo especificado'
+            })
     
-    return JsonResponse({'success': False, 'message': 'No se encontraron productos para este vehículo'})
+    return JsonResponse({
+        'success': False, 
+        'message': 'No hay productos asociados al vehículo especificado'
+    })
+
+
+def debug_vehiculos(request):
+    """Vista de diagnóstico para verificar datos de vehículos y productos"""
+    from django.db.models import Count
+    
+    # Contar datos
+    total_vehiculos = vehiculo.objects.count()
+    total_productos = Producto.objects.count()
+    total_asociaciones = Producto_Vehiculo.objects.count()
+    
+    # Vehículos con productos asociados
+    vehiculos_con_productos = vehiculo.objects.annotate(
+        productos_count=Count('producto_vehiculo')
+    ).filter(productos_count__gt=0).count()
+    
+    # Productos sin asociación
+    productos_sin_asociacion = Producto.objects.annotate(
+        asociaciones=Count('producto_vehiculo')
+    ).filter(asociaciones=0).count()
+    
+    # Primeros 10 vehículos
+    primeros_vehiculos = list(
+        vehiculo.objects.values('marca', 'modelo', 'cilindrada', 'anio')[:10]
+    )
+    
+    # Primeros 10 asociaciones
+    primeras_asociaciones = list(
+        Producto_Vehiculo.objects.select_related('vehiculo', 'producto').values(
+            'vehiculo__marca', 'vehiculo__modelo', 'producto__n_producto'
+        )[:10]
+    )
+    
+    return JsonResponse({
+        'total_vehiculos': total_vehiculos,
+        'total_productos': total_productos,
+        'total_asociaciones': total_asociaciones,
+        'vehiculos_con_productos': vehiculos_con_productos,
+        'productos_sin_asociacion': productos_sin_asociacion,
+        'primeros_vehiculos': primeros_vehiculos,
+        'primeras_asociaciones': primeras_asociaciones
+    }, indent=2)
 
 def sobre_nosotros(request):
     """
@@ -282,7 +338,7 @@ def addCompra(request):
             compra.subtotalc = subtotal_total
             compra.save()
 
-            return redirect("listar_compras")
+            return redirect("admin_compras")
     else:
         form = CompraForm()
 
@@ -290,10 +346,6 @@ def addCompra(request):
         "form": form,
         "productos": Producto.objects.all()
     })
-
-def listar_compras(request):
-    compras = Compra.objects.all()
-    return render(request, "compras/lista.html", {"compras": compras})
 
 def agregar_vehiculos(request):
     if request.method == 'POST':
@@ -378,15 +430,28 @@ def getCatalogo(request):
     if request.method=="GET":
         # Verificar si hay filtro por vehículo
         vehiculo_ids = request.GET.get('vehiculo_ids', '')
+        filtrado_vehiculo = False
         
         if vehiculo_ids:
             # Filtrar productos por IDs de productos compatibles con vehículos
-            producto_ids = vehiculo_ids.split(',')
-            prods = Producto.objects.filter(id_producto__in=producto_ids)
+            try:
+                producto_ids = [pid.strip() for pid in vehiculo_ids.split(',') if pid.strip()]
+                if producto_ids:
+                    prods = Producto.objects.filter(id_producto__in=producto_ids)
+                    filtrado_vehiculo = True
+                else:
+                    prods = Producto.objects.all()
+            except Exception as e:
+                print(f"Error al filtrar productos: {e}")
+                prods = Producto.objects.all()
         else:
             prods = Producto.objects.all()
             
-        return render(request, "productos/catalogo.html", {"prods": prods, "filtrado_vehiculo": bool(vehiculo_ids)})
+        return render(request, "productos/catalogo.html", {
+            "prods": prods, 
+            "filtrado_vehiculo": filtrado_vehiculo,
+            "total_productos": prods.count()
+        })
     
 
 def getProducto(request, id):
@@ -619,9 +684,8 @@ def eliminardelCarrito(request, producto_id):
 
 
 ### SECCION CONTROL DE STOCK Y SEGURIDAD
-@transaction.atomic
 def procesarCompra(request):
-    """Muestra el formulario de checkout con datos del usuario"""
+    """Muestra el formulario de checkout y guarda datos del cliente en sesión (NO crea Venta aún)"""
     carrito = request.session.get('carrito', {})
     if not carrito:
         messages.error(request, "El carrito está vacío.")
@@ -633,10 +697,21 @@ def procesarCompra(request):
             messages.error(request, f"La cantidad de {item['nombre']} debe ser múltiplo de 4.")
             return redirect("ver_carrito")
     
+    # Validar stock disponible antes de mostrar checkout
+    for id_producto, item in carrito.items():
+        try:
+            producto = Producto.objects.get(id_producto=id_producto)
+            if producto.stock < item['cantidad']:
+                messages.error(request, f"No hay suficiente stock para {item['nombre']}. Stock disponible: {producto.stock}")
+                return redirect("ver_carrito")
+        except Producto.DoesNotExist:
+            messages.error(request, f"El producto {item['nombre']} ya no está disponible.")
+            return redirect("ver_carrito")
+    
     total = sum(item['subtotal'] for item in carrito.values())
     
     if request.method == 'POST':
-        # Procesar el formulario y crear la venta
+        # Capturar datos del formulario
         rut = request.POST.get('rut', '').strip()
         nombre = request.POST.get('nombre', '').strip()
         apellido = request.POST.get('apellido', '').strip()
@@ -653,61 +728,21 @@ def procesarCompra(request):
                 'datos': request.POST
             })
         
-        try:
-            with transaction.atomic():
-                # Crear o actualizar usuario
-                usuario, created = Usuario.objects.update_or_create(
-                    rut=rut,
-                    defaults={
-                        'nombre': nombre,
-                        'apellido': apellido,
-                        'email': email,
-                        'telefono': int(telefono),
-                        'direccion': direccion,
-                    }
-                )
-                
-                # Crear la venta
-                venta = Venta.objects.create(
-                    id_usuario=rut,
-                    precio_venta=total,
-                )
-                
-                # Crear productos de la venta (sin descontar stock aún)
-                for id_producto, item in carrito.items():
-                    producto = Producto.objects.select_for_update().get(id_producto=id_producto)
-                    
-                    if producto.stock < item['cantidad']:
-                        raise ValueError(f"No hay suficiente stock para {producto.n_producto}")
-                    
-                    # NO descontar stock aquí - se descuenta al confirmar el pago
-                    
-                    Producto_Venta.objects.create(
-                        id_venta=venta,
-                        id_producto=producto,
-                        cantidad=item['cantidad'],
-                        precio_unitario=item['precio']
-                    )
-                
-                # Guardar ID de venta en sesión para Webpay
-                request.session['venta_pendiente'] = venta.id
-                request.session['total_venta'] = int(total)
-                
-                # Vaciar carrito
-                request.session['carrito'] = {}
-                request.session.modified = True
-                
-                # TODO: Redirigir a Webpay
-                # Por ahora redirigir a página de éxito
-                messages.success(request, f"Venta #{venta.id} creada. Redirigiendo a Webpay...")
-                return redirect('webpay_iniciar')
-                
-        except ValueError as e:
-            messages.error(request, str(e))
-            return redirect('ver_carrito')
-        except Exception as e:
-            messages.error(request, f"Error al procesar la compra: {str(e)}")
-            return redirect('ver_carrito')
+        # Guardar datos del cliente en sesión (NO crear Venta aún)
+        # La Venta se creará SOLO cuando el pago sea exitoso en webpay_retorno
+        request.session['cliente_temp'] = {
+            'rut': rut,
+            'nombre': nombre,
+            'apellido': apellido,
+            'email': email,
+            'telefono': telefono,
+            'direccion': direccion,
+        }
+        request.session['total_venta'] = int(total)
+        request.session.modified = True
+        
+        # Redirigir a Webpay
+        return redirect('webpay_iniciar')
     
     return render(request, 'checkout.html', {
         'carrito': carrito,
@@ -737,11 +772,12 @@ def buscar_usuario_rut(request):
 
 def webpay_iniciar(request):
     """Inicia la transacción con Webpay Plus"""
-    venta_id = request.session.get('venta_pendiente')
+    cliente_temp = request.session.get('cliente_temp')
     total = request.session.get('total_venta')
+    carrito = request.session.get('carrito', {})
     
-    if not venta_id or not total:
-        messages.error(request, "No hay una venta pendiente de pago.")
+    if not cliente_temp or not total or not carrito:
+        messages.error(request, "No hay datos de compra pendiente.")
         return redirect('ver_carrito')
     
     try:
@@ -758,15 +794,14 @@ def webpay_iniciar(request):
         else:
             tx = Transaction.build_for_integration(COMMERCE_CODE, API_KEY)
         
-        # Generar buy_order y session_id únicos
-        buy_order = f"orden_{venta_id}_{int(time.time())}"
-        session_id = f"sesion_{venta_id}_{int(time.time())}"
-        amount = int(total)  # Webpay requiere enteros
+        timestamp = int(time.time())
+        buy_order = f"orden_{timestamp}"
+        session_id = f"sesion_{timestamp}"
+        amount = int(total)  
         
-        # URLs de retorno
+
         return_url = request.build_absolute_uri(reverse('webpay_retorno'))
-        
-        # Crear transacción - devuelve un diccionario
+
         response = tx.create(buy_order, session_id, amount, return_url)
         
         # Guardar token en sesión para validación posterior
@@ -780,36 +815,22 @@ def webpay_iniciar(request):
         
     except Exception as e:
         messages.error(request, f"Error al conectar con Webpay: {str(e)}")
-        # Si falla, mostrar página de simulación como fallback
-        return render(request, 'webpay.html', {
-            'venta_id': venta_id,
-            'total': total,
-            'error': str(e),
-        })
+        return redirect('ver_carrito')
 
 
 def webpay_retorno(request):
-    """Procesa el retorno de Webpay Plus"""
+    """Procesa el retorno de Webpay --- CREA la Venta SOLO si el pago es exitoso"""
     # Obtener token de la respuesta (puede venir por GET o POST)
     token = request.GET.get('token_ws') or request.POST.get('token_ws')
     
-    # Si el usuario canceló el pago
+    # Si el usuario canceló el pago (TBK_TOKEN indica cancelación)
     if request.GET.get('TBK_TOKEN') or not token:
-        venta_id = request.session.get('venta_pendiente')
-        if venta_id:
-            # Eliminar la venta pendiente (el stock no fue descontado)
-            try:
-                venta = Venta.objects.get(id=venta_id)
-                venta.delete()
-            except Venta.DoesNotExist:
-                pass
-            
-            # Limpiar sesión
-            for key in ['venta_pendiente', 'total_venta', 'webpay_token', 'webpay_buy_order']:
-                request.session.pop(key, None)
-            request.session.modified = True
+        # Limpiar datos temporales de sesión (el carrito se mantiene)
+        for key in ['cliente_temp', 'total_venta', 'webpay_token', 'webpay_buy_order']:
+            request.session.pop(key, None)
+        request.session.modified = True
         
-        messages.warning(request, "El pago fue cancelado.")
+        messages.warning(request, "El pago fue cancelado. Tu carrito sigue disponible.")
         return redirect('ver_carrito')
     
     try:
@@ -828,24 +849,63 @@ def webpay_retorno(request):
         # Confirmar transacción - devuelve un diccionario
         response = tx.commit(token)
         
-        venta_id = request.session.get('venta_pendiente')
+        cliente_temp = request.session.get('cliente_temp')
+        total = request.session.get('total_venta')
+        carrito = request.session.get('carrito', {})
         
         # Verificar que el pago fue exitoso
-        # response es un diccionario con keys: vci, amount, status, buy_order, session_id, etc.
         if response.get('status') == 'AUTHORIZED' and response.get('response_code') == 0:
-            # Pago exitoso - AHORA descontar el stock
+            # PAGO EXITOSO - AHORA crear Usuario, Venta, Producto_Venta, descontar stock
             try:
-                venta = Venta.objects.get(id=venta_id)
                 with transaction.atomic():
-                    for pv in venta.productos_venta.all():
-                        producto = Producto.objects.select_for_update().get(id_producto=pv.id_producto.id_producto)
-                        producto.stock -= pv.cantidad
+                    # Crear o actualizar usuario
+                    usuario, created = Usuario.objects.update_or_create(
+                        rut=cliente_temp['rut'],
+                        defaults={
+                            'nombre': cliente_temp['nombre'],
+                            'apellido': cliente_temp['apellido'],
+                            'email': cliente_temp['email'],
+                            'telefono': int(cliente_temp['telefono']),
+                            'direccion': cliente_temp['direccion'],
+                        }
+                    )
+                    
+                    # Crear la venta
+                    venta = Venta.objects.create(
+                        id_usuario=cliente_temp['rut'],
+                        precio_venta=total,
+                    )
+                    
+                    # Crear productos de la venta Y descontar stock
+                    for id_producto, item in carrito.items():
+                        producto = Producto.objects.select_for_update().get(id_producto=id_producto)
+                        
+                        if producto.stock < item['cantidad']:
+                            raise ValueError(f"No hay suficiente stock para {producto.n_producto}")
+                        
+                        # Descontar stock
+                        producto.stock -= item['cantidad']
                         producto.save()
-            except Venta.DoesNotExist:
-                pass
+                        
+                        Producto_Venta.objects.create(
+                            id_venta=venta,
+                            id_producto=producto,
+                            cantidad=item['cantidad'],
+                            precio_unitario=item['precio']
+                        )
+                    
+                    # Crear registro de logística
+                    Logistica.objects.create(venta=venta)
+                    
+                    venta_id = venta.id
+                    
+            except Exception as e:
+                # Error al crear la venta - informar al usuario
+                messages.error(request, f"Error al procesar la compra: {str(e)}")
+                return redirect('ver_carrito')
             
-            # Limpiar sesión
-            for key in ['venta_pendiente', 'total_venta', 'webpay_token', 'webpay_buy_order']:
+            # Limpiar sesión completamente (incluido el carrito)
+            for key in ['cliente_temp', 'total_venta', 'webpay_token', 'webpay_buy_order', 'carrito']:
                 request.session.pop(key, None)
             request.session.modified = True
             
@@ -855,24 +915,20 @@ def webpay_retorno(request):
                 'response': response,
             })
         else:
-            # Pago rechazado - eliminar venta pendiente (stock no fue descontado)
-            total = request.session.get('total_venta')
-            if venta_id:
-                try:
-                    venta = Venta.objects.get(id=venta_id)
-                    venta.delete()
-                except Venta.DoesNotExist:
-                    pass
-            
-            for key in ['venta_pendiente', 'total_venta', 'webpay_token', 'webpay_buy_order']:
+            # Pago rechazado - NO se crea ninguna venta
+            # El carrito se mantiene disponible
+            for key in ['cliente_temp', 'total_venta', 'webpay_token', 'webpay_buy_order']:
                 request.session.pop(key, None)
             request.session.modified = True
             
             return render(request, 'compra_rechazada.html', {
-                'venta_id': venta_id,
                 'total': total,
                 'response': response,
             })
+            
+    except Exception as e:
+        messages.error(request, f"Error al procesar el pago: {str(e)}")
+        return redirect('ver_carrito')
             
     except Exception as e:
         messages.error(request, f"Error al procesar el pago: {str(e)}")
@@ -920,33 +976,12 @@ def admin_ventas(request):
     if not request.user.is_authenticated or not getattr(request.user, 'admin', False):
         messages.error(request, 'No tienes permisos de administrador')
         return redirect('panel_login')
-    hoy = timezone.now().date()
-    inicio_mes = hoy.replace(day=1)
-    inicio_semana = hoy - timedelta(days=hoy.weekday())
     
     ventas = Venta.objects.prefetch_related('productos_venta__id_producto').order_by('-fecha_venta')
     
-    # Agregar cantidad total a cada venta
-    for venta in ventas:
-        venta.cantidad_total = sum(item.cantidad for item in venta.productos_venta.all())
-    
-    # Stats
-    stats = {
-        'ventas_hoy': Venta.objects.filter(
-            fecha_venta__date=hoy
-        ).aggregate(total=Sum('precio_venta'))['total'] or 0,
-        'ventas_semana': Venta.objects.filter(
-            fecha_venta__date__gte=inicio_semana
-        ).aggregate(total=Sum('precio_venta'))['total'] or 0,
-        'ventas_mes': Venta.objects.filter(
-            fecha_venta__date__gte=inicio_mes
-        ).aggregate(total=Sum('precio_venta'))['total'] or 0,
-        'total_ventas': ventas.count(),
-    }
     
     return render(request, 'panel/ventas.html', {
         'ventas': ventas,
-        'stats': stats,
     })
 
 
@@ -1048,6 +1083,41 @@ def marcar_enviado(request, venta_id):
             logistica.save()
             
             messages.success(request, f'Venta #{venta_id} marcada como enviada')
+
+            ### CORREO ELECTRONICOOO!!
+            rut_cliente = logistica.venta.id_usuario
+            try:
+                cliente = Usuario.objects.get(rut=rut_cliente)
+                venta = logistica.venta
+                subject = '🚚 Tu compra ha sido enviada - KRD CLUB'
+                message = f'''
+¡Hola {cliente.nombre}!👋 
+
+¡Excelentes noticias! 
+
+Tu compra #{venta.id} ha sido entregada a la empresa de reparto: {empresa}.
+
+🔍Para que veas donde va tu pedido, aquí te dejamos el número de seguimiento: {n_seguimiento}.
+
+Estamos atentos al proceso de entrega para que todo salga bien.👌
+
+¡Gracias por confiar en KRD Club!😎
+
+Saludos,
+El equipo logístico de KRD ❤️
+'''
+                send_mail(
+                    subject,
+                    message,
+                    settings.DEFAULT_FROM_EMAIL,
+                    [cliente.email],
+                    fail_silently=False,
+                )
+                messages.success(request, f'Correo de envío enviado a {cliente.email}')
+            except Usuario.DoesNotExist:
+                print("Cliente no encontrado con RUT:", rut_cliente)
+
+
         except Exception as e:
             messages.error(request, f'Error: {str(e)}')
     
@@ -1064,6 +1134,7 @@ def marcar_entregado(request, venta_id):
         logistica.estado = 'entregado'
         logistica.save()
         messages.success(request, f'Venta #{venta_id} marcada como entregada')
+
     except Exception as e:
         messages.error(request, f'Error: {str(e)}')
     
@@ -1157,3 +1228,183 @@ def panel_logout(request):
     logout(request)
     messages.info(request, 'Has cerrado sesión correctamente.')
     return redirect('home')
+
+
+### SISTEMA DE VALORACIONES / RESEÑAS
+
+def crear_valoracion(request, venta_id):
+    """
+    Vista para que el cliente cree una valoración de su compra.
+    Solo puede valorar ventas entregadas y que no hayan sido valoradas.
+    """
+    # Obtener la venta
+    venta = get_object_or_404(Venta, id=venta_id)
+    
+    # Verificar que la venta tenga logística y esté entregada
+    try:
+        logistica = venta.logistica
+        if logistica.estado != 'entregado':
+            messages.warning(request, 'Solo puedes valorar compras que ya han sido entregadas.')
+            return redirect('home')
+    except Logistica.DoesNotExist:
+        messages.warning(request, 'Esta venta aún no tiene información de envío.')
+        return redirect('home')
+    
+    # Verificar si ya existe una valoración
+    if hasattr(venta, 'valoracion'):
+        messages.info(request, 'Ya has valorado esta compra.')
+        return redirect('ver_valoracion', venta_id=venta_id)
+    
+    # Obtener datos del usuario
+    usuario = None
+    if venta.id_usuario:
+        try:
+            usuario = Usuario.objects.get(rut=venta.id_usuario)
+        except Usuario.DoesNotExist:
+            pass
+    
+    # Obtener productos de la venta
+    productos_venta = Producto_Venta.objects.filter(id_venta=venta).select_related('id_producto')
+    
+    if request.method == 'POST':
+        # Procesar el formulario
+        estrellas = int(request.POST.get('estrellas', 5))
+        comentario = request.POST.get('comentario', '').strip()
+        
+        # Validar valores entre 1 y 5
+        estrellas = max(1, min(5, estrellas))
+        
+        # Crear la valoración
+        Valoracion.objects.create(
+            venta=venta,
+            rut_usuario=venta.id_usuario or '',
+            estrellas=estrellas,
+            comentario=comentario if comentario else None,
+        )
+        
+        messages.success(request, '¡Gracias por tu valoración! Tu opinión nos ayuda a mejorar.')
+        return redirect('ver_valoracion', venta_id=venta_id)
+    
+    return render(request, 'valoraciones/crear_valoracion.html', {
+        'venta': venta,
+        'usuario': usuario,
+        'productos_venta': productos_venta,
+    })
+
+
+def ver_valoracion(request, venta_id):
+    """Vista para ver una valoración existente"""
+    venta = get_object_or_404(Venta, id=venta_id)
+    valoracion = get_object_or_404(Valoracion, venta=venta)
+    
+    # Obtener datos del usuario
+    usuario = None
+    if venta.id_usuario:
+        try:
+            usuario = Usuario.objects.get(rut=venta.id_usuario)
+        except Usuario.DoesNotExist:
+            pass
+    
+    # Obtener productos de la venta
+    productos_venta = Producto_Venta.objects.filter(id_venta=venta).select_related('id_producto')
+    
+    return render(request, 'valoraciones/ver_valoracion.html', {
+        'venta': venta,
+        'valoracion': valoracion,
+        'usuario': usuario,
+        'productos_venta': productos_venta,
+    })
+
+
+def valoraciones_publicas(request):
+    """
+    Página pública con todas las valoraciones visibles.
+    Muestra testimonios de clientes satisfechos.
+    """
+    valoraciones = Valoracion.objects.select_related('venta').order_by('-fecha_valoracion')[:20]
+    
+    # Agregar nombre de usuario a cada valoración
+    for val in valoraciones:
+        try:
+            usuario = Usuario.objects.get(rut=val.rut_usuario)
+            val.nombre_cliente = f"{usuario.nombre} {usuario.apellido[0]}."
+        except Usuario.DoesNotExist:
+            val.nombre_cliente = "Cliente"
+    
+    # Calcular estadísticas
+    total_valoraciones = Valoracion.objects.count()
+    if total_valoraciones > 0:
+        from django.db.models import Avg
+        stats = Valoracion.objects.aggregate(
+            promedio=Avg('estrellas'),
+        )
+    else:
+        stats = {
+            'promedio': 0,
+        }
+    
+    # Distribución por estrellas con porcentajes calculados
+    distribucion = []
+    for i in range(5, 0, -1):
+        count = Valoracion.objects.filter(estrellas=i).count()
+        porcentaje = (count / total_valoraciones * 100) if total_valoraciones > 0 else 0
+        distribucion.append({
+            'estrellas': i,
+            'count': count,
+            'porcentaje': round(porcentaje, 1)
+        })
+    
+    return render(request, 'valoraciones/valoraciones_publicas.html', {
+        'valoraciones': valoraciones,
+        'total_valoraciones': total_valoraciones,
+        'stats': stats,
+        'distribucion': distribucion,
+    })
+
+
+def buscar_venta_valorar(request):
+    """
+    API para buscar una venta por número de orden y RUT para valorar.
+    """
+    venta_id = request.GET.get('venta_id', '').strip()
+    rut = request.GET.get('rut', '').strip().replace(".", "").replace("-", "").upper()
+    
+    if not venta_id or not rut:
+        return JsonResponse({'success': False, 'message': 'Ingresa el número de orden y tu RUT.'})
+    
+    try:
+        venta = Venta.objects.get(id=venta_id)
+        
+        # Verificar que el RUT coincida
+        rut_venta = venta.id_usuario.replace(".", "").replace("-", "").upper() if venta.id_usuario else ""
+        if rut_venta != rut:
+            return JsonResponse({'success': False, 'message': 'El RUT no coincide con esta orden.'})
+        
+        # Verificar si está entregada
+        try:
+            logistica = venta.logistica
+            if logistica.estado != 'entregado':
+                return JsonResponse({'success': False, 'message': 'Esta compra aún no ha sido entregada.'})
+        except Logistica.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'Esta compra aún no tiene información de envío.'})
+        
+        # Verificar si ya fue valorada
+        if hasattr(venta, 'valoracion'):
+            return JsonResponse({
+                'success': True, 
+                'ya_valorada': True,
+                'redirect_url': reverse('ver_valoracion', args=[venta_id])
+            })
+        
+        return JsonResponse({
+            'success': True,
+            'ya_valorada': False,
+            'redirect_url': reverse('crear_valoracion', args=[venta_id])
+        })
+        
+    except Venta.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'No se encontró una orden con ese número.'})
+
+
+
+

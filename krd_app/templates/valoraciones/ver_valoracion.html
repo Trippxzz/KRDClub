@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Valoración #{{ venta.id }} - KRD Club{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/valoraciones.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-white py-16">
+    <div class="max-w-2xl mx-auto px-6">
+        
+        <!-- Header -->
+        <div class="text-center mb-12 border-b border-gray-200 pb-8">
+            <h1 class="text-3xl md:text-4xl font-light text-gray-900 mb-2" style="font-family: 'Playfair Display', serif;">
+                ¡Gracias por tu Valoración!
+            </h1>
+            <p class="text-gray-500">Tu opinión nos ayuda a mejorar</p>
+        </div>
+
+        <!-- Tarjeta de Valoración -->
+        <div class="border border-gray-200 p-8">
+            
+            <!-- Info de la orden -->
+            <div class="mb-8 pb-8 border-b border-gray-200">
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-6">
+                    <div>
+                        <p class="text-xs text-gray-500 uppercase tracking-wider">Número de Orden</p>
+                        <p class="text-lg font-semibold text-gray-900">#{{ venta.id }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 uppercase tracking-wider">Valorado el</p>
+                        <p class="text-gray-700">{{ valoracion.fecha_valoracion|date:"d/m/Y" }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 uppercase tracking-wider">Por</p>
+                        <p class="text-gray-700">{{ valoracion.nombre_usuario }}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Estrellas -->
+            <div class="text-center mb-8 pb-8 border-b border-gray-200">
+                <div class="flex justify-center items-center gap-2 text-3xl mb-3">
+                    {% for i in "12345" %}
+                        {% if forloop.counter <= valoracion.estrellas %}
+                            <i class="fas fa-star text-gray-900"></i>
+                        {% else %}
+                            <i class="fas fa-star text-gray-300"></i>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                <p class="text-lg font-medium text-gray-700">
+                    {% if valoracion.estrellas == 5 %}Excelente
+                    {% elif valoracion.estrellas == 4 %}Muy Bueno
+                    {% elif valoracion.estrellas == 3 %}Bueno
+                    {% elif valoracion.estrellas == 2 %}Regular
+                    {% else %}Malo
+                    {% endif %}
+                </p>
+            </div>
+            
+            <!-- Comentario -->
+            {% if valoracion.comentario %}
+            <div class="mb-8 pb-8 border-b border-gray-200">
+                <p class="text-xs text-gray-500 uppercase tracking-wider mb-3">Comentario</p>
+                <p class="text-gray-700 leading-relaxed">{{ valoracion.comentario }}</p>
+            </div>
+            {% endif %}
+
+            <!-- Productos -->
+            <div>
+                <p class="text-xs text-gray-500 uppercase tracking-wider mb-4">Productos de esta Orden</p>
+                <div class="space-y-3">
+                    {% for pv in productos_venta %}
+                    <div class="flex items-center gap-4 p-3 bg-gray-50 border border-gray-200">
+                        {% if pv.id_producto.imagen_principal %}
+                        <img src="{{ pv.id_producto.imagen_principal.imagen.url }}" 
+                             alt="{{ pv.id_producto.n_producto }}"
+                             class="w-12 h-12 object-cover">
+                        {% else %}
+                        <div class="w-12 h-12 bg-gray-200 flex items-center justify-center">
+                            <i class="fas fa-image text-gray-400"></i>
+                        </div>
+                        {% endif %}
+                        <div>
+                            <h4 class="font-medium text-gray-900 text-sm">{{ pv.id_producto.n_producto }}</h4>
+                            <p class="text-xs text-gray-500">Cantidad: {{ pv.cantidad }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+
+        <!-- Botones -->
+        <div class="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="{% url 'valoraciones_publicas' %}" class="inline-flex items-center justify-center px-6 py-3 border border-gray-300 text-gray-900 hover:bg-gray-50 transition font-medium">
+                Ver Opiniones
+            </a>
+            <a href="{% url 'listar_productos' %}" class="inline-flex items-center justify-center px-6 py-3 bg-black text-white hover:bg-gray-900 transition font-medium">
+                Seguir Comprando
+            </a>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

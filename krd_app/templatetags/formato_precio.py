@@ -28,3 +28,17 @@ def precio_clp(value):
         return '${:,.0f}'.format(numero).replace(',', '.')
     except (ValueError, TypeError):
         return value
+
+@register.filter(name='get_item')
+def get_item(dictionary, key):
+    """
+    Obtiene un item de un diccionario por clave.
+    Útil para acceder a diccionarios en templates.
+    Uso: {{ mydict|get_item:key }}
+    """
+    if dictionary is None:
+        return 0
+    try:
+        return dictionary.get(key, 0)
+    except (AttributeError, TypeError):
+        return 0

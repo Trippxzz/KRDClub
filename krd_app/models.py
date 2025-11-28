@@ -176,3 +176,40 @@ class Usuario(AbstractBaseUser):
     @property
     def is_staff(self):
         return self.admin
+
+
+### Seccion Valoraciones / Reseñas
+
+class Valoracion(models.Model):
+    """
+    Sistema simple de valoración de ventas por parte de los clientes.
+    """
+    venta = models.OneToOneField(Venta, on_delete=models.CASCADE, related_name='valoracion')
+    rut_usuario = models.CharField(max_length=12)
+    
+    # Valoración en estrellas (1-5)
+    estrellas = models.PositiveIntegerField(default=5)
+    
+    # Comentario opcional
+    comentario = models.TextField(max_length=500, blank=True, null=True)
+    
+    # Metadatos
+    fecha_valoracion = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        verbose_name = "Valoración"
+        verbose_name_plural = "Valoraciones"
+        ordering = ['-fecha_valoracion']
+    
+    def __str__(self):
+        return f"Valoración Venta #{self.venta.id} - {self.estrellas}⭐"
+    
+    @property
+    def nombre_usuario(self):
+        """Obtiene el nombre del usuario que valoró"""
+        try:
+            usuario = Usuario.objects.get(rut=self.rut_usuario)
+            return f"{usuario.nombre} {usuario.apellido[0]}."
+        except Usuario.DoesNotExist:
+            return "Cliente"
+
