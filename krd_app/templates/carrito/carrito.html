@@ -147,14 +147,66 @@
 
             <!-- Resumen de Compra -->
             <div class="lg:col-span-1">
+                <!-- Cupón de Descuento -->
+                <div class="bg-gray-50 rounded-xl p-6 mb-6 border border-gray-200">
+                    <h4 class="font-bold text-gray-800 mb-4 flex items-center">
+                        <i class="fas fa-tag mr-2 text-gray-600"></i>
+                        Cupón de Descuento
+                    </h4>
+                    
+                    {% if cupon_aplicado %}
+                    <!-- Cupón aplicado -->
+                    <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <span class="font-bold text-green-700">{{ cupon_aplicado.codigo }}</span>
+                                <p class="text-sm text-green-600 mt-1">
+                                    {% if cupon_aplicado.tipo == 'porcentaje' %}
+                                        {{ cupon_aplicado.valor }}% de descuento
+                                    {% else %}
+                                        ${{ cupon_aplicado.valor|formato_miles }} de descuento
+                                    {% endif %}
+                                </p>
+                            </div>
+                            <a href="{% url 'remover_cupon' %}" class="text-red-500 hover:text-red-700 p-2" title="Quitar cupón">
+                                <i class="fas fa-times"></i>
+                            </a>
+                        </div>
+                    </div>
+                    {% else %}
+                    <!-- Formulario para aplicar cupón -->
+                    <form method="post" action="{% url 'aplicar_cupon' %}" class="flex gap-2">
+                        {% csrf_token %}
+                        <input type="text" 
+                               name="codigo" 
+                               placeholder="Código de cupón" 
+                               class="flex-1 border border-gray-300 rounded-lg px-4 py-2 text-sm uppercase focus:ring-2 focus:ring-black focus:border-black"
+                               style="text-transform: uppercase;">
+                        <button type="submit" class="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition text-sm font-medium">
+                            Aplicar
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+                
                 <div class="carrito-resumen">
                     <h3>Resumen</h3>
                     
                     <div class="space-y-4 mb-8 pb-8 border-b border-gray-200">
                         <div class="carrito-resumen-linea">
                             <span>Subtotal</span>
-                            <span class="font-precio">${{ total|formato_miles }}</span>
+                            <span class="font-precio">${{ subtotal|formato_miles }}</span>
                         </div>
+                        
+                        {% if cupon_aplicado and descuento > 0 %}
+                        <div class="carrito-resumen-linea text-green-600">
+                            <span>
+                                <i class="fas fa-tag mr-1"></i>
+                                Descuento ({{ cupon_aplicado.codigo }})
+                            </span>
+                            <span class="font-precio">-${{ descuento|formato_miles }}</span>
+                        </div>
+                        {% endif %}
                     </div>
 
                     <div class="carrito-resumen-total">

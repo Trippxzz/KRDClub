@@ -154,8 +154,17 @@
                     <div class="space-y-3 mb-6 pb-6 border-b border-gray-200">
                         <div class="flex justify-between text-gray-700">
                             <span>Subtotal</span>
-                            <span class="font-precio">${{ total|formato_miles }}</span>
+                            <span class="font-precio">${{ subtotal|formato_miles }}</span>
                         </div>
+                        {% if cupon_aplicado and descuento > 0 %}
+                        <div class="flex justify-between text-green-600">
+                            <span>
+                                <i class="fas fa-tag mr-1"></i>
+                                Descuento ({{ cupon_aplicado.codigo }})
+                            </span>
+                            <span class="font-precio">-${{ descuento|formato_miles }}</span>
+                        </div>
+                        {% endif %}
                         <div class="flex justify-between text-gray-700">
                             <span>Envío</span>
                             <span class="text-green-600 font-semibold">Gratis</span>

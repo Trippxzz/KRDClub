@@ -275,8 +275,8 @@
                             {% endif %}
                             {% if p.stock <= 0 %}
                                 <div class="absolute top-3 right-3 bg-red-500 text-white px-2 py-1 text-xs font-bold rounded">SIN STOCK</div>
-                            {% elif p.stock <= 5 %}
-                                <div class="absolute top-3 right-3 bg-yellow-500 text-white px-2 py-1 text-xs font-bold rounded">ÚLTIMAS UNIDADES</div>
+                            {% elif p.stock <= umbral_bajo_stock %}
+                                <div class="absolute top-3 right-3 bg-yellow-500 text-white px-2 py-1 text-xs font-bold rounded">¡POCO STOCK!</div>
                             {% endif %}
                         </div>
 
