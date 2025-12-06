@@ -213,3 +213,117 @@ class Valoracion(models.Model):
         except Usuario.DoesNotExist:
             return "Cliente"
 
+
+### Seccion Configuración del Sistema
+
+class Configuracion(models.Model):
+    """
+    Tabla de configuraciones del sistema.
+    Almacena ajustes configurables por el admin como:
+    - umbral_bajo_stock: cantidad para considerar bajo stock
+    - anuncio_activo: si mostrar anuncio o no
+    - anuncio_texto: texto del anuncio
+    - anuncio_color: color de fondo del anuncio
+    """
+    clave = models.CharField(max_length=50, unique=True, primary_key=True)
+    valor = models.TextField()
+    descripcion = models.CharField(max_length=200, blank=True)
+    fecha_actualizacion = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = "Configuración"
+        verbose_name_plural = "Configuraciones"
+    
+    def __str__(self):
+        return f"{self.clave}: {self.valor[:50]}"
+    
+    @classmethod
+    def get_valor(cls, clave, default=None):
+        """Obtiene el valor de una configuración por su clave"""
+        try:
+            return cls.objects.get(clave=clave).valor
+        except cls.DoesNotExist:
+            return default
+    
+    @classmethod
+    def set_valor(cls, clave, valor, descripcion=''):
+        """Crea o actualiza una configuración"""
+        obj, created = cls.objects.update_or_create(
+            clave=clave,
+            defaults={'valor': valor, 'descripcion': descripcion}
+        )
+        return obj
+
+
+### Sección Cupones de Descuento
+
+class Cupon(models.Model):
+    """
+    Sistema de cupones de descuento para aplicar en el checkout.
+    """
+    TIPO_CHOICES = [
+        ('porcentaje', 'Porcentaje'),
+        ('monto', 'Monto Fijo'),
+    ]
+    
+    codigo = models.CharField(max_length=20, unique=True, primary_key=True)
+    descripcion = models.CharField(max_length=100, blank=True)
+    tipo = models.CharField(max_length=15, choices=TIPO_CHOICES, default='porcentaje')
+    valor = models.IntegerField(help_text="Porcentaje (ej: 10) o monto fijo (ej: 5000)")
+    
+    # Restricciones
+    monto_minimo = models.IntegerField(default=0, help_text="Monto mínimo de compra para aplicar")
+    uso_maximo = models.IntegerField(default=0, help_text="0 = ilimitado")
+    usos_actuales = models.IntegerField(default=0)
+    
+    # Vigencia
+    fecha_inicio = models.DateField(null=True, blank=True)
+    fecha_fin = models.DateField(null=True, blank=True)
+    
+    # Estado
+    activo = models.BooleanField(default=True)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        verbose_name = "Cupón"
+        verbose_name_plural = "Cupones"
+        ordering = ['-fecha_creacion']
+    
+    def __str__(self):
+        if self.tipo == 'porcentaje':
+            return f"{self.codigo} - {self.valor}% OFF"
+        return f"{self.codigo} - ${self.valor} OFF"
+    
+    def es_valido(self, monto_carrito=0):
+        """Verifica si el cupón es válido para usar"""
+        from django.utils import timezone
+        hoy = timezone.now().date()
+        
+        if not self.activo:
+            return False, "Cupón inactivo"
+        
+        if self.fecha_inicio and hoy < self.fecha_inicio:
+            return False, "Cupón aún no vigente"
+        
+        if self.fecha_fin and hoy > self.fecha_fin:
+            return False, "Cupón expirado"
+        
+        if self.uso_maximo > 0 and self.usos_actuales >= self.uso_maximo:
+            return False, "Cupón agotado"
+        
+        if monto_carrito < self.monto_minimo:
+            return False, f"Monto mínimo: ${self.monto_minimo:,}".replace(',', '.')
+        
+        return True, "Válido"
+    
+    def calcular_descuento(self, monto):
+        """Calcula el descuento a aplicar"""
+        if self.tipo == 'porcentaje':
+            return int(monto * self.valor / 100)
+        return min(self.valor, monto)  # El descuento no puede ser mayor al monto
+    
+    def usar(self):
+        """Incrementa el contador de usos"""
+        self.usos_actuales += 1
+        self.save()
+
