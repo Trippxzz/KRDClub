@@ -1,0 +1,171 @@
+{% extends 'panel/base_admin.html' %}
+
+{% block title %}Vehículos{% endblock %}
+{% block page_title %}Gestión de Vehículos{% endblock %}
+
+{% block content %}
+<!-- Header Actions -->
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+    <div class="flex items-center gap-3">
+        <span class="text-gray-600 text-sm">{{ vehiculos|length }} vehículo{{ vehiculos|length|pluralize:"s" }} registrado{{ vehiculos|length|pluralize:"s" }}</span>
+    </div>
+    <button onclick="document.getElementById('modalAgregar').classList.remove('hidden')" 
+            class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center">
+        <i class="fas fa-plus mr-2"></i>
+        Nuevo Vehículo
+    </button>
+</div>
+
+<!-- Vehicles Table -->
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    {% if vehiculos %}
+    <div class="overflow-x-auto">
+        <table class="w-full min-w-[400px]">
+            <thead class="bg-gray-50 border-b border-gray-200">
+                <tr>
+                    <th class="text-left px-4 md:px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Marca</th>
+                    <th class="text-left px-4 md:px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Modelo</th>
+                    <th class="text-center px-4 md:px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Cilindrada</th>
+                    <th class="text-center px-4 md:px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Año</th>
+                    <th class="text-center px-4 md:px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Acciones</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                {% for v in vehiculos %}
+                <tr class="hover:bg-gray-50 transition">
+                    <td class="px-4 md:px-6 py-4">
+                        <div class="flex items-center">
+                            <span class="font-medium text-gray-900">{{ v.marca }}</span>
+                        </div>
+                    </td>
+                    <td class="px-4 md:px-6 py-4 text-gray-700">{{ v.modelo }}</td>
+                    <td class="px-4 md:px-6 py-4 text-center">
+                        <span class="inline-block bg-blue-100 text-blue-700 px-2 py-1 rounded text-sm font-medium">
+                            {{ v.cilindrada }}L
+                        </span>
+                    </td>
+                    <td class="px-4 md:px-6 py-4 text-center">
+                        <span class="inline-block bg-gray-100 text-gray-700 px-2 py-1 rounded text-sm font-medium">
+                            {{ v.anio }}
+                        </span>
+                    </td>
+                    <td class="px-4 md:px-6 py-4 text-center">
+                        <form action="{% url 'eliminar_vehiculo' v.pk %}" method="post" class="inline">
+                            {% csrf_token %}
+                            <button type="submit" 
+                                    onclick="return confirm('¿Eliminar vehículo {{ v.marca }} {{ v.modelo }}?')" 
+                                    class="text-red-600 hover:text-red-800 hover:bg-red-50 p-2 rounded-lg transition"
+                                    title="Eliminar">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <!-- Empty State -->
+    <div class="text-center py-16">
+        <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <i class="fas fa-car text-4xl text-gray-400"></i>
+        </div>
+        <h3 class="text-xl font-bold text-gray-900 mb-2">No hay vehículos registrados</h3>
+        <p class="text-gray-600 mb-6">Agrega vehículos para asignarlos como compatibles con tus productos.</p>
+        <button onclick="document.getElementById('modalAgregar').classList.remove('hidden')" 
+                class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition inline-flex items-center">
+            <i class="fas fa-plus mr-2"></i>
+            Agregar Primer Vehículo
+        </button>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Modal Agregar Vehículo -->
+<div id="modalAgregar" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+        <div class="p-6 border-b border-gray-200">
+            <div class="flex justify-between items-center">
+                <h3 class="text-xl font-bold text-gray-900">Agregar Vehículo</h3>
+                <button onclick="document.getElementById('modalAgregar').classList.add('hidden')" 
+                        class="text-gray-400 hover:text-gray-600 p-2">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+        </div>
+        
+        <form method="post" class="p-6">
+            {% csrf_token %}
+            
+            <div class="space-y-4">
+                <!-- Marca -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Marca *</label>
+                    <select name="marca" required 
+                            class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">Seleccionar marca</option>
+                        <option value="Audi">Audi</option>
+                        <option value="BMW">BMW</option>
+                        <option value="Mercedes-Benz">Mercedes-Benz</option>
+                        <option value="Porsche">Porsche</option>
+                        <option value="Volkswagen">Volkswagen</option>
+                    </select>
+                </div>
+                
+                <!-- Modelo -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Modelo *</label>
+                    <input type="text" name="modelo" required placeholder="Ej: A4, Serie 3, Clase C..."
+                           class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                
+                <!-- Cilindrada -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Cilindrada *</label>
+                    <input type="number" name="cilindrada" required step="0.1" min="0.5" max="10" placeholder="Ej: 2.0"
+                           class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <p class="text-xs text-gray-500 mt-1">En litros (Ej: 2.0)</p>
+                </div>
+                
+                <!-- Año -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Año *</label>
+                    <input type="number" name="anio" required min="1990" max="2025" placeholder="Ej: 2023"
+                           class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+            </div>
+            
+            <!-- Botones -->
+            <div class="flex gap-3 mt-6 pt-4 border-t border-gray-200">
+                <button type="button" 
+                        onclick="document.getElementById('modalAgregar').classList.add('hidden')"
+                        class="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium">
+                    Cancelar
+                </button>
+                <button type="submit" 
+                        class="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium flex items-center justify-center">
+                    <i class="fas fa-save mr-2"></i>
+                    Guardar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// Cerrar modal con Escape
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        document.getElementById('modalAgregar').classList.add('hidden');
+    }
+});
+
+// Cerrar modal clickeando fuera
+document.getElementById('modalAgregar').addEventListener('click', function(e) {
+    if (e.target === this) {
+        this.classList.add('hidden');
+    }
+});
+</script>
+{% endblock %}
