@@ -83,10 +83,20 @@
                     <i class="fas fa-shipping-fast w-5 mr-3"></i>
                     Logística/Envíos
                 </a>
-                </a>
+
                 <div class="pt-4 pb-2 px-4 text-xs uppercase tracking-wider text-gray-500">Configuración</div>
                 
-                <a href="{% url 'lista_vehiculo' %}" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-gray-300 hover:text-white">
+                <a href="{% url 'admin_anuncios' %}" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-gray-300 hover:text-white {% if 'anuncios' in request.path %}active bg-blue-900/20 text-white{% endif %}">
+                    <i class="fas fa-bullhorn w-5 mr-3"></i>
+                    Anuncios
+                </a>
+                
+                <a href="{% url 'admin_cupones' %}" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-gray-300 hover:text-white {% if 'cupones' in request.path %}active bg-blue-900/20 text-white{% endif %}">
+                    <i class="fas fa-ticket-alt w-5 mr-3"></i>
+                    Cupones
+                </a>
+                
+                <a href="{% url 'lista_vehiculo' %}" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-gray-300 hover:text-white {% if request.resolver_match.url_name == 'lista_vehiculo' %}active bg-blue-900/20 text-white{% endif %}">
                     <i class="fas fa-car w-5 mr-3"></i>
                     Vehículos
                 </a>

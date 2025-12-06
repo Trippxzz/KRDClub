@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from .models import Producto, ProductoImagen, Compra, ProductoCompra, vehiculo, Producto_Vehiculo, Venta, Producto_Venta, Usuario, Logistica, Valoracion
+from .models import Producto, ProductoImagen, Compra, ProductoCompra, vehiculo, Producto_Vehiculo, Venta, Producto_Venta, Usuario, Logistica, Valoracion, Configuracion, Cupon
 from .forms import ProductoForm, ProductoImagenForm, CompraForm, ProductoCompraForm, VehiculoForm, UsuarioForm
 from django.http import HttpResponse, JsonResponse
 from decimal import Decimal
@@ -345,18 +345,34 @@ def addCompra(request):
     })
 
 def agregar_vehiculos(request):
-    if request.method == 'POST':
-        form = VehiculoForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('lista_vehiculo')
-    else:
-        form = VehiculoForm()
-    return render(request, 'vehiculos/agregar.html', {'form': form})
+    """Redirige a la lista de vehículos (ahora todo está en una sola página)"""
+    return redirect('lista_vehiculo')
 
 def lista_vehiculo(request):
-    vehiculos = vehiculo.objects.all()
-    return render(request, 'vehiculos/lista.html', {'vehiculos': vehiculos})
+    """Lista de vehículos con formulario de agregar integrado"""
+    if not request.user.is_authenticated or not getattr(request.user, 'admin', False):
+        messages.error(request, 'No tienes permisos de administrador')
+        return redirect('panel_login')
+    
+    if request.method == 'POST':
+        # Crear vehículo desde el modal
+        marca = request.POST.get('marca')
+        modelo = request.POST.get('modelo')
+        cilindrada = request.POST.get('cilindrada')
+        anio = request.POST.get('anio')
+        
+        if marca and modelo and cilindrada and anio:
+            vehiculo.objects.create(
+                marca=marca,
+                modelo=modelo,
+                cilindrada=cilindrada,
+                anio=anio
+            )
+            messages.success(request, f'Vehículo {marca} {modelo} agregado correctamente')
+        return redirect('lista_vehiculo')
+    
+    vehiculos = vehiculo.objects.all().order_by('marca', 'modelo', '-anio')
+    return render(request, 'panel/vehiculos.html', {'vehiculos': vehiculos})
 
 def eliminar_vehiculo(request, pk):
     veh = get_object_or_404(vehiculo, pk=pk)
@@ -504,12 +520,16 @@ def getCatalogo(request):
         
         # Lista de años fija de 2025 a 1990
         anios_disponibles = list(range(2025, 1989, -1))
+        
+        # Umbral de bajo stock desde configuración
+        umbral_bajo_stock = int(Configuracion.get_valor('umbral_bajo_stock', '5'))
             
         return render(request, "productos/catalogo.html", {
             "prods": prods, 
             "filtrado_vehiculo": filtrado_vehiculo,
             "filtros_activos": filtros_activos,
             "total_productos": prods.count(),
+            "umbral_bajo_stock": umbral_bajo_stock,
             # Opciones de filtros
             "marcas_vehiculo": marcas_vehiculo,
             "aros_disponibles": aros_disponibles,
@@ -573,8 +593,86 @@ def getProducto(request, id):
 
 def getCarrito(request):
     carrito = request.session.get('carrito', {})
-    total = sum(item['subtotal'] for item in carrito.values())
-    return render(request, 'carrito/carrito.html', {'carrito': carrito, 'total': total})
+    subtotal = sum(item['subtotal'] for item in carrito.values())
+    
+    # Verificar si hay cupón aplicado
+    cupon_aplicado = None
+    descuento = 0
+    cupon_codigo = request.session.get('cupon_codigo')
+    
+    if cupon_codigo:
+        try:
+            cupon = Cupon.objects.get(codigo=cupon_codigo, activo=True)
+            if cupon.es_valido():
+                cupon_aplicado = cupon
+                if cupon.tipo == 'porcentaje':
+                    descuento = int(subtotal * cupon.valor / 100)
+                else:  # monto fijo
+                    descuento = int(cupon.valor)
+                    if descuento > subtotal:
+                        descuento = subtotal
+            else:
+                # Cupón expirado o sin usos, remover de sesión
+                del request.session['cupon_codigo']
+                request.session.modified = True
+        except Cupon.DoesNotExist:
+            del request.session['cupon_codigo']
+            request.session.modified = True
+    
+    total = subtotal - descuento
+    
+    return render(request, 'carrito/carrito.html', {
+        'carrito': carrito, 
+        'subtotal': subtotal,
+        'total': total,
+        'cupon_aplicado': cupon_aplicado,
+        'descuento': descuento,
+    })
+
+
+def aplicar_cupon(request):
+    """Aplica un cupón de descuento al carrito"""
+    if request.method == 'POST':
+        codigo = request.POST.get('codigo', '').strip().upper()
+        
+        if not codigo:
+            messages.error(request, 'Ingresa un código de cupón')
+            return redirect('carrito')
+        
+        try:
+            cupon = Cupon.objects.get(codigo=codigo)
+            
+            if not cupon.activo:
+                messages.error(request, 'Este cupón no está activo')
+                return redirect('carrito')
+            
+            if not cupon.es_valido():
+                if cupon.usos_actuales >= cupon.usos_maximos:
+                    messages.error(request, 'Este cupón ha alcanzado el límite de usos')
+                else:
+                    messages.error(request, 'Este cupón ha expirado')
+                return redirect('carrito')
+            
+            # Aplicar cupón
+            request.session['cupon_codigo'] = codigo
+            request.session.modified = True
+            messages.success(request, f'¡Cupón "{codigo}" aplicado correctamente!')
+            
+        except Cupon.DoesNotExist:
+            messages.error(request, 'Cupón no válido')
+        
+        return redirect('carrito')
+    
+    return redirect('carrito')
+
+
+def remover_cupon(request):
+    """Remueve el cupón aplicado del carrito"""
+    if 'cupon_codigo' in request.session:
+        del request.session['cupon_codigo']
+        request.session.modified = True
+        messages.success(request, 'Cupón removido')
+    return redirect('carrito')
 
 ###SECCION DE EDITS
 
@@ -840,7 +938,32 @@ def procesarCompra(request):
             messages.error(request, f"El producto {item['nombre']} ya no está disponible.")
             return redirect("ver_carrito")
     
-    total = sum(item['subtotal'] for item in carrito.values())
+    subtotal = sum(item['subtotal'] for item in carrito.values())
+    
+    # Calcular descuento por cupón
+    cupon_aplicado = None
+    descuento = 0
+    cupon_codigo = request.session.get('cupon_codigo')
+    
+    if cupon_codigo:
+        try:
+            cupon = Cupon.objects.get(codigo=cupon_codigo, activo=True)
+            if cupon.es_valido():
+                cupon_aplicado = cupon
+                if cupon.tipo == 'porcentaje':
+                    descuento = int(subtotal * cupon.valor / 100)
+                else:
+                    descuento = int(cupon.valor)
+                    if descuento > subtotal:
+                        descuento = subtotal
+            else:
+                del request.session['cupon_codigo']
+                request.session.modified = True
+        except Cupon.DoesNotExist:
+            del request.session['cupon_codigo']
+            request.session.modified = True
+    
+    total = subtotal - descuento
     
     if request.method == 'POST':
         # Capturar datos del formulario
@@ -856,7 +979,10 @@ def procesarCompra(request):
             messages.error(request, "Todos los campos son obligatorios.")
             return render(request, 'checkout.html', {
                 'carrito': carrito,
+                'subtotal': subtotal,
                 'total': total,
+                'cupon_aplicado': cupon_aplicado,
+                'descuento': descuento,
                 'datos': request.POST
             })
         
@@ -871,6 +997,8 @@ def procesarCompra(request):
             'direccion': direccion,
         }
         request.session['total_venta'] = int(total)
+        request.session['descuento_aplicado'] = descuento
+        request.session['cupon_usado'] = cupon_codigo if cupon_aplicado else None
         request.session.modified = True
         
         # Redirigir a Webpay
@@ -878,7 +1006,10 @@ def procesarCompra(request):
     
     return render(request, 'checkout.html', {
         'carrito': carrito,
+        'subtotal': subtotal,
         'total': total,
+        'cupon_aplicado': cupon_aplicado,
+        'descuento': descuento,
     })
 
 
@@ -1029,6 +1160,16 @@ def webpay_retorno(request):
                     # Crear registro de logística
                     Logistica.objects.create(venta=venta)
                     
+                    # Incrementar usos del cupón si se usó uno
+                    cupon_usado = request.session.get('cupon_usado')
+                    if cupon_usado:
+                        try:
+                            cupon = Cupon.objects.get(codigo=cupon_usado)
+                            cupon.usos_actuales += 1
+                            cupon.save()
+                        except Cupon.DoesNotExist:
+                            pass
+                    
                     venta_id = venta.id
 
                     ####PARTE DEL CORREO
@@ -1093,8 +1234,8 @@ El equipo de KRD Club ❤️
                 messages.error(request, f"Error al procesar la compra: {str(e)}")
                 return redirect('ver_carrito')
             
-            # Limpiar sesión completamente (incluido el carrito)
-            for key in ['cliente_temp', 'total_venta', 'webpay_token', 'webpay_buy_order', 'carrito']:
+            # Limpiar sesión completamente (incluido el carrito y cupón)
+            for key in ['cliente_temp', 'total_venta', 'webpay_token', 'webpay_buy_order', 'carrito', 'cupon_codigo', 'cupon_usado', 'descuento_aplicado']:
                 request.session.pop(key, None)
             request.session.modified = True
             
@@ -1142,7 +1283,133 @@ def admin_dashboard(request):
         messages.error(request, 'No tienes permisos de administrador')
         return redirect('panel_login')
     
-    return render(request, 'panel/dashboard.html')
+    from django.utils import timezone
+    from datetime import timedelta, datetime
+    from django.db.models.functions import TruncDate, TruncMonth
+    import json
+    
+    # Usar datetime completos para compatibilidad con SQLite
+    ahora = timezone.now()
+    hoy = timezone.localtime(ahora).date()
+    
+    # Crear datetimes aware para los filtros<
+    inicio_hoy = timezone.make_aware(datetime.combine(hoy, datetime.min.time()))
+    fin_hoy = inicio_hoy + timedelta(days=1)
+    
+    inicio_semana = timezone.make_aware(datetime.combine(hoy - timedelta(days=hoy.weekday()), datetime.min.time()))
+    
+    inicio_mes = timezone.make_aware(datetime.combine(hoy.replace(day=1), datetime.min.time()))
+    
+    # Estadísticas generales
+    total_ventas = Venta.objects.count()
+    total_ingresos = Venta.objects.aggregate(total=Sum('precio_venta'))['total'] or 0
+    total_productos = Producto.objects.count()
+    total_stock = Producto.objects.aggregate(total=Sum('stock'))['total'] or 0
+    
+    # Ventas del día
+    ventas_hoy = Venta.objects.filter(fecha_venta__gte=inicio_hoy, fecha_venta__lt=fin_hoy).count()
+    ingresos_hoy = Venta.objects.filter(fecha_venta__gte=inicio_hoy, fecha_venta__lt=fin_hoy).aggregate(total=Sum('precio_venta'))['total'] or 0
+    
+    # Ventas de la semana
+    ventas_semana = Venta.objects.filter(fecha_venta__gte=inicio_semana).count()
+    ingresos_semana = Venta.objects.filter(fecha_venta__gte=inicio_semana).aggregate(total=Sum('precio_venta'))['total'] or 0
+    
+    # Ventas del mes
+    ventas_mes = Venta.objects.filter(fecha_venta__gte=inicio_mes).count()
+    ingresos_mes = Venta.objects.filter(fecha_venta__gte=inicio_mes).aggregate(total=Sum('precio_venta'))['total'] or 0
+    
+    # Envíos pendientes
+    envios_pendientes = Logistica.objects.filter(estado='pendiente').count()
+    envios_enviados = Logistica.objects.filter(estado='enviado').count()
+    
+    # Ventas últimos 7 días para gráfico
+    ventas_7_dias = []
+    labels_7_dias = []
+    for i in range(6, -1, -1):
+        fecha = hoy - timedelta(days=i)
+        inicio_dia = timezone.make_aware(datetime.combine(fecha, datetime.min.time()))
+        fin_dia = inicio_dia + timedelta(days=1)
+        total = Venta.objects.filter(fecha_venta__gte=inicio_dia, fecha_venta__lt=fin_dia).aggregate(total=Sum('precio_venta'))['total'] or 0
+        ventas_7_dias.append(int(total))
+        labels_7_dias.append(fecha.strftime('%d/%m'))
+    
+    # Ventas últimos 6 meses para gráfico
+    ventas_mensuales = []
+    labels_mensuales = []
+    for i in range(5, -1, -1):
+        mes = hoy.month - i
+        anio = hoy.year
+        if mes <= 0:
+            mes += 12
+            anio -= 1
+        fecha_inicio = timezone.make_aware(datetime(anio, mes, 1))
+        if mes == 12:
+            fecha_fin = timezone.make_aware(datetime(anio+1, 1, 1))
+        else:
+            fecha_fin = timezone.make_aware(datetime(anio, mes+1, 1))
+        total = Venta.objects.filter(fecha_venta__gte=fecha_inicio, fecha_venta__lt=fecha_fin).aggregate(total=Sum('precio_venta'))['total'] or 0
+        ventas_mensuales.append(int(total))
+        labels_mensuales.append(fecha_inicio.strftime('%b'))
+    
+    # Productos más vendidos
+    productos_vendidos = Producto_Venta.objects.values('id_producto__n_producto').annotate(
+        total_vendido=Sum('cantidad')
+    ).order_by('-total_vendido')[:5]
+    
+    # Umbral de bajo stock (configurable, guardado en BD)
+    # Si viene por POST, guardar en BD
+    if request.method == 'POST' and 'umbral_stock' in request.POST:
+        nuevo_umbral = request.POST.get('umbral_stock', '5')
+        try:
+            nuevo_umbral = int(nuevo_umbral)
+            if nuevo_umbral < 0:
+                nuevo_umbral = 0
+            if nuevo_umbral > 100:
+                nuevo_umbral = 100
+            Configuracion.set_valor('umbral_bajo_stock', str(nuevo_umbral), 'Cantidad para considerar bajo stock')
+        except ValueError:
+            pass
+    
+    # Obtener umbral desde BD (default: 5)
+    umbral_bajo_stock = int(Configuracion.get_valor('umbral_bajo_stock', '5'))
+    
+    # Productos con bajo stock
+    productos_bajo_stock = Producto.objects.filter(stock__lte=umbral_bajo_stock).order_by('stock')[:10]
+    
+    # Últimas 5 ventas
+    ultimas_ventas = Venta.objects.prefetch_related('productos_venta').order_by('-fecha_venta')[:5]
+    
+    context = {
+        # Stats generales
+        'total_ventas': total_ventas,
+        'total_ingresos': total_ingresos,
+        'total_productos': total_productos,
+        'total_stock': total_stock,
+        # Stats del día
+        'ventas_hoy': ventas_hoy,
+        'ingresos_hoy': ingresos_hoy,
+        # Stats semana
+        'ventas_semana': ventas_semana,
+        'ingresos_semana': ingresos_semana,
+        # Stats mes
+        'ventas_mes': ventas_mes,
+        'ingresos_mes': ingresos_mes,
+        # Logística
+        'envios_pendientes': envios_pendientes,
+        'envios_enviados': envios_enviados,
+        # Datos para gráficos (JSON)
+        'ventas_7_dias': json.dumps(ventas_7_dias),
+        'labels_7_dias': json.dumps(labels_7_dias),
+        'ventas_mensuales': json.dumps(ventas_mensuales),
+        'labels_mensuales': json.dumps(labels_mensuales),
+        # Listas
+        'productos_vendidos': productos_vendidos,
+        'productos_bajo_stock': productos_bajo_stock,
+        'umbral_bajo_stock': umbral_bajo_stock,
+        'ultimas_ventas': ultimas_ventas,
+    }
+    
+    return render(request, 'panel/dashboard.html', context)
 
 
 def admin_productos(request):
@@ -1636,5 +1903,106 @@ def buscar_venta_valorar(request):
         return JsonResponse({'success': False, 'message': 'No se encontró una orden con ese número.'})
 
 
+def admin_anuncios(request):
+    """Gestión de anuncios del banner superior"""
+    if not request.user.is_authenticated or not getattr(request.user, 'admin', False):
+        messages.error(request, 'No tienes permisos de administrador')
+        return redirect('panel_login')
+    
+    # Obtener anuncios actuales
+    anuncios_json = Configuracion.get_valor('anuncios', '[]')
+    try:
+        anuncios = json.loads(anuncios_json)
+    except json.JSONDecodeError:
+        anuncios = []
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        if action == 'agregar':
+            nuevo_anuncio = {
+                'texto': request.POST.get('texto', ''),
+                'link': request.POST.get('link', ''),
+                'link_texto': request.POST.get('link_texto', 'Ver más'),
+                'activo': True
+            }
+            if nuevo_anuncio['texto']:
+                anuncios.append(nuevo_anuncio)
+                Configuracion.set_valor('anuncios', json.dumps(anuncios), 'Anuncios del banner superior')
+                messages.success(request, 'Anuncio agregado correctamente')
+        
+        elif action == 'eliminar':
+            index = int(request.POST.get('index', -1))
+            if 0 <= index < len(anuncios):
+                anuncios.pop(index)
+                Configuracion.set_valor('anuncios', json.dumps(anuncios), 'Anuncios del banner superior')
+                messages.success(request, 'Anuncio eliminado')
+        
+        elif action == 'toggle':
+            index = int(request.POST.get('index', -1))
+            if 0 <= index < len(anuncios):
+                anuncios[index]['activo'] = not anuncios[index].get('activo', True)
+                Configuracion.set_valor('anuncios', json.dumps(anuncios), 'Anuncios del banner superior')
+                estado = 'activado' if anuncios[index]['activo'] else 'desactivado'
+                messages.success(request, f'Anuncio {estado}')
+        
+        elif action == 'editar':
+            index = int(request.POST.get('index', -1))
+            if 0 <= index < len(anuncios):
+                anuncios[index]['texto'] = request.POST.get('texto', '')
+                anuncios[index]['link'] = request.POST.get('link', '')
+                anuncios[index]['link_texto'] = request.POST.get('link_texto', 'Ver más')
+                Configuracion.set_valor('anuncios', json.dumps(anuncios), 'Anuncios del banner superior')
+                messages.success(request, 'Anuncio actualizado')
+        
+        return redirect('admin_anuncios')
+    
+    return render(request, 'panel/anuncios.html', {'anuncios': anuncios})
 
+
+def admin_cupones(request):
+    """Gestión de cupones de descuento"""
+    if not request.user.is_authenticated or not getattr(request.user, 'admin', False):
+        messages.error(request, 'No tienes permisos de administrador')
+        return redirect('panel_login')
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        if action == 'crear':
+            codigo = request.POST.get('codigo', '').upper().strip()
+            if codigo and not Cupon.objects.filter(codigo=codigo).exists():
+                Cupon.objects.create(
+                    codigo=codigo,
+                    descripcion=request.POST.get('descripcion', ''),
+                    tipo=request.POST.get('tipo', 'porcentaje'),
+                    valor=int(request.POST.get('valor', 10)),
+                    monto_minimo=int(request.POST.get('monto_minimo', 0) or 0),
+                    uso_maximo=int(request.POST.get('uso_maximo', 0) or 0),
+                    fecha_inicio=request.POST.get('fecha_inicio') or None,
+                    fecha_fin=request.POST.get('fecha_fin') or None,
+                    activo=True
+                )
+                messages.success(request, f'Cupón {codigo} creado correctamente')
+            else:
+                messages.error(request, 'El código ya existe o es inválido')
+        
+        elif action == 'toggle':
+            codigo = request.POST.get('codigo')
+            cupon = Cupon.objects.filter(codigo=codigo).first()
+            if cupon:
+                cupon.activo = not cupon.activo
+                cupon.save()
+                estado = 'activado' if cupon.activo else 'desactivado'
+                messages.success(request, f'Cupón {estado}')
+        
+        elif action == 'eliminar':
+            codigo = request.POST.get('codigo')
+            Cupon.objects.filter(codigo=codigo).delete()
+            messages.success(request, 'Cupón eliminado')
+        
+        return redirect('admin_cupones')
+    
+    cupones = Cupon.objects.all()
+    return render(request, 'panel/cupones.html', {'cupones': cupones})
 

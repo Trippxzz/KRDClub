@@ -40,6 +40,9 @@ urlpatterns = [
     path('compras/crear/', views.addCompra, name='crear_compra'),
     # path('compras/', views.listar_compras, name='listar_compras'),
     path('carrito/', views.getCarrito, name='ver_carrito'),
+    path('carrito/', views.getCarrito, name='carrito'),  # Alias
+    path('carrito/aplicar-cupon/', views.aplicar_cupon, name='aplicar_cupon'),
+    path('carrito/remover-cupon/', views.remover_cupon, name='remover_cupon'),
     path('agregar/<uuid:producto_id>/', views.addCarrito, name='agregar_al_carrito'),
     path('quitar/<uuid:producto_id>/', views.eliminardelCarrito, name='remover_del_carrito'),
     path('actualizar/<uuid:producto_id>/', views.actualizarCantidadCarrito, name='actualizar_cantidad'),
@@ -77,6 +80,10 @@ urlpatterns = [
     path('valoracion/<int:venta_id>/', views.ver_valoracion, name='ver_valoracion'),
     path('opiniones/', views.valoraciones_publicas, name='valoraciones_publicas'),
     path('api/buscar-venta-valorar/', views.buscar_venta_valorar, name='buscar_venta_valorar'),
+    
+    # Gestión de Anuncios y Cupones
+    path('panel/anuncios/', views.admin_anuncios, name='admin_anuncios'),
+    path('panel/cupones/', views.admin_cupones, name='admin_cupones'),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
