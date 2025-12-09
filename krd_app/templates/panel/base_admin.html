@@ -91,6 +91,11 @@
                     Anuncios
                 </a>
                 
+                <a href="{% url 'admin_destacados' %}" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-gray-300 hover:text-white {% if 'destacados' in request.path %}active bg-blue-900/20 text-white{% endif %}">
+                    <i class="fas fa-star w-5 mr-3"></i>
+                    Productos Destacados
+                </a>
+                
                 <a href="{% url 'admin_cupones' %}" class="sidebar-link flex items-center px-4 py-3 rounded-lg text-gray-300 hover:text-white {% if 'cupones' in request.path %}active bg-blue-900/20 text-white{% endif %}">
                     <i class="fas fa-ticket-alt w-5 mr-3"></i>
                     Cupones

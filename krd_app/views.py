@@ -21,7 +21,13 @@ from transbank.webpay.webpay_plus.transaction import Transaction
 def home(request):
     # Obtener las marcas disponibles
     marcas = vehiculo.MARCAS
-    return render(request, "public/home.html", {'marcas': marcas})
+    # Obtener productos destacados desde Configuracion
+    productos_destacados = Configuracion.get_productos_destacados()[:6]  # Máximo 6 productos
+    
+    return render(request, "public/home.html", {
+        'marcas': marcas,
+        'productos_destacados': productos_destacados,
+    })
 
 
 # API para filtro de vehículos
@@ -523,6 +529,9 @@ def getCatalogo(request):
         
         # Umbral de bajo stock desde configuración
         umbral_bajo_stock = int(Configuracion.get_valor('umbral_bajo_stock', '5'))
+        
+        # IDs de productos destacados para marcarlos en el catálogo
+        productos_destacados_ids = [str(p.id_producto) for p in Configuracion.get_productos_destacados()]
             
         return render(request, "productos/catalogo.html", {
             "prods": prods, 
@@ -530,6 +539,7 @@ def getCatalogo(request):
             "filtros_activos": filtros_activos,
             "total_productos": prods.count(),
             "umbral_bajo_stock": umbral_bajo_stock,
+            "productos_destacados_ids": productos_destacados_ids,
             # Opciones de filtros
             "marcas_vehiculo": marcas_vehiculo,
             "aros_disponibles": aros_disponibles,
@@ -2005,4 +2015,78 @@ def admin_cupones(request):
     
     cupones = Cupon.objects.all()
     return render(request, 'panel/cupones.html', {'cupones': cupones})
+
+
+def admin_destacados(request):
+    """Gestión de productos destacados"""
+    if not request.user.is_authenticated or not getattr(request.user, 'admin', False):
+        messages.error(request, 'No tienes permisos de administrador')
+        return redirect('panel_login')
+    
+    # Obtener productos destacados actuales
+    productos_destacados = Configuracion.get_productos_destacados()
+    productos_destacados_ids = [str(p.id_producto) for p in productos_destacados]
+    
+    # Obtener todos los productos disponibles (con stock)
+    todos_productos = Producto.objects.filter(stock__gt=0).order_by('n_producto')
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        if action == 'agregar':
+            producto_id = request.POST.get('producto_id')
+            orden = int(request.POST.get('orden', 0))
+            if producto_id:
+                Configuracion.agregar_producto_destacado(producto_id, orden)
+                messages.success(request, 'Producto agregado a destacados')
+        
+        elif action == 'eliminar':
+            producto_id = request.POST.get('producto_id')
+            if producto_id:
+                Configuracion.eliminar_producto_destacado(producto_id)
+                messages.success(request, 'Producto eliminado de destacados')
+        
+        elif action == 'actualizar_orden':
+            producto_id = request.POST.get('producto_id')
+            nuevo_orden = int(request.POST.get('orden', 0))
+            if producto_id:
+                Configuracion.agregar_producto_destacado(producto_id, nuevo_orden)
+                messages.success(request, 'Orden actualizado')
+        
+        elif action == 'guardar_todos':
+            # Guardar orden de todos los productos destacados
+            nuevos_destacados = []
+            for key, value in request.POST.items():
+                if key.startswith('orden_'):
+                    producto_id = key.replace('orden_', '')
+                    orden = int(value) if value else 0
+                    nuevos_destacados.append({'id': producto_id, 'orden': orden})
+            
+            if nuevos_destacados:
+                Configuracion.set_productos_destacados(nuevos_destacados)
+                messages.success(request, 'Orden de productos actualizado')
+        
+        return redirect('admin_destacados')
+    
+    # Obtener info completa de destacados con orden
+    destacados_json = Configuracion.get_valor('productos_destacados', '[]')
+    try:
+        destacados_config = json.loads(destacados_json)
+        destacados_dict = {d['id']: d.get('orden', 0) for d in destacados_config}
+    except json.JSONDecodeError:
+        destacados_dict = {}
+    
+    # Combinar productos con su orden
+    productos_destacados_con_orden = []
+    for producto in productos_destacados:
+        productos_destacados_con_orden.append({
+            'producto': producto,
+            'orden': destacados_dict.get(str(producto.id_producto), 0)
+        })
+    
+    return render(request, 'panel/destacados.html', {
+        'productos_destacados': productos_destacados_con_orden,
+        'productos_destacados_ids': productos_destacados_ids,
+        'todos_productos': todos_productos,
+    })
 

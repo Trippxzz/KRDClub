@@ -84,6 +84,7 @@ urlpatterns = [
     # Gestión de Anuncios y Cupones
     path('panel/anuncios/', views.admin_anuncios, name='admin_anuncios'),
     path('panel/cupones/', views.admin_cupones, name='admin_cupones'),
+    path('panel/destacados/', views.admin_destacados, name='admin_destacados'),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

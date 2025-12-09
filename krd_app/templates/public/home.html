@@ -243,64 +243,67 @@
         </div>
     </section>
 
-    {% comment %} <!-- Carrusel de Productos Destacados -->
+    <!-- Productos Destacados -->
+    {% if productos_destacados %}
     <section class="bg-white py-24">
         <div class="max-w-7xl mx-auto px-6">
             <div class="text-center mb-16">
-                <p class="text-gray-600 text-sm tracking-[0.3em] mb-3 uppercase">Colección Exclusiva</p>
+                <p class="text-gray-600 text-sm tracking-[0.3em] mb-3 uppercase font-precio">Colección Exclusiva</p>
                 <h2 class="text-4xl md:text-5xl font-bold text-black luxury-text mb-4">Productos Destacados</h2>
                 <div class="w-16 h-1 bg-black mx-auto"></div>
             </div>
 
-            <div class="carousel-container relative">
-                <!-- Botón Anterior -->
-                <button id="carousel-prev" class="carousel-btn carousel-btn-prev" aria-label="Anterior">
-                    <i class="fas fa-chevron-left"></i>
-                </button>
-               
-                <div class="carousel-viewport overflow-hidden">
-                    <div id="carousel-track" class="carousel-track flex transition-transform duration-500 ease-out">
-                        
-                        <div class="carousel-slide flex-shrink-0 w-full md:w-1/3 px-4">
-                            <div class="group hover-lift bg-gray-50 rounded-lg overflow-hidden h-full">
-                                <div class="relative h-80 bg-gradient-to-br from-gray-200 to-gray-100 overflow-hidden flex items-center justify-center">
-                                    <svg class="w-40 h-40 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" />
-                                    </svg>
-                                    <div class="absolute top-4 right-4 bg-black text-white px-4 py-2 text-xs tracking-widest font-bold">NUEVO</div>
-                                </div>
-                                <div class="p-8">
-                                    <p class="text-gray-500 text-sm tracking-wider mb-2">LLANTAS 1</p>
-                                    <div class="flex items-center justify-between">
-                                        <span class="text-2xl font-bold text-black">$299.990</span>
-                                        <a href="{% url 'listar_productos' %}" class="bg-black text-white px-6 py-2 text-sm font-medium tracking-wider hover:bg-gray-900 transition">
-                                            VER
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {% for producto in productos_destacados %}
+                <div class="group hover-lift bg-gray-50 rounded-lg overflow-hidden luxury-shadow">
+                    <!-- Imagen -->
+                    <div class="relative h-64 bg-gradient-to-br from-gray-200 to-gray-100 overflow-hidden flex items-center justify-center">
+                        {% if producto.imagen_principal %}
+                            <img src="{{ producto.imagen_principal.imagen.url }}" alt="{{ producto.n_producto }}" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                        {% else %}
+                            <svg class="w-32 h-32 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" />
+                            </svg>
+                        {% endif %}
+                        <!-- Etiqueta destacado -->
+                        <div class="absolute top-4 right-4 bg-black text-white px-4 py-2 text-xs tracking-widest font-bold">
+                            DESTACADO
+                        </div>
+                        <!-- Icono de estrella -->
+                        <div class="absolute top-4 left-4 text-yellow-400 text-xl">
+                            <i class="fas fa-star"></i>
+                        </div>
+                    </div>
+                    <!-- Contenido -->
+                    <div class="p-6">
+                        <p class="text-gray-500 text-sm tracking-wider mb-2 font-precio">
+                            {{ producto.n_producto }}
+                        </p>
+                        <!-- Especificaciones rápidas -->
+                        <div class="flex flex-wrap gap-1 mb-3">
+                            <span class="text-xs bg-gray-200 text-gray-700 px-2 py-0.5 rounded font-precio">{{ producto.aro }}"</span>
+                            <span class="text-xs bg-gray-200 text-gray-700 px-2 py-0.5 rounded font-precio">{{ producto.ancho }}</span>
+                            <span class="text-xs bg-gray-200 text-gray-700 px-2 py-0.5 rounded font-precio">{{ producto.apernadura }}</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-2xl font-bold text-black font-precio">${{ producto.precio|floatformat:0 }}</span>
+                            <a href="{% url 'detproducto' producto.id_producto %}" class="bg-black text-white px-6 py-2 text-sm font-medium tracking-wider hover:bg-gray-900 transition rounded">
+                                VER
+                            </a>
                         </div>
                     </div>
                 </div>
-                
-                
-                <button id="carousel-next" class="carousel-btn carousel-btn-next" aria-label="Siguiente">
-                    <i class="fas fa-chevron-right"></i>
-                </button>
+                {% endfor %}
             </div>
 
-            
-            <div id="carousel-indicators" class="flex justify-center mt-8 gap-3">
-                
-            </div>
-            
             <div class="text-center mt-12">
                 <a href="{% url 'listar_productos' %}" class="inline-block border-2 border-black text-black px-10 py-4 font-medium tracking-wider hover:bg-black hover:text-white transition text-sm">
                     VER TODA LA COLECCIÓN
                 </a>
             </div>
         </div>
-    </section> {% endcomment %}
+    </section>
+    {% endif %}
 
 {% endblock %}
 

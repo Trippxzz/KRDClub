@@ -273,6 +273,14 @@
                                     </svg>
                                 </div>
                             {% endif %}
+                            <!-- Badge de destacado -->
+                            {% with p.id_producto|stringformat:"s" as pid_str %}
+                            {% if pid_str in productos_destacados_ids %}
+                                <div class="absolute top-3 left-3 bg-yellow-500 text-white px-2 py-1 text-xs font-bold rounded flex items-center gap-1">
+                                    <i class="fas fa-star"></i> DESTACADO
+                                </div>
+                            {% endif %}
+                            {% endwith %}
                             {% if p.stock <= 0 %}
                                 <div class="absolute top-3 right-3 bg-red-500 text-white px-2 py-1 text-xs font-bold rounded">SIN STOCK</div>
                             {% elif p.stock <= umbral_bajo_stock %}

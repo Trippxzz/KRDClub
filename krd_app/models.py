@@ -253,6 +253,68 @@ class Configuracion(models.Model):
             defaults={'valor': valor, 'descripcion': descripcion}
         )
         return obj
+    
+    @classmethod
+    def get_productos_destacados(cls):
+        """
+        Obtiene los productos destacados configurados.
+        Almacenados en clave 'productos_destacados' como JSON: [{"id": "uuid", "orden": 1}, ...]
+        """
+        import json
+        valor = cls.get_valor('productos_destacados', '[]')
+        try:
+            destacados_config = json.loads(valor)
+            # Ordenar por orden
+            destacados_config.sort(key=lambda x: x.get('orden', 0))
+            # Obtener los productos
+            producto_ids = [d['id'] for d in destacados_config]
+            productos = Producto.objects.filter(id_producto__in=producto_ids, stock__gt=0)
+            # Ordenar según la configuración
+            productos_dict = {str(p.id_producto): p for p in productos}
+            return [productos_dict[d['id']] for d in destacados_config if d['id'] in productos_dict]
+        except (json.JSONDecodeError, KeyError):
+            return []
+    
+    @classmethod
+    def set_productos_destacados(cls, productos_lista):
+        """
+        Guarda los productos destacados.
+        productos_lista: lista de dicts [{"id": "uuid", "orden": 1}, ...]
+        """
+        import json
+        cls.set_valor('productos_destacados', json.dumps(productos_lista), 'Lista de productos destacados')
+    
+    @classmethod
+    def agregar_producto_destacado(cls, producto_id, orden=0):
+        """Agrega un producto a destacados"""
+        import json
+        valor = cls.get_valor('productos_destacados', '[]')
+        try:
+            destacados = json.loads(valor)
+        except json.JSONDecodeError:
+            destacados = []
+        
+        # Verificar si ya existe
+        for d in destacados:
+            if d['id'] == str(producto_id):
+                d['orden'] = orden
+                cls.set_productos_destacados(destacados)
+                return
+        
+        destacados.append({'id': str(producto_id), 'orden': orden})
+        cls.set_productos_destacados(destacados)
+    
+    @classmethod
+    def eliminar_producto_destacado(cls, producto_id):
+        """Elimina un producto de destacados"""
+        import json
+        valor = cls.get_valor('productos_destacados', '[]')
+        try:
+            destacados = json.loads(valor)
+            destacados = [d for d in destacados if d['id'] != str(producto_id)]
+            cls.set_productos_destacados(destacados)
+        except json.JSONDecodeError:
+            pass
 
 
 ### Sección Cupones de Descuento

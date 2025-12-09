@@ -1,0 +1,193 @@
+{% extends 'panel/base_admin.html' %}
+
+{% block title %}Productos Destacados - Panel Admin{% endblock %}
+{% block page_title %}Productos Destacados{% endblock %}
+{% block page_subtitle %}Gestiona los productos que se muestran en el inicio{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Productos Destacados</h1>
+            <p class="text-gray-600 mt-1">Los productos destacados aparecen en el inicio y tienen un badge especial en el catálogo</p>
+        </div>
+        <button onclick="document.getElementById('modal-agregar').classList.remove('hidden')" 
+                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition flex items-center gap-2">
+            <i class="fas fa-plus"></i>
+            Agregar Producto
+        </button>
+    </div>
+
+    <!-- Lista de Productos Destacados -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+            <h2 class="font-semibold text-gray-800">Productos Destacados Actuales ({{ productos_destacados|length }})</h2>
+            {% if productos_destacados %}
+            <form method="post" id="form-guardar-orden">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="guardar_todos">
+                <button type="submit" class="text-sm bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg transition flex items-center gap-2">
+                    <i class="fas fa-save"></i>
+                    Guardar Orden
+                </button>
+            </form>
+            {% endif %}
+        </div>
+        
+        {% if productos_destacados %}
+        <div class="divide-y divide-gray-100">
+            {% for item in productos_destacados %}
+            <div class="p-4 sm:p-6 hover:bg-gray-50 transition">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <!-- Producto Info -->
+                    <div class="flex items-center gap-4 flex-1 min-w-0">
+                        <!-- Imagen -->
+                        <div class="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                            {% if item.producto.imagen_principal %}
+                                <img src="{{ item.producto.imagen_principal.imagen.url }}" alt="{{ item.producto.n_producto }}" class="w-full h-full object-cover">
+                            {% else %}
+                                <div class="w-full h-full flex items-center justify-center text-gray-400">
+                                    <i class="fas fa-image text-2xl"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Info -->
+                        <div class="flex-1 min-w-0">
+                            <h3 class="font-medium text-gray-900 truncate">{{ item.producto.n_producto }}</h3>
+                            <div class="flex flex-wrap gap-2 mt-1">
+                                <span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">{{ item.producto.aro }}"</span>
+                                <span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">{{ item.producto.ancho }}</span>
+                                <span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">Stock: {{ item.producto.stock }}</span>
+                            </div>
+                            <p class="text-sm font-semibold text-gray-800 mt-1">${{ item.producto.precio|floatformat:0 }}</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Controles -->
+                    <div class="flex items-center gap-3 flex-shrink-0">
+                        <!-- Orden -->
+                        <div class="flex items-center gap-2">
+                            <label class="text-sm text-gray-500">Orden:</label>
+                            <input type="number" 
+                                   name="orden_{{ item.producto.id_producto }}" 
+                                   value="{{ item.orden }}" 
+                                   min="0" 
+                                   form="form-guardar-orden"
+                                   class="w-16 px-2 py-1 border border-gray-300 rounded text-center text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        
+                        <!-- Eliminar -->
+                        <form method="post" class="inline" onsubmit="return confirm('¿Eliminar este producto de destacados?')">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="eliminar">
+                            <input type="hidden" name="producto_id" value="{{ item.producto.id_producto }}">
+                            <button type="submit" 
+                                    class="bg-red-100 text-red-700 hover:bg-red-200 p-2 rounded-lg transition"
+                                    title="Eliminar de destacados">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="p-12 text-center">
+            <i class="fas fa-star text-4xl text-gray-300 mb-4"></i>
+            <p class="text-gray-500">No hay productos destacados</p>
+            <p class="text-sm text-gray-400 mt-1">Agrega productos para mostrarlos en el inicio</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal Agregar Producto -->
+<div id="modal-agregar" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+        <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center flex-shrink-0">
+            <h3 class="text-lg font-bold text-gray-900">Agregar Producto Destacado</h3>
+            <button onclick="document.getElementById('modal-agregar').classList.add('hidden')" class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <!-- Búsqueda -->
+        <div class="px-6 py-4 border-b border-gray-100">
+            <input type="text" id="buscar-producto" placeholder="Buscar producto..." 
+                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+        </div>
+        
+        <!-- Lista de productos -->
+        <div class="flex-1 overflow-y-auto p-6">
+            <div class="space-y-2" id="lista-productos">
+                {% for producto in todos_productos %}
+                <div class="producto-item flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition {% if producto.id_producto|stringformat:'s' in productos_destacados_ids %}opacity-50{% endif %}"
+                     data-nombre="{{ producto.n_producto|lower }}">
+                    <div class="flex items-center gap-3 flex-1 min-w-0">
+                        <!-- Imagen pequeña -->
+                        <div class="w-12 h-12 bg-gray-100 rounded overflow-hidden flex-shrink-0">
+                            {% if producto.imagen_principal %}
+                                <img src="{{ producto.imagen_principal.imagen.url }}" alt="" class="w-full h-full object-cover">
+                            {% else %}
+                                <div class="w-full h-full flex items-center justify-center text-gray-400">
+                                    <i class="fas fa-image"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="font-medium text-gray-900 truncate">{{ producto.n_producto }}</p>
+                            <p class="text-sm text-gray-500">${{ producto.precio|floatformat:0 }} · Stock: {{ producto.stock }}</p>
+                        </div>
+                    </div>
+                    
+                    {% if producto.id_producto|stringformat:'s' in productos_destacados_ids %}
+                        <span class="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded">Ya destacado</span>
+                    {% else %}
+                        <form method="post" class="flex items-center gap-2">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="agregar">
+                            <input type="hidden" name="producto_id" value="{{ producto.id_producto }}">
+                            <input type="number" name="orden" value="0" min="0" 
+                                   class="w-14 px-2 py-1 border border-gray-300 rounded text-center text-sm"
+                                   placeholder="Orden">
+                            <button type="submit" 
+                                    class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-sm font-medium transition">
+                                <i class="fas fa-plus mr-1"></i> Agregar
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
+                {% empty %}
+                <p class="text-center text-gray-500 py-8">No hay productos disponibles</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const buscarInput = document.getElementById('buscar-producto');
+    const productos = document.querySelectorAll('.producto-item');
+    
+    buscarInput.addEventListener('input', function() {
+        const busqueda = this.value.toLowerCase();
+        
+        productos.forEach(function(producto) {
+            const nombre = producto.dataset.nombre;
+            if (nombre.includes(busqueda)) {
+                producto.style.display = 'flex';
+            } else {
+                producto.style.display = 'none';
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
