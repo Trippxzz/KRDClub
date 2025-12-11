@@ -3,6 +3,8 @@ from django.contrib import messages
 from .models import Producto, ProductoImagen, Compra, ProductoCompra, vehiculo, Producto_Vehiculo, Venta, Producto_Venta, Usuario, Logistica, Valoracion, Configuracion, Cupon
 from .forms import ProductoForm, ProductoImagenForm, CompraForm, ProductoCompraForm, VehiculoForm, UsuarioForm
 from django.http import HttpResponse, JsonResponse
+from django_ratelimit.decorators import ratelimit
+from django_ratelimit.exceptions import Ratelimited
 from decimal import Decimal
 from django.db import transaction
 from django.conf import settings
@@ -1689,8 +1691,14 @@ def formato_rut(rut):
     return dv == dv_calculado
 
 
+@ratelimit(key='ip', rate='5/m', method='POST')  ### METODO DE SEGURIDAD
 def panel_login(request):
     """Vista de login para el panel de administración"""
+    # Verificar si fue bloqueado por rate limit
+    if getattr(request, 'limited', False):
+        messages.error(request, 'Demasiados intentos. Por favor espera un minuto antes de intentar nuevamente.')
+        return render(request, 'panel/login.html', {'bloqueado': True})
+    
     if request.user.is_authenticated:
         return redirect('admin_dashboard')
     
