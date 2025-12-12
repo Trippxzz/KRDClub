@@ -5,6 +5,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/home.css' %}">
+<link rel="stylesheet" href="{% static 'css/chatbot.css' %}">
 <style>
     .hero-section {
         background: #fafafa;
@@ -324,9 +325,56 @@
     </section>
     {% endif %}
 
+    <!-- ============ CHATBOT DE PREGUNTAS FRECUENTES ============ -->
+    <!-- Botón flotante del chatbot -->
+    <button id="chatbot-toggle" class="chatbot-toggle" aria-label="Abrir chat de ayuda">
+        <i class="fas fa-comments"></i>
+    </button>
+
+    <!-- Ventana del chatbot -->
+    <div id="chatbot-container" class="chatbot-container">
+        <!-- Header -->
+        <div class="chatbot-header">
+            <div class="chatbot-avatar">
+                <i class="fas fa-robot"></i>
+            </div>
+            <div class="chatbot-info">
+                <h3>Asistente KRD</h3>
+                <p>Preguntas Frecuentes</p>
+            </div>
+            <button id="chatbot-close" class="chatbot-close" aria-label="Cerrar chat">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        
+        <!-- Área de mensajes -->
+        <div id="chatbot-messages" class="chatbot-messages">
+            <!-- Los mensajes se agregan dinámicamente -->
+        </div>
+        
+        <!-- Categorías de preguntas -->
+        <div id="chatbot-categories" class="chatbot-categories">
+            <!-- Se renderizan dinámicamente -->
+        </div>
+        
+        <!-- Lista de preguntas por categoría -->
+        <div id="chatbot-questions" class="questions-list hidden">
+            <!-- Se renderizan dinámicamente -->
+        </div>
+        
+        <!-- Input de texto -->
+        <div class="chatbot-input">
+            <input type="text" id="chatbot-input" placeholder="Escribe tu pregunta..." autocomplete="off">
+            <button id="chatbot-send" aria-label="Enviar mensaje">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+
 {% endblock %}
 
 {% block extra_js %}
 <script src="{% static 'js/filtro-vehiculos.js' %}"></script>
 <script src="{% static 'js/carousel.js' %}"></script>
+<script src="{% static 'js/chatbot.js' %}"></script>
 {% endblock %}

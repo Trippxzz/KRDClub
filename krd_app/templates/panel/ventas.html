@@ -6,27 +6,6 @@
 
 {% block content %}
 
-{% comment %} <!-- Filtros -->
-<div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6">
-    <form method="GET" class="flex flex-wrap gap-4 items-end">
-        <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Desde</label>
-            <input type="date" name="fecha_desde" value="{{ request.GET.fecha_desde }}" 
-                   class="border border-gray-300 rounded-lg px-3 py-2">
-        </div>
-        <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Hasta</label>
-            <input type="date" name="fecha_hasta" value="{{ request.GET.fecha_hasta }}"
-                   class="border border-gray-300 rounded-lg px-3 py-2">
-        </div>
-        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
-            <i class="fas fa-filter mr-2"></i>Filtrar
-        </button>
-        <a href="{% url 'admin_ventas' %}" class="text-gray-600 px-4 py-2 hover:text-gray-900">
-            Limpiar filtros
-        </a>
-    </form>
-</div> {% endcomment %}
 
 <!-- Tabla de Ventas -->
 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
