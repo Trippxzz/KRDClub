@@ -60,7 +60,7 @@
                 </div>
 
                 <!-- Campo Contraseña -->
-                <div class="mb-6">
+                <div class="mb-4">
                     <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
                         Contraseña
                     </label>
@@ -80,6 +80,15 @@
                             <i class="fas fa-eye" id="eye-icon"></i>
                         </button>
                     </div>
+                </div>
+
+                <!-- Olvidé mi contraseña -->
+                <div class="mb-6 text-right">
+                    <button type="button" 
+                            onclick="document.getElementById('modalRecuperar').classList.remove('hidden')"
+                            class="text-sm text-gray-500 hover:text-black transition">
+                        ¿Olvidaste tu contraseña?
+                    </button>
                 </div>
 
                 <!-- Botón Submit -->
@@ -212,5 +221,140 @@ document.getElementById('login-form').addEventListener('submit', function(e) {
         document.getElementById('rut').focus();
     }
 });
+</script>
+
+<!-- Modal Recuperar Contraseña -->
+<div id="modalRecuperar" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-xl max-w-md w-full">
+        <div class="p-6 border-b border-gray-200">
+            <div class="flex justify-between items-center">
+                <h3 class="text-xl font-bold text-gray-900">Recuperar Contraseña</h3>
+                <button onclick="cerrarModalRecuperar()" class="text-gray-400 hover:text-gray-600 p-2">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+        </div>
+        
+        <div class="p-6">
+            <p class="text-gray-600 text-sm mb-6">
+                Ingresa tu correo electrónico y te enviaremos instrucciones para restablecer tu contraseña.
+            </p>
+            
+            <form id="form-recuperar" onsubmit="enviarRecuperacion(event)">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Correo Electrónico</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                            <i class="fas fa-envelope"></i>
+                        </span>
+                        <input type="email" 
+                               id="email-recuperar" 
+                               placeholder="correo@ejemplo.com"
+                               class="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-black focus:outline-none transition"
+                               required>
+                    </div>
+                </div>
+                
+                <!-- Mensaje de estado -->
+                <div id="recuperar-status" class="hidden mb-4 p-3 rounded-lg text-sm"></div>
+                
+                <div class="flex gap-3">
+                    <button type="button" 
+                            onclick="cerrarModalRecuperar()"
+                            class="flex-1 px-4 py-3 border-2 border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium">
+                        Cancelar
+                    </button>
+                    <button type="submit" 
+                            id="btn-recuperar"
+                            class="flex-1 px-4 py-3 bg-black text-white rounded-lg hover:bg-gray-800 transition font-medium">
+                        <i class="fas fa-paper-plane mr-2"></i>
+                        Enviar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function cerrarModalRecuperar() {
+    document.getElementById('modalRecuperar').classList.add('hidden');
+    document.getElementById('email-recuperar').value = '';
+    document.getElementById('recuperar-status').classList.add('hidden');
+}
+
+// Cerrar modal con Escape
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        cerrarModalRecuperar();
+    }
+});
+
+// Cerrar modal clickeando fuera
+document.getElementById('modalRecuperar').addEventListener('click', function(e) {
+    if (e.target === this) {
+        cerrarModalRecuperar();
+    }
+});
+
+function enviarRecuperacion(e) {
+    e.preventDefault();
+    
+    const email = document.getElementById('email-recuperar').value.trim();
+    const statusDiv = document.getElementById('recuperar-status');
+    const btnRecuperar = document.getElementById('btn-recuperar');
+    
+    if (!email) {
+        mostrarStatusRecuperar('Ingresa un correo electrónico', 'error');
+        return;
+    }
+    
+    // Deshabilitar botón
+    btnRecuperar.disabled = true;
+    btnRecuperar.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Enviando...';
+    
+    // Enviar solicitud
+    fetch('{% url "recuperar_password" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({ email: email })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            mostrarStatusRecuperar(data.message, 'success');
+            document.getElementById('email-recuperar').value = '';
+            // Cerrar modal después de 3 segundos
+            setTimeout(() => {
+                cerrarModalRecuperar();
+            }, 3000);
+        } else {
+            mostrarStatusRecuperar(data.message, 'error');
+        }
+    })
+    .catch(error => {
+        mostrarStatusRecuperar('Error al procesar la solicitud', 'error');
+    })
+    .finally(() => {
+        btnRecuperar.disabled = false;
+        btnRecuperar.innerHTML = '<i class="fas fa-paper-plane mr-2"></i>Enviar';
+    });
+}
+
+function mostrarStatusRecuperar(mensaje, tipo) {
+    const statusDiv = document.getElementById('recuperar-status');
+    statusDiv.classList.remove('hidden', 'bg-green-50', 'text-green-700', 'border-green-200', 'bg-red-50', 'text-red-700', 'border-red-200');
+    
+    if (tipo === 'success') {
+        statusDiv.classList.add('bg-green-50', 'text-green-700', 'border', 'border-green-200');
+        statusDiv.innerHTML = '<i class="fas fa-check-circle mr-2"></i>' + mensaje;
+    } else {
+        statusDiv.classList.add('bg-red-50', 'text-red-700', 'border', 'border-red-200');
+        statusDiv.innerHTML = '<i class="fas fa-exclamation-circle mr-2"></i>' + mensaje;
+    }
+}
 </script>
 {% endblock %}

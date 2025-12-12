@@ -3,12 +3,14 @@ from django.contrib import messages
 from .models import Producto, ProductoImagen, Compra, ProductoCompra, vehiculo, Producto_Vehiculo, Venta, Producto_Venta, Usuario, Logistica, Valoracion, Configuracion, Cupon
 from .forms import ProductoForm, ProductoImagenForm, CompraForm, ProductoCompraForm, VehiculoForm, UsuarioForm
 from django.http import HttpResponse, JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from django_ratelimit.decorators import ratelimit
 from django_ratelimit.exceptions import Ratelimited
 from decimal import Decimal
 from django.db import transaction
 from django.conf import settings
 from django.urls import reverse
+from datetime import datetime, timedelta
 import json, random, time
 from django.contrib.auth.hashers import make_password, check_password
 from django.core.mail import send_mail
@@ -1743,6 +1745,139 @@ def panel_logout(request):
     logout(request)
     messages.info(request, 'Has cerrado sesión correctamente.')
     return redirect('home')
+
+
+@csrf_exempt
+def recuperar_password(request):
+    """
+    Procesa la solicitud de recuperación de contraseña.
+    Solo envía el correo si el email existe en la base de datos.
+    """
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            email = data.get('email', '').strip().lower()
+            
+            if not email:
+                return JsonResponse({'success': False, 'message': 'Ingresa un correo electrónico'})
+            
+            # Buscar usuario admin por email
+            usuario = Usuario.objects.filter(email__iexact=email, admin=True).first()
+            
+            if not usuario:
+                # Por seguridad, no revelar si el correo existe o no
+                return JsonResponse({
+                    'success': True, 
+                    'message': 'Si el correo existe, recibirás las instrucciones'
+                })
+            
+            # Generar token temporal corto (válido por 1 hora)
+            import secrets
+            
+            token = secrets.token_hex(12)  # 24 caracteres hex
+            expiracion = datetime.now() + timedelta(hours=1)
+            
+            # Guardar token en configuración (temporal)
+            clave = f'rst_{token}'
+            valor = f'{usuario.rut}|{expiracion.isoformat()}'
+            
+            Configuracion.set_valor(clave, valor, 'Reset pwd')
+            
+            # Construir URL de reset
+            reset_url = request.build_absolute_uri(f'/panel/reset-password/{token}/')
+            
+            # Enviar correo
+            try:
+                subject = 'Recuperar Contraseña - KRD Club'
+                message = f'''Hola {usuario.nombre},
+
+Recibimos una solicitud para restablecer tu contraseña en KRD Club.
+
+Para crear una nueva contraseña, visita este enlace:
+{reset_url}
+
+Este enlace expirará en 1 hora.
+
+Si no solicitaste este cambio, ignora este correo.
+
+Saludos,
+KRD Club'''
+                
+                send_mail(
+                    subject,
+                    message,
+                    settings.DEFAULT_FROM_EMAIL,
+                    [usuario.email],
+                    fail_silently=False,
+                )
+            except Exception as mail_error:
+                print(f"Error enviando correo: {mail_error}")
+                return JsonResponse({
+                    'success': False, 
+                    'message': 'Error al enviar el correo. Verifica la configuración de email.'
+                })
+            
+            return JsonResponse({
+                'success': True, 
+                'message': 'Se han enviado las instrucciones a tu correo'
+            })
+                
+        except json.JSONDecodeError:
+            return JsonResponse({'success': False, 'message': 'Datos inválidos'})
+        except Exception as e:
+            print(f"Error en recuperar_password: {type(e).__name__}: {e}")
+            return JsonResponse({'success': False, 'message': 'Error al procesar la solicitud'})
+    
+    return JsonResponse({'success': False, 'message': 'Método no permitido'})
+
+
+def reset_password(request, token):
+    """
+    Muestra el formulario para crear nueva contraseña y procesa el cambio.
+    """
+    # Verificar token
+    try:
+        clave = f'rst_{token}'
+        config = Configuracion.objects.get(clave=clave)
+        datos = config.valor.split('|')
+        rut = datos[0]
+        expiracion = datetime.fromisoformat(datos[1])
+        
+        # Verificar si expiró
+        if datetime.now() > expiracion:
+            config.delete()
+            messages.error(request, 'El enlace ha expirado. Solicita uno nuevo.')
+            return redirect('panel_login')
+        
+        usuario = Usuario.objects.get(rut=rut)
+        
+    except (Configuracion.DoesNotExist, Usuario.DoesNotExist, IndexError):
+        messages.error(request, 'El enlace no es válido o ha expirado.')
+        return redirect('panel_login')
+    
+    if request.method == 'POST':
+        password = request.POST.get('password', '')
+        password2 = request.POST.get('password2', '')
+        
+        if len(password) < 6:
+            messages.error(request, 'La contraseña debe tener al menos 6 caracteres.')
+            return render(request, 'panel/reset_password.html', {'token': token})
+        
+        if password != password2:
+            messages.error(request, 'Las contraseñas no coinciden.')
+            return render(request, 'panel/reset_password.html', {'token': token})
+        
+        # Cambiar contraseña
+        usuario.set_password(password)
+        usuario.save()
+        
+        # Eliminar token usado
+        config.delete()
+        
+        messages.success(request, '¡Contraseña actualizada correctamente! Ya puedes iniciar sesión.')
+        return redirect('panel_login')
+    
+    return render(request, 'panel/reset_password.html', {'token': token})
 
 
 ### SISTEMA DE VALORACIONES

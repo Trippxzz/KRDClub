@@ -74,6 +74,8 @@ urlpatterns = [
     path('panel/logistica/entregado/<int:venta_id>/', views.marcar_entregado, name='marcar_entregado'),
     path('panel/login/', views.panel_login, name='panel_login'),
     path('panel/logout/', views.panel_logout, name='panel_logout'),
+    path('panel/recuperar-password/', views.recuperar_password, name='recuperar_password'),
+    path('panel/reset-password/<str:token>/', views.reset_password, name='reset_password'),
     
     # Sistema de Valoraciones
     path('valorar/<int:venta_id>/', views.crear_valoracion, name='crear_valoracion'),
